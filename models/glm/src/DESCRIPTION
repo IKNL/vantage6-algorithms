@@ -1,0 +1,20 @@
+Vantage-Comment:
+    **************************************************
+    * This file was generated from DESCRIPTION.tpl   *
+    * Please don't modify it directly! Instead,      *
+    * modify DESCRIPTION.tpl and run the following   *
+    * command:                                       *
+    *   make DESCRIPTION                             *
+    **************************************************
+Package: vtg.glm
+Type: Package
+Version: 0.1.0
+Title: vtg.glm
+Description: This package can be used with the vantage6 federated
+    learning infrastructure (see https://github.com/IKNL/vantage6).
+Encoding: UTF-8
+LazyData: true
+Imports:
+    glue
+Remotes:
+RoxygenNote: 7.1.1
