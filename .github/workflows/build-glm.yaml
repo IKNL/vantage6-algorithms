@@ -43,7 +43,7 @@ jobs:
         if: $BRANCH_NAME == 'main'
         with:
           push: True
-          file: {context}/models/glm/docker/Dockerfile
+          file: ${context}/models/glm/docker/Dockerfile
           tags: harbor2.vantage6.ai/algorithms/glm:latest
 
       - name: TEST build and push Docker image
@@ -51,7 +51,7 @@ jobs:
         if: $BRANCH_NAME == 'glm'
         with:
           push: True
-          file: {context}/models/glm/docker/Dockerfile
+          file: ${context}/models/glm/docker/Dockerfile
           tags: harbor2.vantage6.ai/algorithms/glm:test
 
 
