@@ -40,18 +40,18 @@ jobs:
 
       - name: RELEASE build and push Docker image
         uses: docker/build-push-action@v2.7.0
-        if: $BRANCH_NAME == 'main'
+        if: ${{BRANCH_NAME}} == 'main'
         with:
           push: True
-          file: ${context}/models/glm/docker/Dockerfile
+          file: ./models/glm/docker/Dockerfile
           tags: harbor2.vantage6.ai/algorithms/glm:latest
 
       - name: TEST build and push Docker image
         uses: docker/build-push-action@v2.7.0
-        if: $BRANCH_NAME == 'glm'
+        if: ${{BRANCH_NAME}} == 'glm'
         with:
           push: True
-          file: ${context}/models/glm/docker/Dockerfile
+          file: ./models/glm/docker/Dockerfile
           tags: harbor2.vantage6.ai/algorithms/glm:test
 
 
