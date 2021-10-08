@@ -12,9 +12,6 @@ _Implementation of the federated Generalized Linear Model_
 
 -----------------------------------------------------------------------------------------------------
 
-
-# vtg.dglm
-
 ## Usage
 
 ### Installation
