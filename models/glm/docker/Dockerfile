@@ -10,7 +10,8 @@ ARG PKG_NAME='vtg.glm'
 LABEL maintainer="Frank Martin <f.martin@iknl.nl>"
 
 # Install federated glm package
-COPY src /usr/local/R/${PKG_NAME}/
+COPY ./models/glm/src /usr/local/R/${PKG_NAME}/
+
 WORKDIR /usr/local/R/${PKG_NAME}
 RUN Rscript -e 'library(devtools)' -e 'install_deps(".")'
 RUN R CMD INSTALL --no-multiarch --with-keep.source .
