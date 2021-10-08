@@ -35,12 +35,14 @@ jobs:
           username: ${{ secrets.HARBOR2_USERNAME }}
           password: ${{ secrets.HARBOR2_TOKEN }}
 
-      - name: Obtain current branch name
-        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_HEAD_REF})"
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
 
       - name: RELEASE build and push Docker image
         uses: docker/build-push-action@v2.7.0
-        if: ${{BRANCH_NAME}} == 'main'
+        if: ${{ steps.extract_branch.outputs.branch }} == 'main'
         with:
           push: True
           file: ./models/glm/docker/Dockerfile
@@ -48,13 +50,11 @@ jobs:
 
       - name: TEST build and push Docker image
         uses: docker/build-push-action@v2.7.0
-        if: ${{BRANCH_NAME}} == 'glm'
+        if: ${{ steps.extract_branch.outputs.branch }} == 'glm'
         with:
           push: True
           file: ./models/glm/docker/Dockerfile
           tags: harbor2.vantage6.ai/algorithms/glm:test
-
-
 
       # Runs a single command using the runners shell
       #- name: Run a one-line script
