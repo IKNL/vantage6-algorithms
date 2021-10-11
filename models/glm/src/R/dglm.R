@@ -21,14 +21,6 @@ dglm <- function(client, formula, dstar=NULL, types=NULL, family = gaussian,
     USE_VERBOSE_OUTPUT <- getOption('vtg.verbose_output', T)
     lgr::threshold("debug")
 
-    # Image of the algorithm (which includes this code)
-    image.name <- "harbor2.vantage6.ai/algorithms/glm:lastest"
-    vtg::log$debug(glue::glue("Using image: '{image.name}'"))
-
-    client$set.task.image(
-        image.name,
-        task.name <- "GLM"
-    )
 
     # Run in a MASTER container. Note that this will call this method but then
     # within a Docker container. The client used here bellow has set the
