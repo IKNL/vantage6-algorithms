@@ -6,10 +6,10 @@ vantage6-Comment:
     * command:                                       *
     *   make DESCRIPTION                             *
     **************************************************
-Package: glm
+Package: vtg.glm
 Type: Package
 Version: 1.0.0
-Title: glm
+Title: vtg.glm
 Description: This package can be used with the vantage6 federated
     learning infrastructure (see https://github.com/IKNL/vantage6).
 Encoding: UTF-8

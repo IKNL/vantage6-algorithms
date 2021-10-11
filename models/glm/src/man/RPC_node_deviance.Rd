@@ -4,10 +4,10 @@
 \alias{RPC_node_deviance}
 \title{RPC call for the second data loop of the federated GLM}
 \usage{
-RPC_node_deviance(Data, weights = NULL, master)
+RPC_node_deviance(data, weights = NULL, master)
 }
 \arguments{
-\item{Data}{dataframe containing the data}
+\item{data}{dataframe containing the data}
 
 \item{weights}{an optional vector of ‘prior weights’ to be used in the
 fitting process. Should be NULL or a numeric vector.}

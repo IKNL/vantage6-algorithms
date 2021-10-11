@@ -31,7 +31,6 @@ master_beta <- function(nodes = NULL, master = NULL) {
 
     g <- nodes
 
-    vtg::log$debug(g)
     vtg::log$debug("Merging node calculation to update new Betas.")
     # Total sum of weights
     allwt <- Reduce(`+`, lapply(1:length(g), function(j) g[[j]]$wt2))
