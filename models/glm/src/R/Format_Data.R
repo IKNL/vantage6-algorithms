@@ -1,15 +1,23 @@
-Format_Data=function(Data,master){
-    column_names = names(master$types)
-    for(i in 1:length(master$types)){
+#' assign types to all columns from the data-frame
+#'
+#' @param data dataframe
+#' @param types containing the types to set to the columns
+#'
+#' @return formatted dataframe
+#'
+format_data <- function(data, types) {
+
+    column_names = names(types)
+    for(i in 1:length(types)) {
         column_name = column_names[i]
-        specs = master$types[[i]]
+        specs = types[[i]]
         type_ = specs$type
         if (type_ == "numeric"){
-            Data[[column_name]] = as.numeric(Data[[column_name]])
+            data[[column_name]] = as.numeric(data[[column_name]])
         }
         if (type_ == "factor"){
-            Data[[column_name]] = factor(Data[[column_name]], levels=specs$levels)
+            data[[column_name]] = factor(data[[column_name]], levels=specs$levels)
         }
     }
-    return(Data)
+    data
 }

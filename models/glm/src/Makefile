@@ -6,9 +6,9 @@
 $(eval PKG_NAME := $(shell Rscript -e "cat(basename(dirname(getwd())))"))
 
 # These variables can be set as environment variables or as arguments to `make`
-HOST ?= harbor.vantage6.ai
-IMAGE ?= vantage/${PKG_NAME}
-TAG ?= trolltunga
+HOST ?= harbor2.vantage6.ai
+IMAGE ?= algorithms/${PKG_NAME}
+TAG ?= harukas
 $(eval PWD := $(shell Rscript -e "cat(dirname(getwd()))"))
 
 echo:
@@ -36,7 +36,7 @@ uninstall:
 
 DESCRIPTION: DESCRIPTION.tpl
 	@echo "Generating \"DESCRIPTION\" from \"DESCRIPTION.tpl\""
-	@echo "Vantage-Comment:" > DESCRIPTION
+	@echo "vantage6-Comment:" > DESCRIPTION
 	@echo "    **************************************************" >> DESCRIPTION
 	@echo "    * This file was generated from DESCRIPTION.tpl   *" >> DESCRIPTION
 	@echo "    * Please don't modify it directly! Instead,      *" >> DESCRIPTION

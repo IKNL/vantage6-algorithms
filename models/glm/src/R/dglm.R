@@ -1,63 +1,79 @@
-#' Run the distributed GLM algorithm.
+#' Run the federated GLM.
 #'
-#' Params:
-#'    client: ptmclient::Client instance.
-#'    formula: dependant_variable ~ explanatory_variable(i) + ...
-#'    types: types of the columns that are used in the formula
-#'    family: to this up it uses the Gaussian as this is the default value
-#'    tol: tolerance level
-#'    maxit: maximum number of iterations the function is allowed to cycle up to
+#' @param client vtg::Client instance
+#' @param formula an object of class formula (or one that can be coerced to that
+#' class: a symbolic description of the model to be fitted. E.g.:
+#' dependant_variable ~ explanatory_variable(i) + ...
+#' @param dstar ...
+#' @param types types of the columns that are used in the formula
+#' @param family: to this up it uses the Gaussian as this is the default value
+#' @param tol: tolerance level
+#' @param maxit: maximum number of iterations
 #'
-dglm <- function(client, formula, dstar=NULL, types=NULL, family = gaussian, tol = 1e-08, maxit = 25) {
+#' @return A GLM model in a dict format. To convert it to a GLM model which
+#' can be used by R, use the `vtg.glm::as.GLM(output)` to convert it.
+#'
+dglm <- function(client, formula, dstar=NULL, types=NULL, family = gaussian,
+                 tol = 1e-08, maxit = 25) {
+
+    vtg::log$debug("Initializing...")
 
     USE_VERBOSE_OUTPUT <- getOption('vtg.verbose_output', T)
     lgr::threshold("debug")
-    image.name <- "harbor.vantage6.ai/vantage/vtg.glm"
+
+    # Image of the algorithm (which includes this code)
+    image.name <- "harbor2.vantage6.ai/algorithms/glm:lastest"
+    vtg::log$debug(glue::glue("Using image: '{image.name}'"))
 
     client$set.task.image(
         image.name,
         task.name <- "GLM"
     )
 
-    vtg::log$debug("Initializing..")
-
-
-    # Run in a MASTER container
+    # Run in a MASTER container. Note that this will call this method but then
+    # within a Docker container. The client used here bellow has set the
+    # property `use.master.container` set to `False`, therefore it will skip
+    # this block (else an infinite loop would occur).
     if (client$use.master.container) {
-        vtg::log$debug(glue::glue("Running `dglm` in master container using image '{image.name}'.."))
-        # result <- vtg.glm::dglm(client, formula=formula, dstar=dstar, types=types, family=family, tol=tol, maxit=maxit)
-        result <- client$call("dglm", formula=formula, dstar=dstar, types=types, family=family, tol=tol, maxit=maxit)
+        vtg::log$debug(glue::glue("Running `dglm` in master container using
+                                  image '{image.name}'.."))
+        result <- client$call("dglm", formula=formula, dstar=dstar, types=types,
+                              family=family, tol=tol, maxit=maxit)
         return(result)
     }
 
-    # results <- client$call("node_beta", master=master)
-    # print(results)\
-    master <- list(formula = formula, types=types, dstar=dstar, family = family, iter = 1, tol = tol,
-                   maxit = maxit)
+    # Collect all parameters in a single var which can be passed arround the
+    # methods.
+    params <- list(formula = formula, types=types, dstar=dstar, family = family,
+                   iter = 1, tol = tol, maxit = maxit)
 
-
+    # Loop until the model is converged or when `max_it` has been hit. Note that
+    # the maximum itterations are checked in `master_deviance`.
     repeat{
 
-        vtg::log$info(glue::glue("--> I am on iteration {master$iter}."))
-        results <- client$call("node_beta", master = master)
-        # print(length(results))
+        vtg::log$info(glue::glue("{params$iter}.1 - RPC Node Beta"))
+        results <- client$call("node_beta", master = params)
 
-        vtg::log$debug(glue::glue("--> length of results = {length(results)}"))
+        vtg::log$debug(glue::glue("  length of results = {length(results)}"))
         Ds <- lapply(results, as.data.frame)
 
-        vtg::log$debug("Master beta")
-        master <- vtg.glm::master_beta(master= master, nodes = results)
+        vtg::log$info("{params$iter}.2 - Master beta")
+        params <- vtg.glm::master_beta(master= params, nodes = results)
 
-        vtg::log$debug(glue::glue("--> length of results = {length(results)}"))
-        results <- client$call("node_deviance", master = master)
+        vtg::log$info(glue::glue("{params$iter}.3 - RPC Node Deviance"))
+        results <- client$call("node_deviance", master = params)
         Ds <- lapply(results, as.data.frame)
 
-        vtg::log$debug("Master deviance")
-        master <- vtg.glm::master_deviance(nodes = results, master = master)
-        if (master$converged) {
-            vtg::log$debug("Converged.")
+        vtg::log$info("{params$iter}.4 - Master deviance")
+        params <- vtg.glm::master_deviance(nodes = results, master = params)
+
+        vtg::log$info("{params$iter}.5 - Check convergence")
+        if (params$converged) {
+            vtg::log$debug("  Model converged or Maximum iterations reached")
             break
         }
     }
-    return(master)
+
+    # Return
+    params
 }

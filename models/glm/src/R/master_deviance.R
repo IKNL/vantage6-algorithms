@@ -1,42 +1,47 @@
-master_deviance <- function(..., nodes = NULL, master) {
-    #receive as many object as many are the nodes involved in the analysis (...)
-    #the function evaluate if the algorithm converge
-    #the function update the betas
-    vtg::log$debug("Starting master deviance.")
+#' RPC call for the second data loop of the federated GLM
+#'
+#' @param nodes list of results from the individual nodes
+#' @param master a list of parameters used to compute the GLM
+#'
+#' @return global updated parameters
+#'
+master_deviance <- function(nodes = NULL, master) {
+
+    vtg::log$debug("Initializing master deviance...")
     tol <- master$tol
     maxit <- master$maxit
     formula <- master$formula
     family <- master$family
-    if(family=='rs.poi'){
+
+    if (family=='rs.poi') {
         family <- poisson()
         family$family <- "rs.poi"
         family$link <- "glm relative survival model with Poisson error"
         family$linkfun <- function(mu) log(mu - dstar)
         family$linkinv <- function(eta) dstar + exp(eta)
-    }else{
+    } else {
         if (is.character(family))
             family <- get(family, mode = "function", envir = parent.frame())
         if (is.function(family))
             family <- family()
-        if (is.null(family$family)) {
-            print(family)
-            stop("'family' not recognized")
-        }
+        if (is.null(family$family))
+            stop(glue::glue("familty '{family}' not recognized"))
     }
-    if (is.null(nodes)) {
-        x <- list(...)  #place the dots into a list
-    }else {
-        x <- nodes
-    }
-    dev_old <- Reduce(`+`, lapply(1:length(x), function(j) x[[j]]$dev_old)) #sum up deviance of previous iteration
-    dev <- Reduce(`+`, lapply(1:length(x), function(j) x[[j]]$dev)) #sum up new deviance
-    dev.null <- Reduce(`+`, lapply(1:length(x), function(j) x[[j]]$dev.null)) #sum up null deviance
-    convergence <- (abs(dev - dev_old) / (0.1 + abs(dev)) < tol) #evaluate if algorithm  converge
+
+    x <- nodes
+    # Sum up deviance of previous iteration
+    dev_old <- Reduce(`+`, lapply(1:length(x), function(j) x[[j]]$dev_old))
+    # Sum up new deviance
+    dev <- Reduce(`+`, lapply(1:length(x), function(j) x[[j]]$dev))
+    # Sum up null deviance
+    dev.null <- Reduce(`+`, lapply(1:length(x), function(j) x[[j]]$dev.null))
+    # Evaluate if algorithm  converge
+    convergence <- (abs(dev - dev_old) / (0.1 + abs(dev)) < tol)
+
     if(convergence==FALSE & master$iter<maxit) {
         vtg::log$debug("Model hasn't converged. Max iteration not reached.")
         master$converged = convergence
         master$iter = master$iter+1
-        #saveRDS(master,file = paste0("master.Rds"))
         return(master)
     } else {
         zvalue <- master$coef[,ncol(master$coef)]/master$se
@@ -60,8 +65,7 @@ master_deviance <- function(..., nodes = NULL, master) {
                        null.deviance=dev.null,
                        nobs=master$nobs,
                        nvars=master$nvars)
-        #saveRDS(master,file = paste0("master.Rds"))
-        return(master)
+        # Return
+        master
     }
-    #return a list of output only if the algorithm converge
 }
