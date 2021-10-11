@@ -21,6 +21,10 @@ dglm <- function(client, formula, dstar=NULL, types=NULL, family = gaussian,
     USE_VERBOSE_OUTPUT <- getOption('vtg.verbose_output', T)
     lgr::threshold("debug")
 
+    # parse string to formula type. If it already is a formula this statement
+    # will do nothin'. This is needed when Python (or other langauges) is used
+    # as a client.
+    formula <- as.formula(formula)
 
     # Run in a MASTER container. Note that this will call this method but then
     # within a Docker container. The client used here bellow has set the
