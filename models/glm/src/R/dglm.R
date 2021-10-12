@@ -70,6 +70,7 @@ dglm <- function(client, formula, dstar=NULL, types=NULL, family = gaussian,
         }
     }
 
-    # Return
+    # Return, formula is not parsed to json (if this is requested). When using
+    # RDS this is not an issue.
     params
 }
