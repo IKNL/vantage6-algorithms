@@ -1,8 +1,6 @@
-import sys
 import pandas
 import time
 import numpy
-import json
 
 from vantage6.tools.util import warn, info
 
@@ -72,7 +70,8 @@ def master(client, data, columns):
 
     # check that all dataset reported their headers are correct
     info("Check if all column names on all sites are correct")
-    g_stats["column_names_correct"] = all([x["column_names_correct"] for x in results])
+    g_stats["column_names_correct"] = \
+        all([x["column_names_correct"] for x in results])
     # info(f"correct={g_stats['column_names_correct']}")
 
     # count the total number of rows of all datasets
@@ -82,7 +81,7 @@ def master(client, data, columns):
 
     # compute global statistics for numeric columns
     info("Computing numerical column statistics")
-    numeric_colums = columns_series.loc[columns_series.isin(['numeric','n'])]
+    numeric_colums = columns_series.loc[columns_series.isin(['numeric', 'n'])]
     for header in numeric_colums.keys():
 
         n = g_stats["number_of_rows"]
@@ -99,10 +98,9 @@ def master(client, data, columns):
         # info(f"g_nan={g_nan}")
         g_mean = sum([x.get("sum") for x in stats]) / (n-g_nan)
         # info(f"g_mean={g_mean}")
-        g_std = (sum([x.get("sq_dev_sum") for x in stats]) / (n-1-g_nan))**(0.5)
+        g_std = (sum([x.get("sq_dev_sum") for x in stats])/(n-1-g_nan))**(0.5)
 
         # estimate the median
-        # see https://stats.stackexchange.com/questions/103919/estimate-median-from-mean-std-dev-and-or-range
         u_std = (((n-1)/n)**(0.5)) * g_std
         g_median = [
             max([g_min, g_mean - u_std]),
@@ -120,12 +118,14 @@ def master(client, data, columns):
 
     # compute global statistics for categorical columns
     info("Computing categorical column statistics")
-    categorical_columns = columns_series.loc[columns_series.isin(['category', 'c'])]
+    categorical_columns = \
+        columns_series.loc[columns_series.isin(['category', 'c'])]
     for header in categorical_columns.keys():
-        
+
         stats = [result["statistics"][header] for result in results]
-        all_keys = list(set([key for result in results for key in result["statistics"][header].keys()]))
-        
+        all_keys = list(set([key for result in results for key in
+                             result["statistics"][header].keys()]))
+
         categories_dict = dict()
         for key in all_keys:
             key_sum = sum([x.get(key) for x in stats if key in x.keys()])
@@ -136,6 +136,7 @@ def master(client, data, columns):
     info("master algorithm complete")
 
     return g_stats
+
 
 def RPC_summary(dataframe, columns):
     """
@@ -159,13 +160,17 @@ def RPC_summary(dataframe, columns):
 
     # compare column names from dataset to the input column names
     info("Checking (given) column-names")
-    column_names_correct = set(list(columns_series.keys())).issubset(list(dataframe.keys()))
+    column_names_correct = set(list(columns_series.keys()))\
+        .issubset(list(dataframe.keys()))
     if not column_names_correct:
-        problematic_column_names = list(numpy.setdiff1d(list(columns_series.keys()), list(dataframe.keys())))
+        problematic_column_names = list(numpy.setdiff1d(
+            list(columns_series.keys()),
+            list(dataframe.keys()))
+        )
         warn("Column names do not match. Exiting.")
-        return {"column_names_correct": column_names_correct, 
+        return {"column_names_correct": column_names_correct,
                 "column_names_not_in_dataset": problematic_column_names}
-    
+
     dataframe = dataframe[list(columns.keys())]
 
     # count the number of rows in the dataset
@@ -180,11 +185,11 @@ def RPC_summary(dataframe, columns):
 
     # min, max, median, average, Q1, Q3, missing_values
     columns = {}
-    numeric_colums = columns_series.loc[columns_series.isin(['numeric','n'])]
+    numeric_colums = columns_series.loc[columns_series.isin(['numeric', 'n'])]
     for column_name in numeric_colums.keys():
         info(f"Numerical column={column_name} is processed")
         column_values = dataframe[column_name]
-        q1, median, q3 = column_values.quantile([0.25,0.5,0.75]).values
+        q1, median, q3 = column_values.quantile([0.25, 0.5, 0.75]).values
         mean = column_values.mean()
         minimum = column_values.min()
         maximum = column_values.max()
@@ -206,7 +211,8 @@ def RPC_summary(dataframe, columns):
         }
 
     # return the categories in categorial columns
-    categorical_columns = columns_series.loc[columns_series.isin(['category', 'c'])]
+    categorical_columns = \
+        columns_series.loc[columns_series.isin(['category', 'c'])]
     for column_name in categorical_columns.keys():
         info(f"Categorical column={column_name} is processed")
         columns[column_name] = dataframe[column_name].value_counts().to_dict()
