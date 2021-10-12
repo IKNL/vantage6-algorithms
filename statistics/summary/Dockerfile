@@ -6,7 +6,7 @@ FROM harbor.vantage6.ai/algorithms/algorithm-base
 ARG PKG_NAME="v6-summary-py"
 
 # install federated algorithm
-COPY . /app
+COPY ./statistics/summary /app
 RUN pip install /app
 
 ENV PKG_NAME=${PKG_NAME}
