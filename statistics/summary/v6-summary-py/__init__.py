@@ -73,8 +73,8 @@ def master(client, data, columns):
 
     # compute global statistics for numeric columns
     info("Computing numerical column statistics")
-    numeric_colums = columns_series.loc[columns_series.isin(['numeric', 'n'])]
-    for header in numeric_colums.keys():
+    numeric_columns = columns_series.loc[columns_series.isin(['numeric', 'n'])]
+    for header in numeric_columns.keys():
 
         n = g_stats["number_of_rows"]
 
@@ -201,8 +201,8 @@ def RPC_summary(dataframe, columns):
 
     # min, max, median, average, Q1, Q3, missing_values
     columns = {}
-    numeric_colums = columns_series.loc[columns_series.isin(['numeric', 'n'])]
-    for column_name in numeric_colums.keys():
+    numeric_columns = columns_series.loc[columns_series.isin(['numeric', 'n'])]
+    for column_name in numeric_columns.keys():
         info(f"Numerical column={column_name} is processed")
         column_values = dataframe[column_name]
         q1, median, q3 = column_values.quantile([0.25, 0.5, 0.75]).values
