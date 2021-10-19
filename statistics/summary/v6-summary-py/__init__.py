@@ -24,8 +24,10 @@ def master(client, data, columns):
         A dictonairy containing summary statistics for all the columns of the
         dataset.
     """
+
+    
     # define the input for the summary algorithm
-    info("Defining input paramaeters")
+    info("Defining input parameters")
     input_ = {
         "method": "summary",
         "args": [],
@@ -38,7 +40,7 @@ def master(client, data, columns):
     organizations = client.get_organizations_in_my_collaboration()
     ids = [organization.get("id") for organization in organizations]
 
-    # collaboration and image is stored in the key, so we do not need
+    # collaboration and image are stored in the key, so we do not need
     # to specify these
     info("Creating node tasks")
     task = client.create_new_task(
@@ -46,17 +48,7 @@ def master(client, data, columns):
         organization_ids=ids
     )
 
-    # wait for all results
-    # TODO subscribe to websocket, to avoid polling
-    task_id = task.get("id")
-    task = client.request(f"task/{task_id}")
-    while not task.get("complete"):
-        task = client.request(f"task/{task_id}")
-        info("Waiting for results")
-        time.sleep(1)
-
-    info("Obtaining results")
-    results = client.get_results(task_id=task.get("id"))
+    results = wait_and_collect(client, task)
 
     info("Check that column names are correct")
     if not all(x['column_names_correct'] for x in results):
@@ -98,23 +90,45 @@ def master(client, data, columns):
         # info(f"g_nan={g_nan}")
         g_mean = sum([x.get("sum") for x in stats]) / (n-g_nan)
         # info(f"g_mean={g_mean}")
-        g_std = (sum([x.get("sq_dev_sum") for x in stats])/(n-1-g_nan))**(0.5)
-
-        # estimate the median
-        u_std = (((n-1)/n)**(0.5)) * g_std
-        g_median = [
-            max([g_min, g_mean - u_std]),
-            min([g_max, g_mean + u_std])
-        ]
 
         g_stats[header] = {
             "min": g_min,
             "max": g_max,
             "nan": g_nan,
-            "mean": g_mean,
-            "std": g_std,
-            "median": g_median
+            "mean": g_mean
         }
+
+    # get variance and std, from global mean
+    g_means = {header:g_stats.get(header, {}).get('mean') 
+           for header in numeric_columns.keys() if isinstance(value, dict)}
+    
+    info("Calculating federated variance")
+    input_ = {
+        "method": "federated_variance_part",
+        "args": [],
+        "kwargs": {
+            "g_means": g_means
+        }
+    }
+
+    info("Creating node tasks")
+    task = client.create_new_task(
+        input_,
+        organization_ids=ids
+    )
+    federated_variance_parts = wait_and_collect(client, task)
+
+    for header in numeric_columns.keys():
+
+        sum_n = sum([node_res[header]['len'] for node_res in federated_variance_parts])
+        sum_fv_p2 = sum([node_res[header]['fv_part2'] for node_res in federated_variance_parts])
+        
+        var_federated = sum_fv_p2/sum_n
+        std_federated = numpy.sqrt(var_federated) # Population Standard Deviation
+        
+        g_stats[header].update({'var': var_federated})
+        g_stats[header].update({'std': std_federated})
+
 
     # compute global statistics for categorical columns
     info("Computing categorical column statistics")
@@ -133,6 +147,8 @@ def master(client, data, columns):
 
         g_stats[header] = categories_dict
 
+    g_stats = convert_np_to_py(g_stats)
+
     info("master algorithm complete")
 
     return g_stats
@@ -146,7 +162,7 @@ def RPC_summary(dataframe, columns):
     ----------
     dataframe : pandas dataframe
         Pandas dataframe that contains the local data.
-    columns : Dictonairy
+    columns : Dictionairy
         Dict containing column name and column (panda) type pairs
 
     Returns
@@ -222,3 +238,97 @@ def RPC_summary(dataframe, columns):
         "number_of_rows": number_of_rows,
         "statistics": columns
     }
+
+def RPC_federated_variance_part(dataframe, g_means):
+    """
+    Federated variance can be calculated by:
+    Var(X) = 1/(n_a + n_b) * sum_(j∈{a,b}) (sum_(i=1)^n_j (x_(j,i) - g_mean)^2)
+    Where,
+    Part 1: 1/(n_a + n_b)
+    Part 2: sum_(j∈{a,b}) (sum_(i=1)^n_j (x_(j,i) - g_mean)^2)
+        
+    This function computes Part 2 of the variance needed for calculating the 
+    federated variance, for a single party, let's say party b in this case.
+    
+    Parameters
+    ----------
+    dataframe : pandas dataframe
+        Pandas dataframe that contains the local data.
+    g_means : Dictionairy
+        Dictionary of the (numeric) headers (column names) of the dataframe and their corresponding global means.
+
+    Returns
+    -------
+    Dict
+        A Dict containing, pet key in g_means: 
+            number of values (n_b) - part of part 1
+            sum_(i=1)^n_j (x_(j,i) - g_mean)^2 for party b - part of part 2
+    """
+
+    federated_variance_parts = dict()
+    
+    for header, g_mean in g_means.items():
+        
+        data = dataframe[header]
+        data.dropna(inplace=True)
+        n = len(data)
+        fv_p2 = sum((data-g_mean)**2)
+        
+        federated_variance_parts[header] = {'len': n, 'fv_part2': fv_p2}
+
+    return federated_variance_parts
+
+
+def convert_np_to_py(d):
+    """
+    Converts numpy instances in a dictionary to native python instances.
+    Background information : the wrapper could not serialize numpy instances to JSON. 
+    
+    Parameters
+    ----------
+    d : Dictionairy
+
+    Returns
+    -------
+    Dict
+        A Dict without numpy instances.
+    """
+    for k, v in d.items():
+        if isinstance(v, dict):
+            convert_np_to_py(v)
+        else:
+            if 'numpy' in type(v).__module__:
+                d[k] = v.item()
+    return(d)
+
+
+def wait_and_collect(client, task):
+    """
+    Waits till the nodes are done with processing a task, and 
+    collects the results.
+    
+    Parameters
+    ----------
+    client : ContainerClient
+        Interface to the central server. This is supplied by the wrapper.
+    task : Dictionary
+        vantage6 task information obtained from client.create_new_task().
+
+    Returns
+    -------
+    Dict
+        A Dict with result dictionaries per node.
+    """
+# wait for all results
+    # TODO subscribe to websocket, to avoid polling
+    task_id = task.get("id")
+    task = client.request(f"task/{task_id}")
+    while not task.get("complete"):
+        task = client.request(f"task/{task_id}")
+        info("Waiting for results")
+        time.sleep(1)
+
+    info("Obtaining results")
+    results = client.get_results(task_id=task.get("id"))
+
+    return results
