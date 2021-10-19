@@ -99,8 +99,7 @@ def master(client, data, columns):
         }
 
     # get variance and std, from global mean
-    g_means = {header:g_stats.get(header, {}).get('mean') 
-           for header in numeric_columns.keys() if isinstance(value, dict)}
+    g_means = {header:g_stats.get(header, {}).get('mean') for header in numeric_columns.keys()}
     
     info("Calculating federated variance")
     input_ = {
