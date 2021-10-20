@@ -52,10 +52,10 @@ master_deviance <- function(nodes = NULL, master) {
         }
         vtg::log$debug("Model converged. Collecting output.")
         master <- list(converged=TRUE,
-                       coefficients=master$coef[,ncol(master$coef)],
-                       Std.Error=master$se,
-                       pvalue=pvalue,
-                       zvalue=zvalue,
+                       coefficients=as.pairlist(master$coef[,ncol(master$coef)]),
+                       Std.Error=as.pairlist(master$se),
+                       pvalue=as.pairlist(pvalue),
+                       zvalue=as.pairlist(zvalue),
                        dispersion=master$disp,
                        est.disp=master$est.disp,
                        formula=master$formula,
