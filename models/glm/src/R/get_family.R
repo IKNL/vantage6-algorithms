@@ -29,3 +29,4 @@ get_family <- function(family, dstar = NULL, data = NULL) {
         stop(glue::glue("family '{family}' not recognized"))
 
     return(family)
+}
