@@ -51,7 +51,7 @@ master_deviance <- function(nodes = NULL, master) {
             pvalue <- 2 * pnorm(-abs(zvalue))
         }
         vtg::log$debug("Model converged. Collecting output.")
-        master <- list(converged=TRUE,
+        master <- list(converged=convergence,
                        coefficients=as.pairlist(master$coef[,ncol(master$coef)]),
                        Std.Error=as.pairlist(master$se),
                        pvalue=as.pairlist(pvalue),
