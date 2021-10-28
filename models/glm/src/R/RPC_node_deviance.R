@@ -29,26 +29,8 @@ RPC_node_deviance <- function(data, weights = NULL, master) {
     # Extract the offset
     offset=model.offset(model.frame(formula, data = data))
 
-    # Functions of the family required (gaussian, poisson, logistic,...)
-    if(family=='rs.poi') {
-        if(is.null(dstar)) {
-            vtg::log$debug("expected count required for relative survival")
-            return()
-        }
-        family <- poisson()
-        family$family <- "rs.poi"
-        family$link <- "glm relative survival model with Poisson error"
-        family$linkfun <- function(mu) log(mu - dstar)
-        family$linkinv <- function(eta) dstar + exp(eta)
-        dstar=eval(as.name(dstar), data)
-    } else {
-        if (is.character(family))
-            family <- get(family, mode = "function", envir = parent.frame())
-        if (is.function(family))
-            family <- family()
-        if (is.null(family$family))
-            stop(glue::glue("family '{family}' not recognized"))
-    }
+    # Get the family required (gaussian, poisson, logistic,...)
+    family <- get_family(family, dstar, data)
 
     if (is.null(weights)) weights <- rep.int(1, nrow(X))
     if (is.null(offset)) offset <- rep.int(0, nrow(X))

@@ -13,20 +13,8 @@ master_deviance <- function(nodes = NULL, master) {
     formula <- master$formula
     family <- master$family
 
-    if (family=='rs.poi') {
-        family <- poisson()
-        family$family <- "rs.poi"
-        family$link <- "glm relative survival model with Poisson error"
-        family$linkfun <- function(mu) log(mu - dstar)
-        family$linkinv <- function(eta) dstar + exp(eta)
-    } else {
-        if (is.character(family))
-            family <- get(family, mode = "function", envir = parent.frame())
-        if (is.function(family))
-            family <- family()
-        if (is.null(family$family))
-            stop(glue::glue("familty '{family}' not recognized"))
-    }
+    # Get the family required (gaussian, poisson, logistic,...)
+    family <- get_family(family)
 
     x <- nodes
     # Sum up deviance of previous iteration

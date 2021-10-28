@@ -13,21 +13,8 @@ master_beta <- function(nodes = NULL, master = NULL) {
     formula <- master$formula
     family <- master$family
 
-    if (is.character(family)){
-        if (family=='rs.poi') {
-            family <- poisson()
-            family$family <- "rs.poi"
-            family$link <- "glm relative survival model with Poisson error"
-            family$linkfun <- function(mu) log(mu - dstar)
-            family$linkinv <- function(eta) dstar + exp(eta)
-        } else {
-            family <- get(family, mode = "function", envir = parent.frame())()
-        }
-    }
-    if (is.function(family))
-        family <- family()
-    if (is.null(family$family))
-        stop(glue::glue("family '{family}' not recognized"))
+    # Get the family required (gaussian, poisson, logistic,...)
+    family <- get_family(family)
 
     g <- nodes
 
