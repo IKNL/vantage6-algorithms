@@ -21,7 +21,7 @@ master_beta <- function(nodes = NULL, master = NULL) {
             family$linkfun <- function(mu) log(mu - dstar)
             family$linkinv <- function(eta) dstar + exp(eta)
         } else {
-            family <- get(family, mode = "function", envir = parent.frame())
+            family <- get(family, mode = "function", envir = parent.frame())()
         }
     }
     if (is.function(family))

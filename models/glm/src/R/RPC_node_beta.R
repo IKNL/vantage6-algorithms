@@ -41,7 +41,7 @@ RPC_node_beta <- function(data, weights = NULL, master = NULL) {
             family$linkinv <- function(eta) dstar + exp(eta)
             dstar=eval(as.name(dstar),data)
         } else {
-            family <- get(family, mode = "function", envir = parent.frame())
+            family <- get(family, mode = "function", envir = parent.frame())()
         }
     }
     if (is.function(family))
