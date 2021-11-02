@@ -25,12 +25,12 @@ master_deviance <- function(nodes = NULL, master) {
     dev.null <- Reduce(`+`, lapply(1:length(x), function(j) x[[j]]$dev.null))
     # Evaluate if algorithm  converge
     convergence <- (abs(dev - dev_old) / (0.1 + abs(dev)) < tol)
+    master$converged <- convergence
 
-    if(convergence==FALSE & master$iter<maxit) {
-        vtg::log$debug("Model hasn't converged. Max iteration not reached.")
-        master$converged = convergence
-        master$iter = master$iter+1
+    if (convergence == FALSE & master$iter < maxit) {
+        vtg::log$debug("Model hasn't converged and max iterations hasn't been reached.")
         return(master)
+    
     } else {
         zvalue <- master$coef[,ncol(master$coef)]/master$se
         if (master$est.disp) {
@@ -38,7 +38,7 @@ master_deviance <- function(nodes = NULL, master) {
         } else {
             pvalue <- 2 * pnorm(-abs(zvalue))
         }
-        vtg::log$debug("Model converged. Collecting output.")
+        vtg::log$debug("Collecting output.")
         master <- list(converged=convergence,
                        coefficients=as.pairlist(master$coef[,ncol(master$coef)]),
                        Std.Error=as.pairlist(master$se),

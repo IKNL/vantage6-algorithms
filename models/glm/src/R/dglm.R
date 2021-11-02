@@ -44,7 +44,7 @@ dglm <- function(client, formula, dstar=NULL, types=NULL, family = gaussian,
                    iter = 1, tol = tol, maxit = maxit)
 
     # Loop until the model is converged or when `max_it` has been hit. Note that
-    # the maximum itterations are checked in `master_deviance`.
+    # the maximum iterations are checked in `master_deviance`.
     repeat{
 
         vtg::log$info(glue::glue("{params$iter}.1 - RPC Node Beta"))
@@ -54,7 +54,7 @@ dglm <- function(client, formula, dstar=NULL, types=NULL, family = gaussian,
         Ds <- lapply(results, as.data.frame)
 
         vtg::log$info("{params$iter}.2 - Master beta")
-        params <- vtg.glm::master_beta(master= params, nodes = results)
+        params <- vtg.glm::master_beta(master = params, nodes = results)
 
         vtg::log$info(glue::glue("{params$iter}.3 - RPC Node Deviance"))
         results <- client$call("node_deviance", master = params)
@@ -65,9 +65,14 @@ dglm <- function(client, formula, dstar=NULL, types=NULL, family = gaussian,
 
         vtg::log$info("{params$iter}.5 - Check convergence")
         if (params$converged) {
-            vtg::log$debug("  Model converged or Maximum iterations reached")
+            vtg::log$debug("  Model converged.")
+            break
+        } else if (params$iter == maxit) {
+            vtg::log$debug("  Maximum iterations reached.")
             break
         }
+
+        params$iter <- params$iter+1
     }
 
     # Return, formula is not parsed to json (if this is requested). When using
