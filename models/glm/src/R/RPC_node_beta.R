@@ -31,6 +31,7 @@ RPC_node_beta <- function(data, weights = NULL, master = NULL) {
     # Get the family required (gaussian, poisson, logistic,...)
     family <- get_family(family, dstar, data)
 
+    vtg::log$info(glue::glue("family: {family}"))
     if (is.null(weights)) weights <- rep.int(1, nrow(X))
     if (is.null(offset)) offset <- rep.int(0, nrow(X))
 
@@ -59,6 +60,7 @@ RPC_node_beta <- function(data, weights = NULL, master = NULL) {
     mu <-  family$linkinv(eta)
     varg <- family$variance(mu)
     gprime <- family$mu.eta(eta)
+    vtg::log$info(glue::glue("gprime: {gprime}"))
 
     # Calculate z
     z <- (eta - offset) + (y - mu) / gprime
