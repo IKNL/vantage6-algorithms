@@ -26,7 +26,6 @@ RPC_node_beta <- function(data, weights = NULL, master = NULL) {
     X <- model.matrix(formula, data = data)
     # Extract the offset from formula (if exists)
     offset <- model.offset(model.frame(formula, data = data))
-    vtg::log$info(glue::glue("offset: {offset}"))
 
     # Get the family required (gaussian, poisson, logistic,...)
     family <- get_family(family, dstar, data)
@@ -34,6 +33,7 @@ RPC_node_beta <- function(data, weights = NULL, master = NULL) {
     if (is.null(weights)) weights <- rep.int(1, nrow(X))
     if (is.null(offset)) offset <- rep.int(0, nrow(X))
 
+    vtg::log$info(glue::glue("offset: {offset}"))
     # (!) `nobs` and `nvars` needed by the initialize expression below
     nobs <- nrow(X)
     nvars <- ncol(X)
