@@ -53,20 +53,15 @@ RPC_node_beta <- function(data, weights = NULL, master = NULL) {
         eta = (X %*% master$coef[,ncol(master$coef)]) + offset
     }
 
-    vtg::log$info(glue::glue("eta: {eta}"))
     vtg::log$debug("Calculating the Betas.")
     mu <-  family$linkinv(eta)
     varg <- family$variance(mu)
     gprime <- family$mu.eta(eta)
-    vtg::log$info(glue::glue("gprime: {gprime}"))
 
-    vtg::log$info(glue::glue("offset: {offset}"))
     # Calculate z
     z <- (eta - offset) + (y - mu) / gprime
-    vtg::log$info(glue::glue("z: {z}"))
     # Update the weights
     W <- weights * as.vector(gprime^2 / varg)
-    vtg::log$info(glue::glue("W: {W}"))
     # Calculate the dispersion matrix
     dispersion <- sum(W *((y - mu) / family$mu.eta(eta))^2)
 
