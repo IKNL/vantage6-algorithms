@@ -18,7 +18,6 @@ get_family <- function(family, dstar = NULL, data = NULL) {
             family$link <- "glm relative survival model with Poisson error"
             family$linkfun <- function(mu) log(mu - dstar)
             family$linkinv <- function(eta) dstar + exp(eta)
-            dstar=eval(as.name(dstar), data)
         } else {
             family <- get(family, mode = "function", envir = parent.frame())()
         }

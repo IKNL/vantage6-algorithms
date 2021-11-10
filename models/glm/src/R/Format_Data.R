@@ -17,6 +17,7 @@ format_data <- function(data, types) {
         }
         if (type_ == "factor"){
             data[[column_name]] = factor(data[[column_name]], levels=specs$levels)
+            data = data[data[[column_name]] %in% specs$levels,]
         }
     }
     data

@@ -12,9 +12,10 @@ master_beta <- function(nodes = NULL, master = NULL) {
 
     formula <- master$formula
     family <- master$family
+    dstar <- master$dstar
 
     # Get the family required (gaussian, poisson, logistic,...)
-    family <- get_family(family)
+    family <- get_family(family, dstar)
 
     g <- nodes
 

@@ -30,6 +30,7 @@ RPC_node_deviance <- function(data, weights = NULL, master) {
     offset=model.offset(model.frame(formula, data = data))
 
     # Get the family required (gaussian, poisson, logistic,...)
+    if (family == 'rs.poi') dstar <- eval(as.name(dstar), data)
     family <- get_family(family, dstar, data)
 
     if (is.null(weights)) weights <- rep.int(1, nrow(X))
