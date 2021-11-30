@@ -9,12 +9,59 @@ All but the last argument are passed to MPyC.
 
 import argparse
 import asyncio
+import time
 import lifelines
 import pandas as pd
 
 from tno.mpc.communication import Pool
 
 from tno.mpc.protocols.kaplan_meier import Alice, Bob, Helper
+
+
+class Alice2(Alice):
+
+    async def start_protocol(self) -> None:
+        """
+        Starts and runs the protocol
+        """
+        print('Alice2')
+        await asyncio.gather(
+            *[
+                self.receive_paillier_scheme(),
+                self.receive_number_of_groups(),
+            ]
+        )
+        self.start_randomness_generation()
+        await self.receive_encrypted_group_data()
+        self.compute_hidden_table()
+        self.compute_factors()
+        self.re_randomise_ht()
+        self.stop_randomness_generation()
+        self.generate_share()
+        await self.send_share()
+        time.sleep(10)
+        await self.pool.shutdown()
+        await self.run_mpyc()
+
+class Bob2(Bob):
+
+    async def start_protocol(self) -> None:
+        """
+        Starts and runs the protocol
+        """
+        print('bob2')
+        await self.send_number_of_groups()
+        loop = asyncio.get_event_loop()
+        _, _, self.encrypted_data = await asyncio.gather(
+            self.send_paillier_scheme(),
+            self.send_number_of_groups(),
+            loop.run_in_executor(None, self.encrypt, self.data),
+        )
+        self.stop_randomness_generation()
+        await self.send_encrypted_data()
+        await self.receive_share()
+        await self.pool.shutdown()
+        await self.run_mpyc()
 
 
 def parse_args():
@@ -61,14 +108,14 @@ if __name__ == "__main__":
            )  # default port=80
        if player == "Alice":
            event_times = test_data[["time", "event"]]
-           player_instance = Alice(
+           player_instance = Alice2(
                identifier=player,
                data=event_times,
                pool=pool,
            )
        elif player == "Bob":
            groups = test_data[["Group A", "Group B"]]
-           player_instance = Bob(
+           player_instance = Bob2(
                identifier=player,
                data=groups,
                pool=pool,

@@ -1,9 +1,10 @@
 import jwt
 import os
 import asyncio
+import subprocess
 
 from time import sleep
-from typing import Any, Container, Dict, Tuple
+from typing import Any, Dict, Tuple
 from pandas import DataFrame
 
 from vantage6.common import info
@@ -16,49 +17,6 @@ from tno.mpc.protocols.kaplan_meier import Alice, Bob, Helper
 WAIT = 4
 RETRY = 10
 WORKER_TYPES = {'event', 'groups'}
-
-
-class Alice2(Alice):
-
-    async def start_protocol(self) -> None:
-        """
-        Starts and runs the protocol
-        """
-        await asyncio.gather(
-            *[
-                self.receive_paillier_scheme(),
-                self.receive_number_of_groups(),
-            ]
-        )
-        self.start_randomness_generation()
-        await self.receive_encrypted_group_data()
-        self.compute_hidden_table()
-        self.compute_factors()
-        self.re_randomise_ht()
-        self.stop_randomness_generation()
-        self.generate_share()
-        await self.send_share()
-        await self.pool.shutdown()
-        await self.run_mpyc()
-
-class Bob2(Bob):
-
-    async def start_protocol(self) -> None:
-        """
-        Starts and runs the protocol
-        """
-        await self.send_number_of_groups()
-        loop = asyncio.get_event_loop()
-        _, _, self.encrypted_data = await asyncio.gather(
-            self.send_paillier_scheme(),
-            self.send_number_of_groups(),
-            loop.run_in_executor(None, self.encrypt, self.data),
-        )
-        self.stop_randomness_generation()
-        await self.send_encrypted_data()
-        await self.receive_share()
-        await self.pool.shutdown()
-        await self.run_mpyc()
 
 def main(client: ContainerClient, _, g_organization: int,
          e_organization: int, h_organization: int):
@@ -126,10 +84,43 @@ def RPC_group_worker(data: DataFrame, parent: Tuple[str, int]):
         else:
             my_result = result
 
-    pool = Pool()
-    pool.add_http_server(port=8888)
+    process = subprocess.Popen([
+        'python','/app/v6-kaplan-meier-py/run.py',
+        f'-P {my_result["node"]["ip"]}:{my_result["port"]}',
+        f'-P {other_results[0]["node"]["ip"]}:{other_results[0]["node"]["ip"]}',
+        f'-P {other_results[1]["node"]["ip"]}:{other_results[1]["node"]["ip"]}',
+        '-I0'
+    ])
 
+import subprocess
+process = subprocess.run([
+    'python','v6-kaplan-meier-py/run.py',
+    f'-P', 'localhost:8080',
+    f'-P', 'localhost:8081',
+    f'-P', 'localhost:8082',
+    '-I0',
+    '-p', 'Alice'
+])
 
+import subprocess
+process = subprocess.run([
+    'python','v6-kaplan-meier-py/run.py',
+    f'-P', 'localhost:8080',
+    f'-P', 'localhost:8081',
+    f'-P', 'localhost:8082',
+    '-I1',
+    '-p', 'Bob'
+])
+
+import subprocess
+process = subprocess.run([
+    'python','v6-kaplan-meier-py/run.py',
+    f'-P', 'localhost:8080',
+    f'-P', 'localhost:8081',
+    f'-P', 'localhost:8082',
+    '-I2',
+    '-p', 'Helper'
+])
 
 
 
