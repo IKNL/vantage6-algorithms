@@ -12,11 +12,11 @@ import asyncio
 import time
 import lifelines
 import pandas as pd
+import numpy as np
 
 from tno.mpc.communication import Pool
 
 from tno.mpc.protocols.kaplan_meier import Alice, Bob, Helper
-
 
 class Alice2(Alice):
 
@@ -39,11 +39,20 @@ class Alice2(Alice):
         self.stop_randomness_generation()
         self.generate_share()
         await self.send_share()
-        time.sleep(10)
+        # time.sleep(10)
         await self.pool.shutdown()
         await self.run_mpyc()
 
 class Bob2(Bob):
+
+    async def receive_share(self) -> None:
+        """
+        Receive additive secret share produced by party Alice.
+        """
+        encrypted_share = await self.receive_message(self.party_A, msg_id="share")
+        await self.pool.shutdown()
+        self._mpyc_data = await self.decrypt_share(encrypted_share)
+        self._mpyc_factors = np.zeros((len(self._mpyc_data), 3), dtype=np.float64)
 
     async def start_protocol(self) -> None:
         """
@@ -60,7 +69,7 @@ class Bob2(Bob):
         self.stop_randomness_generation()
         await self.send_encrypted_data()
         await self.receive_share()
-        await self.pool.shutdown()
+        # await self.pool.shutdown()
         await self.run_mpyc()
 
 
