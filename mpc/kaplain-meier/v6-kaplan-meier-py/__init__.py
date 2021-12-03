@@ -4,7 +4,7 @@ import asyncio
 import subprocess
 
 from time import sleep
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, List
 from pandas import DataFrame
 
 from vantage6.common import info
@@ -18,64 +18,118 @@ WAIT = 4
 RETRY = 10
 WORKER_TYPES = {'event', 'groups'}
 
-def main(client: ContainerClient, _, g_organization: int,
-         e_organization: int, h_organization: int):
+def main(client: ContainerClient, _, organizations: List[int]):
     """
     """
 
     # Retreive own IP and port so that we can send these to the child-
     # tasks
-    info('Retrieving own IP and port')
+    # info('Retrieving own IP and port')
     #FIXME: we should extend container client and ENVIRONMENT vars, port
     # and IP should be profided. Also additional tooling should be
     # profided in order to simplify the retrievel of other parties ips
     # and ports.
-    my_info = _find_my_ip_and_port(client)
+    # my_info = _find_my_ip_and_port(client)
 
     # create tasks for the organizations at the server
     info("Dispatching worker tasks")
-    event_worker = client.create_new_task(
+    tasks = client.create_new_task(
         input_={
-            'method': 'group_worker',
-            'kwargs': {'parent': my_info}
+            'method': 'worker',
         },
-        organization_ids=[g_organization]
+        organization_ids=organizations
     )
 
-    group_worker = client.create_new_task(
-        input_={
-            'method': 'sensor_worker',
-            'kwargs': {'parent': my_info}
-        },
-        organization_ids=[e_organization]
-    )
+    info('exiting master container...')
+    # info('waiting for restults...')
 
-    group_worker = client.create_new_task(
-        input_={
-            'method': 'helper_worker',
-            'kwargs': {'parent': my_info}
-        },
-        organization_ids=[h_organization]
-    )
+def RPC_worker(data: DataFrame):
 
-    info('waiting for restults')
+    player = os.environ['player']
+    if player == 'Alice':
+        info('I am Alice...')
+        alice()
+    elif player == 'Bob':
+        info('I am bob...')
+        bob()
+    elif player == 'Helper':
+        info('I am Helper...')
+        helper()
 
-def RPC_group_worker(data: DataFrame, parent: Tuple[str, int]):
-    """A.K.A. BOB"""
 
-    # obtain ip and port from party
+def alice():
+
+    info('Alice worker initialization')
+    _, _, all_results = _prework()
+
+    info('Run script')
+    cmd = [
+        'python', '-u', '/app/v6-kaplan-meier-py/run.py',
+        '-P', f'localhost:8888',
+        '-P', f'{all_results[1]["node"]["ip"]}:{all_results[1]["port"]}',
+        '-P', f'{all_results[2]["node"]["ip"]}:{all_results[2]["port"]}',
+        '-I0',
+        '-p', 'Alice',
+        '--alice', f'{all_results[0]["node"]["ip"]}:{all_results[0]["port"]}',
+        '--bob', f'{all_results[1]["node"]["ip"]}:{all_results[1]["port"]}'
+    ]
+    info(f'cmd = {cmd}')
+
+    subprocess.run(cmd)
+    return True
+
+def bob():
+
     info('Group worker initialization')
-    #FIXME: this should happen in the wrapper..
+    _, _, all_results = _prework()
+
+    info('Run script')
+    cmd = [
+        'python', '-u', '/app/v6-kaplan-meier-py/run.py',
+        '-P', f'{all_results[0]["node"]["ip"]}:{all_results[0]["port"]}',
+        '-P', f'localhost:8888',
+        '-P', f'{all_results[2]["node"]["ip"]}:{all_results[2]["port"]}',
+        '-I1',
+        '-p', 'Bob',
+        '--alice', f'{all_results[0]["node"]["ip"]}:{all_results[0]["port"]}',
+        '--bob', f'{all_results[1]["node"]["ip"]}:{all_results[1]["port"]}'
+    ]
+    info(f'cmd = {cmd}')
+    subprocess.run(cmd)
+    return True
+
+def helper():
+
+    info('Helper worker initialization')
+    _, _, all_results = _prework()
+
+    info('Run script')
+    cmd = [
+        'python', '-u', '/app/v6-kaplan-meier-py/run.py',
+        '-P', f'{all_results[0]["node"]["ip"]}:{all_results[0]["port"]}',
+        '-P', f'{all_results[1]["node"]["ip"]}:{all_results[1]["port"]}',
+        '-P', f'localhost:8888',
+        '-I2',
+        '-p', 'Helper'
+    ]
+
+    info(f'cmd = {cmd}')
+    subprocess.run(cmd, capture_output=True)
+    return True
+
+
+def _prework():
+
     client = _temp_fix_client()
 
     task_id = _find_my_task_id(client)
     organization_id = _find_my_organization_id(client)
 
     info('Fetch other parties ips and ports')
-    # FIXME: I abused the _await_port_numbers to check if the port
-    # numbers are already available.
     results = _await_port_numbers(client, task_id)
+    info(' -> Port numbers available ...')
     results = client.request(f"task/{task_id}/result")
+    results = sorted(results, key=lambda d: d['id'])
     assert len(results) == 3, f"There are {len(results)} workers?!"
     other_results = []
     for result in results:
@@ -83,66 +137,25 @@ def RPC_group_worker(data: DataFrame, parent: Tuple[str, int]):
             other_results.append(result)
         else:
             my_result = result
+    info(f'my info: {my_result}')
+    info(f'others info {other_results}')
 
-    process = subprocess.Popen([
-        'python','/app/v6-kaplan-meier-py/run.py',
-        f'-P {my_result["node"]["ip"]}:{my_result["port"]}',
-        f'-P {other_results[0]["node"]["ip"]}:{other_results[0]["node"]["ip"]}',
-        f'-P {other_results[1]["node"]["ip"]}:{other_results[1]["node"]["ip"]}',
-        '-I0'
-    ])
-
-import subprocess
-process = subprocess.run([
-    'python','v6-kaplan-meier-py/run.py',
-    f'-P', 'localhost:8080',
-    f'-P', 'localhost:8081',
-    f'-P', 'localhost:8082',
-    '-I0',
-    '-p', 'Alice'
-])
-
-import subprocess
-process = subprocess.run([
-    'python','v6-kaplan-meier-py/run.py',
-    f'-P', 'localhost:8080',
-    f'-P', 'localhost:8081',
-    f'-P', 'localhost:8082',
-    '-I1',
-    '-p', 'Bob'
-])
-
-import subprocess
-process = subprocess.run([
-    'python','v6-kaplan-meier-py/run.py',
-    f'-P', 'localhost:8080',
-    f'-P', 'localhost:8081',
-    f'-P', 'localhost:8082',
-    '-I2',
-    '-p', 'Helper'
-])
-
-
-
-
-
-def RPC_event_worker(data: DataFrame, parent: Tuple[str, int]):
-
-    info('Event worker initialization')
-    info('Setup socket connection to parent container')
-
-def RPC_helper_worker(data: DataFrame, parent: Tuple[str, int]):
-    pass
-
-
+    return my_result, other_results, results
 
 def _temp_fix_client():
     token_file = os.environ["TOKEN_FILE"]
     info(f"Reading token file '{token_file}'")
     with open(token_file) as fp:
         token = fp.read().strip()
-
-    return ContainerClient(token)
+    host = os.environ["HOST"]
+    port = os.environ["PORT"]
+    api_path = os.environ["API_PATH"]
+    return ContainerClient(
+        token=token,
+        port=port,
+        host=host,
+        path=api_path
+    )
 
 def _find_my_task_id(client):
     id_ = jwt.decode(client._access_token, verify=False)['identity']
@@ -154,9 +167,9 @@ def _find_my_organization_id(client):
 
 def _find_my_ip_and_port(client):
     own_id =  _find_my_task_id(client)
-    tasks = client.request(f'task/{own_id}/result')
+    tasks: list = client.request(f'task/{own_id}/result')
     assert len(tasks) == 1, "Multiple master tasks?"
-    result = next(tasks)
+    result = tasks.pop()
     return (result['node']['ip'], result['port'])
 
 def _await_port_numbers(client, task_id):
@@ -188,3 +201,41 @@ def _get_address_from_result(result: Dict[str, Any]) -> Tuple[str, int]:
     port = result['port']
 
     return address, port
+
+
+
+# import subprocess
+# process = subprocess.Popen([
+#     'python','v6-kaplan-meier-py/run.py',
+#     f'-P', 'localhost:8080',
+#     f'-P', 'localhost:8081',
+#     f'-P', 'localhost:8082',
+#     '-I0',
+#     '-p', 'Alice',
+#     '--alice', 'localhost:8080',
+#     '--bob', 'localhost:8081',
+#     '--port', '8080'
+# ])
+
+# import subprocess
+# process = subprocess.Popen([
+#     'python','v6-kaplan-meier-py/run.py',
+#     f'-P', 'localhost:8080',
+#     f'-P', 'localhost:8081',
+#     f'-P', 'localhost:8082',
+#     '-I1',
+#     '-p', 'Bob',
+#     '--alice', 'localhost:8080',
+#     '--bob', 'localhost:8081',
+#     '--port', '8081'
+# ])
+
+# import subprocess
+# process = subprocess.Popen([
+#     'python','v6-kaplan-meier-py/run.py',
+#     f'-P', 'localhost:8080',
+#     f'-P', 'localhost:8081',
+#     f'-P', 'localhost:8082',
+#     '-I2',
+#     '-p', 'Helper'
+# ])
