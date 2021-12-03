@@ -1,11 +1,10 @@
 import jwt
 import os
-import asyncio
+import time
 import subprocess
 
 from time import sleep
 from typing import Any, Dict, Tuple, List
-from pandas import DataFrame
 
 from vantage6.common import info
 from vantage6.client import ContainerClient
@@ -33,17 +32,34 @@ def main(client: ContainerClient, _, organizations: List[int]):
 
     # create tasks for the organizations at the server
     info("Dispatching worker tasks")
-    tasks = client.create_new_task(
+    task = client.create_new_task(
         input_={
             'method': 'worker',
         },
         organization_ids=organizations
     )
 
-    info('exiting master container...')
-    # info('waiting for restults...')
+    info("Waiting for resuls")
+    task_id = task.get("id")
+    task = client.get_task(task_id)
+    i = 1
+    while not task.get("complete") and i < 180:
+        task = client.get_task(task_id)
+        info(f"Waiting for results {i}")
+        time.sleep(1)
+        i += 1
 
-def RPC_worker(data: DataFrame):
+    # Once we now the partials are complete, we can collect them.
+    info("Obtaining results")
+    results = client.request(
+        f"task/{task_id}/result"
+    )
+
+
+    info('exiting master container...')
+    return results
+
+def RPC_worker(_):
 
     player = os.environ['player']
     if player == 'Alice':
