@@ -13,20 +13,25 @@ import pandas as pd
 import numpy as np
 import threading
 import ssl
+import logging
+import numpy as np
+import numpy.typing as npt
 
-from typing import Optional
+from typing import Optional, List
 
 import tno.mpc.communication.httphandlers
-
 from tno.mpc.communication import Pool
-
+from tno.mpc.protocols.kaplan_meier.player import Player
 from tno.mpc.protocols.kaplan_meier import Alice, Bob, Helper
+from tno.mpc.protocols.kaplan_meier.player import MPCProtocolMetadata
+
+from .mpc import setup
 
 #
 # MONKEY PATCHES
 #
 
-# Alice needs to shut down the HTTP server after its done
+# Alice needs to shutdown the HTTP server after its done
 async def new_alice_start_protocol(self) -> None:
     await asyncio.gather(
         *[
@@ -55,6 +60,57 @@ async def new_receive_share(self) -> None:
     self._mpyc_factors = np.zeros((len(self._mpyc_data), 3), dtype=np.float64)
 
 Bob.receive_share = new_receive_share
+
+# Our setup does not use CLI arguments. Therefore we patch the setup
+# module from MPyC and have to patch the mpc (=runtime) object in the
+# tno module
+async def new_run_mpyc(self) -> None:
+    """
+    Runs the Shamir secret sharing part of the protocol using the MPyC
+    framework
+    """
+    async with self.mpc as mpc:
+        assert len(mpc.parties) == 3, \
+            "Number of parties should be 3"
+        await self._start_mpyc()
+        await self.obtain_secret_sharings()
+        await self.secure_multivariate_log_rank_test()
+
+Player.run_mpyc = new_run_mpyc
+
+
+
+def new_player_init(self, identifier: str, parties: List[str],
+                    index: int=1, ssl: bool=False,
+                    output_file: bool=False, party_A: str = "Alice",
+                    party_B: str = "Bob", helper: str = "Helper"
+                    ) -> None:
+    """
+    Initializes player
+    :param identifier: (unique) name of the player
+    :param party_A: identifier of party Alice
+    :param party_B: identifier of party Bob
+    :param helper: identifier of the helper party
+    """
+    self._identifier = identifier
+    self._party_A = party_A
+    self._party_B = party_B
+    self._helper = helper
+    self.mpc_metadata = MPCProtocolMetadata()
+    self.mpc(parties, index, ssl, output_file)
+    self._logger = logging.getLogger(self._identifier)
+    self._logger.setLevel(logging.DEBUG)
+    logging.basicConfig(
+        format="%(asctime)s - %(name)s - " "%(levelname)s - %(message)s"
+    )
+
+    self._mpyc_data = None
+    self._mpyc_shares = None
+    self._mpyc_factors = None
+    self._mpyc_factors_shares = None
+    self.statistic = None
+
+Player.__init__ = new_player_init
 
 # The http client uses a different listening port than the external port
 # that is used
