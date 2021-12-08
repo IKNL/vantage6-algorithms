@@ -16,8 +16,9 @@ format_data <- function(data, types) {
             data[[column_name]] = as.numeric(data[[column_name]])
         }
         if (type_ == "factor"){
-            data[[column_name]] = factor(data[[column_name]], levels=specs$levels)
             data = data[data[[column_name]] %in% specs$levels,]
+            data[[column_name]] = factor(data[[column_name]], levels=specs$levels)
+            if(! is.null(specs$ref)) data[[column_name]] = relevel(data[[column_name]], ref=specs$ref)
         }
     }
     data
