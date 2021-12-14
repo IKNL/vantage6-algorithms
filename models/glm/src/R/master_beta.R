@@ -8,13 +8,12 @@
 master_beta <- function(nodes = NULL, master = NULL) {
 
     vtg::log$debug("Initializing master Beta...")
-    vtg::log$debug(glue::glue("dstart={master$dstar}"))
 
     formula <- master$formula
     family <- master$family
     dstar <- master$dstar
 
-    # Get the family required (gaussian, poisson, logistic,...)
+    # Get the family required (Gaussian, Poisson, logistic,...)
     family <- get_family(family, dstar)
 
     g <- nodes

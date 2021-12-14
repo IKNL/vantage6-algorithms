@@ -38,15 +38,13 @@ dglm <- function(client, formula, dstar=NULL, types=NULL, family = gaussian,
         return(result)
     }
 
-    # Collect all parameters in a single var which can be passed arround the
+    # Collect all parameters in a single var which can be passed around the
     # methods.
     params <- list(formula = formula, types=types, dstar=dstar, family = family,
                    iter = 1, tol = tol, maxit = maxit)
 
-    # Loop until the model is converged or when `max_it` has been hit. Note that
-    # the maximum iterations are checked in `master_deviance`.
+    # Loop until the model is converged or when `maxit` has been hit.
     repeat{
-
         vtg::log$info(glue::glue("{params$iter}.1 - RPC Node Beta"))
         results <- client$call("node_beta", master = params)
 

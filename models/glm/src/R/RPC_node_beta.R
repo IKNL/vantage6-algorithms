@@ -20,14 +20,14 @@ RPC_node_beta <- function(data, weights = NULL, master = NULL) {
     family <- master$family
     dstar <- master$dstar
 
-    # Extract y and X varibales name from formula
+    # Extract y and X variables name from formula
     y <- eval(formula[[2]], envir = data)
     # Create a model matrix
     X <- model.matrix(formula, data = data)
     # Extract the offset from formula (if exists)
     offset <- model.offset(model.frame(formula, data = data))
 
-    # Get the family required (gaussian, poisson, logistic,...)
+    # Get the family required (Gaussian, Poisson, logistic,...)
     if (family == "rs.poi") dstar <- eval(as.name(dstar), data)
     family <- get_family(family, dstar, data)
 
