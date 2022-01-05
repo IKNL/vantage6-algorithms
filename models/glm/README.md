@@ -12,9 +12,22 @@ _Implementation of the federated Generalized Linear Model_
 
 -----------------------------------------------------------------------------------------------------
 
-## Usage
+## Intro
+This repo includes an implementation of the federated Generalized Linear Model (GLM) for horizontally partitioned data.
 
-### Installation
+Generalized Linear Models estimate regression models for outcomes following exponential distributions. The GLM generalizes linear regression by allowing the linear model to be related to the response variable via a link function and by allowing the magnitude of the variance of each measurement to be a function of its predicted value.
+
+The current implementation is validated for the following R family inputs:
+* gaussian(link = "identity"): gaussian regression
+* binomial(link = "logit"): normal logistic regression
+* poisson(link = "log"): poisson regression
+* "rs.poi": custom glm relative survival model with poisson error
+
+## Documentation 
+Check "Technical Documentation - GLM" for technical details about the algorithm and more. (<- @TODO this should be a link to the .pdf)
+
+## Installation
+### R
 Run the following in the R console to install the package and its dependencies:
 
 ```R
@@ -22,13 +35,22 @@ Run the following in the R console to install the package and its dependencies:
 devtools::install_github('iknl/vantage6-algorithms', subdir='models/glm/src')
 ```
 
-### Run example
+## Run example
+To follow the next examples, first prepare:
+* a vantage6 server, 
+* user, 
+* 3 organizations, 
+* a collaboration,
+* 3 nodes, 
+* and configure the nodes with the datasets "data_user1.csv", "data_user2.csv", "data_user3.csv" which you can find in iknl/vantage6-algorithms/models/glm/src/data.
+
+### R
 ```R
 setup.client <- function() {
   # Define parameters
   username <- 'username@example.com'
   password <- 'password'
-  host <- 'https://address-to-vantage6-server.domain'
+  host <- 'https://address-to-vantage6-server.domain:port'
   api_path <- ''
 
   # Create the client
@@ -56,22 +78,23 @@ client$setCollaborationId(1)
 model <- vtg.glm::dglm(client, formula = num_awards ~ prog + math, family='poisson', tol= 1e-08, maxit=25)
 ```
 
-### Notes
-1. Added as.GLM.R to convert the result to a glm/lm object
-    * Simply wrap the object with the as.GLM -> as.GLM(object) where 'object' is the final output (the trained model)
+### Python
 
-## Development
+### API
 
-### Automatic Building
-
-This repository is automatically build into an Docker image and pushed to our Docker image registry `harbor2.vantage6.ai`. If this is the `main` branch the image will be uploaded with the `latest` tag.
+## Builds
+This repository is automatically built into a Docker image and pushed to our Docker image registry `harbor2.vantage6.ai`. If this is the `main` branch the image will be uploaded with the `latest` tag.
 
 ```
 harbor2.vantage6.ai/algorithms/glm:latest
 ```
 
-In case the `glm` branch is used the image is build and tagged with the shortened commit hash.
+In case the `glm` branch is used the image is built and tagged with the shortened commit hash.
 
 ```
 harbor2.vantage6.ai/algorithms/glm:COMMIT_HASH
 ```
+
+## Notes
+1. Added 'as.GLM.R' to convert the result to a glm/lm object
+    * Simply wrap the object with the as.GLM -> as.GLM(object) where 'object' is the final output (the trained model).
