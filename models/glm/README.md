@@ -26,8 +26,8 @@ devtools::install_github('iknl/vantage6-algorithms', subdir='models/glm/src')
 ```R
 setup.client <- function() {
   # Define parameters
-  username <- "username@example.com"
-  password <- "password"
+  username <- 'username@example.com'
+  password <- 'password'
   host <- 'https://address-to-vantage6-server.domain'
   api_path <- ''
 
@@ -53,7 +53,7 @@ print( client$getCollaborations() )
 client$setCollaborationId(1)
 
 # vtg.dglm contains the function `dglm`.
-model <- vtg.glm::dglm(client, formula = num_awards ~ prog + math, family="poisson",tol= 1e-08,maxit=25)
+model <- vtg.glm::dglm(client, formula = num_awards ~ prog + math, family='poisson', tol= 1e-08, maxit=25)
 ```
 
 ### Notes
