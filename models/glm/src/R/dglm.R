@@ -1,33 +1,34 @@
 #' Run the federated GLM.
 #'
-#' @param client vtg::Client instance
-#' @param formula an object of class formula (or one that can be coerced to that
+#' @param client: vtg::Client instance
+#' @param formula: an object of class formula (or one that can be coerced to that
 #' class: a symbolic description of the model to be fitted. E.g.:
 #' dependant_variable ~ explanatory_variable(i) + ...
-#' @param dstar ...
-#' @param types types of the columns that are used in the formula
-#' @param family: to this up it uses the Gaussian as this is the default value
+#' @param dstar: number of expected deaths only applicable when using the glm 
+#' relative survival model with Poisson regression)
+#' @param types: types of the columns that are used in the formula
+#' @param family: family type where Gaussian now is the default value
 #' @param tol: tolerance level
 #' @param maxit: maximum number of iterations
 #'
 #' @return A GLM model in a dict format. To convert it to a GLM model which
 #' can be used by R, use the `vtg.glm::as.GLM(output)` to convert it.
 #'
-dglm <- function(client, formula, dstar=NULL, types=NULL, family = gaussian,
-                 tol = 1e-08, maxit = 25) {
+dglm <- function(client, formula, dstar=NULL, types=NULL, family=gaussian,
+                 tol=1e-08, maxit=25) {
 
     vtg::log$debug("Initializing...")
 
     USE_VERBOSE_OUTPUT <- getOption('vtg.verbose_output', T)
     lgr::threshold("debug")
 
-    # parse string to formula type. If it already is a formula this statement
-    # will do nothin'. This is needed when Python (or other langauges) is used
+    # Parse a string to formula type. If it already is a formula this statement
+    # will do nothing. This is needed when Python (or other langauges) is used
     # as a client.
     formula <- as.formula(formula)
 
     # Run in a MASTER container. Note that this will call this method but then
-    # within a Docker container. The client used here bellow has set the
+    # within a Docker container. The client used here below has set the
     # property `use.master.container` set to `False`, therefore it will skip
     # this block (else an infinite loop would occur).
     if (client$use.master.container) {
