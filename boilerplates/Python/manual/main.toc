@@ -1,0 +1,12 @@
+\babel@toc {english}{}\relax 
+\contentsline {section}{\numberline {1}Introduction}{3}{}%
+\contentsline {section}{\numberline {2}Mathematics}{3}{}%
+\contentsline {subsection}{\numberline {2.1}Central}{3}{}%
+\contentsline {subsection}{\numberline {2.2}Federated}{3}{}%
+\contentsline {section}{\numberline {3}Implementation}{3}{}%
+\contentsline {subsection}{\numberline {3.1}Parameters}{3}{}%
+\contentsline {subsection}{\numberline {3.2}Algorithm}{3}{}%
+\contentsline {subsection}{\numberline {3.3}Output}{3}{}%
+\contentsline {section}{\numberline {4}Risks}{4}{}%
+\contentsline {section}{\numberline {5}Validation}{4}{}%
+\contentsline {section}{\numberline {6}Examples}{4}{}%
