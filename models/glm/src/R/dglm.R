@@ -1,15 +1,15 @@
 #' Run the federated GLM.
 #'
-#' @param client: vtg::Client instance
-#' @param formula: an object of class formula (or one that can be coerced to that
+#' @param client vtg::Client instance
+#' @param formula an object of class formula (or one that can be coerced to that
 #' class: a symbolic description of the model to be fitted. E.g.:
 #' dependant_variable ~ explanatory_variable(i) + ...
-#' @param dstar: number of expected deaths only applicable when using the glm 
+#' @param dstar number of expected deaths only applicable when using the glm 
 #' relative survival model with Poisson regression)
-#' @param types: types of the columns that are used in the formula
-#' @param family: family type where Gaussian now is the default value
-#' @param tol: tolerance level
-#' @param maxit: maximum number of iterations
+#' @param types types of the columns that are used in the formula
+#' @param family family type where Gaussian now is the default value
+#' @param tol tolerance level
+#' @param maxit maximum number of iterations
 #'
 #' @return A GLM model in a dict format. To convert it to a GLM model which
 #' can be used by R, use the `vtg.glm::as.GLM(output)` to convert it.
