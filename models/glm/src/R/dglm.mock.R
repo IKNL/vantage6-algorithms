@@ -1,23 +1,12 @@
-dglm.mock <- function(formula = num_awards ~ prog + math, types=NULL, dstar=NULL, family="poisson",tol= 1e-08,maxit=25) {
+#'
+#' Example on how to run the federated GLM using the MockClient.
+#'
 
-    datasets <- list(
-        read.csv('/path/to/data1.csv'),
-        read.csv('/path/to/data2.csv'),
-        read.csv('/path/to/data3.csv')
-    )
-
-    client <- vtg::MockClient$new(datasets, "glm")
-    results <- vtg.glm::dglm(client, formula=formula, family=family, types=types, tol=tol, dstar=dstar)
-}
-
-types=list(
-    sex=list(type='factor',levels=1:2,ref=NULL),
-    site2=list(type='factor',levels=c(1:3,9),ref=NULL),
-    end=list(type='factor',levels=1:5,ref=NULL),
-    agecat2=list(type='factor',levels=1:5,ref=4),
-    country1=list(type='factor',levels=c(1,2,4),ref=NULL)
+datasets <- list(
+  read.csv('C:\\Users\\age2105.55108\\AppData\\Local\\vantage6\\node\\data\\data_user1.csv'),
+  read.csv('C:\\Users\\age2105.55108\\AppData\\Local\\vantage6\\node\\data\\data_user2.csv'),
+  read.csv('C:\\Users\\age2105.55108\\AppData\\Local\\vantage6\\node\\data\\data_user3.csv')
 )
 
-#model <- dglm.mock(formula = d~end+agecat2+country1+offset(log(y)),dstar = "d_star",types=types, family = 'rs.poi',maxit=25,tol= 1e-08)
-#model1 <- vtg.glm::dglm(client, formula = d~end+agecat2+country1+offset(log(y)),dstar = "d_star",types=types, family = 'rs.poi',maxit=25,tol= 1e-08)
-#dglm.mock(formula = d~end+sex+age+site2+country1+offset(log(y)),dstar = "d_star",types=types, family = 'rs.poi',maxit=25,tol= 1e-08)
+client <- vtg::MockClient$new(datasets, "vtg.glm")
+result <- vtg.glm::dglm(client, formula = num_awards ~ prog + math, family='poisson', tol=1e-08, maxit=25)

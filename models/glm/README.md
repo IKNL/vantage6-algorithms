@@ -17,14 +17,30 @@ This repo includes an implementation of the federated Generalized Linear Model (
 
 Generalized Linear Models estimate regression models for outcomes following exponential distributions. The GLM generalizes linear regression by allowing the linear model to be related to the response variable via a link function and by allowing the magnitude of the variance of each measurement to be a function of its predicted value.
 
-The current implementation is validated for the following R family inputs:
+The current implementation is validated for the following R family inputs: (<- @TODO add validation for these to the .pdf)
 * gaussian(link = "identity"): gaussian regression
 * binomial(link = "logit"): normal logistic regression
 * poisson(link = "log"): poisson regression
 * "rs.poi": custom glm relative survival model with poisson error
 
+This algorithm is implemented in R, but with help of our R and Python wrappers you can also call the algorithm from Python.
+
 ## Documentation 
 Check "Technical Documentation - GLM" for technical details about the algorithm and more. (<- @TODO this should be a link to the .pdf)
+
+## Builds
+This repository is automatically built into a Docker image and pushed to our Docker image registry `harbor2.vantage6.ai`. 
+If this is the `main` branch the image will be uploaded with the `latest` tag.
+
+```
+harbor2.vantage6.ai/algorithms/glm:latest
+```
+
+In case the `glm` branch is used the image is built and tagged with the shortened commit hash.
+
+```
+harbor2.vantage6.ai/algorithms/glm:COMMIT_HASH
+```
 
 ## Installation
 ### R
@@ -35,7 +51,7 @@ Run the following in the R console to install the package and its dependencies:
 devtools::install_github('iknl/vantage6-algorithms', subdir='models/glm/src')
 ```
 
-## Run example
+## Run examples
 To follow the next examples, first prepare:
 * a vantage6 server, 
 * user, 
@@ -74,26 +90,78 @@ print( client$getCollaborations() )
 # Select a collaboration
 client$setCollaborationId(1)
 
-# vtg.dglm contains the function `dglm`.
-model <- vtg.glm::dglm(client, formula = num_awards ~ prog + math, family='poisson', tol=1e-08, maxit=25)
+# vtg.glm contains the function `dglm`.
+result <- vtg.glm::dglm(client, formula = num_awards ~ prog + math, family='poisson', tol=1e-08, maxit=25)
 ```
 
 ### Python
+```Python
+import time
+from vantage6.client import Client
+
+username = 'username@example.com'
+password = 'password'
+host = 'https://address-to-vantage6-server.domain'
+port = 5000 # specify the correct port, 5000 is an example
+api_path = '' # specify the correct path
+
+client = Client(host, port, api_path)
+client.authenticate(username, password)
+client.setup_encryption(None)
+
+# Get a list of available collaborations
+print(client.collaboration.list(fields=['id', 'name']))
+
+# Should output something like this:
+# [{'id': 1, 'name': 'ZEPPELIN'}, {'id': 2, 'name': 'PIPELINE'}]
+
+# Select a collaboration
+COLLABORATION_ID = 1 # specify the correct id
+
+# Get all organizations in the collaboration
+ORGANIZATION_IDS = [i['id'] for i in client.collaboration.get(COLLABORATION_ID).get('organizations')]
+
+# Prepare task input
+input_ = {'master': True,
+          'method': 'dglm',
+          'args': [], 
+          'kwargs': {'formula': 'num_awards ~ prog + math',
+                     'types': {'prog': {'type': 'factor', 
+                                        'levels': ['General','Vocational','Academic']}}, 
+                     'family': 'poisson',
+                     'tol': 1e-08,
+                     'maxit': 25 
+                    },
+          'output_format': 'json'
+          }
+
+# Sending the analysis task to the server
+my_task = client.task.create(collaboration=COLLABORATION_ID,
+                             organizations=[ORGANIZATION_IDS[0]],
+                             name='GLM-example',
+                             description='Testing the GLM algorithm.',
+                             image='harbor2.vantage6.ai/algorithms/glm:latest',
+                             input=input_,
+                             data_format='json'
+                            ) 
+
+task_id = my_task.get('id')
+print(f'Task id: {task_id}')
+
+# Polling for results
+task_info = client.task.get(task_id)
+while not task_info.get("complete"):
+    task_info = client.task.get(task_id, include_results=True)
+    time.sleep(30) #sec
+    print('Waiting for results..')
+print('Results are ready!')
+
+# Retrieve result
+result = client.result.from_task(task_id)[0].get('result')
+```
 
 ### API
-
-## Builds
-This repository is automatically built into a Docker image and pushed to our Docker image registry `harbor2.vantage6.ai`. If this is the `main` branch the image will be uploaded with the `latest` tag.
-
-```
-harbor2.vantage6.ai/algorithms/glm:latest
-```
-
-In case the `glm` branch is used the image is built and tagged with the shortened commit hash.
-
-```
-harbor2.vantage6.ai/algorithms/glm:COMMIT_HASH
-```
+@TODO add a section about API calls (not sure if it should be at 'Run examples')
 
 ## Notes
 1. Added 'as.GLM.R' to convert the result to a glm/lm object
