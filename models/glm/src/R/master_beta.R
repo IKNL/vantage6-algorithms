@@ -1,67 +1,70 @@
-#' RPC call for the second data loop of the federated GLM
+#' Combine the results from the first RPC call and update the betas
+#' accordingly
 #'
-#' @param nodes list of results from the individual nodes
-#' @param master a list of parameters used to compute the GLM
+#' Computes: X^T W X and X^T W z from the partials. Then computes the
+#' updated betas by multiplying these.
+#'
+#' @param partials result of rpc_node_beta, partial results from the
+#'   individual nodes
+#' @param family family type
+#' @param dstar name of the dstar sensor column (e.g. expected deaths).
+#'  Only applicable when using the glm relative survival model with
+#'  Poisson regression)
 #'
 #' @return global updated parameters
 #'
-master_beta <- function(nodes = NULL, master = NULL) {
+master_beta <- function(partials, family, dstar) {
 
     vtg::log$debug("Initializing master Beta...")
 
-    formula <- master$formula
-    family <- master$family
-    dstar <- master$dstar
+    # Get the family (Gaussian, Poisson, logistic,...)
+    family <- vtg.glm::get_family(family, dstar)
 
-    # Get the family required (Gaussian, Poisson, logistic,...)
-    family <- get_family(family, dstar)
-
-    g <- nodes
+    g <- partials
 
     vtg::log$debug("Merging node calculation to update new Betas.")
+    s <- seq_len(length(g))
     # Total sum of weights
-    allwt <- Reduce(`+`, lapply(1:length(g), function(j) g[[j]]$wt2))
+    allwt <- Reduce(`+`, lapply(s, function(j) g[[j]]$wt2))
     # Global weighted mu
-    wtdmu <- Reduce(`+`, lapply(1:length(g), function(j) g[[j]]$wt1/allwt))
+    wtdmu <- Reduce(`+`, lapply(s, function(j) g[[j]]$wt1 / allwt))
     # Sum up components of the matrix to be inverted calculated in each node
-    a <- Reduce(`+`, lapply(1:length(g), function(j) g[[j]]$v1))
+    a <- Reduce(`+`, lapply(s, function(j) g[[j]]$v1))
     # Sum up components of the matrix to be inverted calculated in each node
-    b <- Reduce(`+`, lapply(1:length(g), function(j) g[[j]]$v2))
+    b <- Reduce(`+`, lapply(s, function(j) g[[j]]$v2))
     # Sum up components dispersion matrix
-    phi <- Reduce(`+`, lapply(1:length(g), function(j) g[[j]]$dispersion))
+    phi <- Reduce(`+`, lapply(s, function(j) g[[j]]$dispersion))
     # Total number of observation
-    nobs <- Reduce(`+`, lapply(1:length(g), function(j) g[[j]]$nobs))
+    nobs <- Reduce(`+`, lapply(s, function(j) g[[j]]$nobs))
     # Number of variables
     nvars <- nrow(g[[1]]$v1)
 
-    if (is.null(master)) {
-        beta <- rep(1, nvars)
-    } else {
-        beta <- master$coef
-    }
-    if (family$family %in% c('poisson','binomial','rs.poi')) {
+    if (family$family %in% c("poisson", "binomial", "rs.poi")) {
         disp <- 1
-        est.disp <- FALSE
+        est_disp <- FALSE
     } else {
         disp <- phi / (nobs - nvars)
-        est.disp <- T
+        est_disp <- T
     }
 
     vtg::log$debug("Updating the Betas.")
     # Calculate the new betas
     fb <- solve(a, b, tol = 2 * .Machine$double.eps)
+
     # Calculate the Standard error of coefficients
     se <- sqrt(diag(solve(a) * disp))
 
     # update the parameters
-    master$coef <- cbind(master$coef, fb)
-    master$se <- se
-    master$disp <- disp
-    master$est.disp <- est.disp
-    master$nobs <- nobs
-    master$nvars <- nvars
-    master$wtdmu <- wtdmu
+    output <- list(
+        coef = fb,
+        se = se,
+        disp = disp,
+        est_disp = est_disp,
+        nobs = nobs,
+        nvars = nvars,
+        wtdmu = wtdmu
+    )
 
     # Return
-    master
+    return(output)
 }

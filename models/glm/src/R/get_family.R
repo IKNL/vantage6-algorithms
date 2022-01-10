@@ -1,15 +1,18 @@
-#' translates family input to R family object
+#' translates family string input to R family object
 #'
-#' @param family family input
+#' @param family sting identifyer of the family to be returned
 #'
 #' @return R family object
 #'
-get_family <- function(family, dstar = NULL, data = NULL) {
+get_family <- function(family, dstar = NULL) {
 
     # Functions of the family required (gaussian, poisson, logistic,...)
-    if (is.character(family)){
-        if(family=='rs.poi'){
-            if(is.null(dstar)){
+    if (is.character(family))
+    {
+        if(family == 'rs.poi')
+        {
+            if(is.null(dstar))
+            {
                 vtg::log$debug("expected count required for relative survival")
                 return()
             }
@@ -22,10 +25,14 @@ get_family <- function(family, dstar = NULL, data = NULL) {
             family <- get(family, mode = "function", envir = parent.frame())()
         }
     }
-    if (is.function(family))
+
+    if (is.function(family)){
         family <- family()
-    if (is.null(family$family))
+    }
+
+    if (is.null(family$family)){
         stop(glue::glue("family '{family}' not recognized"))
+    }
 
     return(family)
 }

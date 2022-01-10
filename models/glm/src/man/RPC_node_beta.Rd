@@ -4,13 +4,23 @@
 \alias{RPC_node_beta}
 \title{RPC call for the first data loop of the federated GLM}
 \usage{
-RPC_node_beta(data, weights = NULL, master = NULL)
+RPC_node_beta(
+  data,
+  formula,
+  family,
+  first_iteration,
+  coefficients,
+  dstar = NULL,
+  types = NULL,
+  weights = NULL
+)
 }
 \arguments{
-\item{data}{dataframe containing the data}
+\item{data}{dataframe containing the data, this is automatically
+supplied by the node}
 
 \item{weights}{an optional vector of ‘prior weights’ to be used in the
-fitting process. Should be NULL or a numeric vector.}
+fitting process. Should be NULL or a numeric vector}
 
 \item{master}{a list of parameters used to compute the GLM}
 }

@@ -2,18 +2,20 @@
 % Please edit documentation in R/master_beta.R
 \name{master_beta}
 \alias{master_beta}
-\title{RPC call for the second data loop of the federated GLM}
+\title{Combine the results from the first RPC call and update the betas
+accordingly}
 \usage{
-master_beta(nodes = NULL, master = NULL)
+master_beta(partials1, family, dstar, master = NULL)
 }
 \arguments{
-\item{nodes}{list of results from the individual nodes}
-
 \item{master}{a list of parameters used to compute the GLM}
+
+\item{nodes}{list of results from the individual nodes}
 }
 \value{
 global updated parameters
 }
 \description{
-RPC call for the second data loop of the federated GLM
+Computes: X^T W X and X^T W z from the partials. Then computes the
+updated betas by multiplying these.
 }
