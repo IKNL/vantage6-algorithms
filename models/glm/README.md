@@ -17,13 +17,14 @@ This repo includes an implementation of the federated Generalized Linear Model (
 
 Generalized Linear Models estimate regression models for outcomes following exponential distributions. The GLM generalizes linear regression by allowing the linear model to be related to the response variable via a link function and by allowing the magnitude of the variance of each measurement to be a function of its predicted value.
 
-The current implementation is validated for the following R family inputs: (<- @TODO add validation for these to the .pdf)
+This algorithm is implemented in R, but with help of our R and Python wrappers you can also call the algorithm from Python.
+
+The current implementation is validated for the following R family inputs: 
 * gaussian(link = "identity"): gaussian regression
 * binomial(link = "logit"): normal logistic regression
 * poisson(link = "log"): poisson regression
 * "rs.poi": custom glm relative survival model with poisson error
-
-This algorithm is implemented in R, but with help of our R and Python wrappers you can also call the algorithm from Python.
+See the documentation and iknl/vantage6-algorithms/models/glm/src/validation/validation.R .
 
 ## Documentation 
 Check "Technical Documentation - GLM" for technical details about the algorithm and more. (<- @TODO this should be a link to the .pdf)
@@ -166,3 +167,11 @@ result = client.result.from_task(task_id)[0].get('result')
 ## Notes
 1. Added 'as.GLM.R' to convert the result to a glm/lm object
     * Simply wrap the object with the as.GLM -> as.GLM(object) where 'object' is the final output (the trained model).
+2. The as.GLM() function misses some outputs compared to the R built-in glm function:
+    * AIC output set to 1, not properly implemented yet.
+    * 'Deviance Residuals' printed by R's summary.glm(glm-output) is not included yet.
+    * 'Number of Fisher Scoring iterations' printed by R's summary.glm(glm-output) is not included yet.
+    * 'Signif. codes:  ... printed by R's summary.glm(glm-output) is not included yet.
+
+
+

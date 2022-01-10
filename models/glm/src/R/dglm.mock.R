@@ -3,9 +3,9 @@
 #'
 
 datasets <- list(
-  read.csv('C:\\Users\\age2105.55108\\AppData\\Local\\vantage6\\node\\data\\data_user1.csv'),
-  read.csv('C:\\Users\\age2105.55108\\AppData\\Local\\vantage6\\node\\data\\data_user2.csv'),
-  read.csv('C:\\Users\\age2105.55108\\AppData\\Local\\vantage6\\node\\data\\data_user3.csv')
+  read.csv('../data/data_user1.csv'),
+  read.csv('../data/data_user2.csv'),
+  read.csv('../data/data_user3.csv')
 )
 
 client <- vtg::MockClient$new(datasets, "vtg.glm")
