@@ -7,66 +7,72 @@
 #'
 #' @return GLM partials
 #'
-RPC_node_deviance <- function(data, weights = NULL, master) {
+RPC_node_deviance <- function( #nolint
+    data,
+    formula,
+    family,
+    first_iteration,
+    dstar,
+    coeff,
+    coeff_old,
+    wtdmu,
+    types=NULL,
+    weights = NULL) {
 
     vtg::log$debug("Starting node deviance.")
 
     # Specify data types for the columns in the data
-    if(!is.null(master$types)){
-        data = format_data(data,master$types)
+    if (!is.null(types)) {
+        data <- vtg.glm::assign_types(data, types)
     }
-
-    # The function update the betas
-    formula <- master$formula
-    family <- master$family
-    dstar <- master$dstar
 
     # The function calculate the residual deviance with updated betas for the
     # single node extract y variable names
     y <- eval(formula[[2]], envir = data)
     # Extract X variables
-    X <- model.matrix(formula,data = data)
+    X <- model.matrix(formula, data = data) #nolint
     # Extract the offset
-    offset=model.offset(model.frame(formula, data = data))
+    offset <- model.offset(model.frame(formula, data = data))
 
     # Get the family required (gaussian, poisson, logistic,...)
-    if (family == 'rs.poi') dstar <- eval(as.name(dstar), data)
-    family <- get_family(family, dstar, data)
+    dstar <- if (family == "rs.poi") eval(as.name(dstar), data) else dstar
+    family <- vtg.glm::get_family(family, dstar)
 
-    if (is.null(weights)) weights <- rep.int(1, nrow(X))
-    if (is.null(offset)) offset <- rep.int(0, nrow(X))
+    weights <- if (is.null(weights)) rep.int(1, nrow(X)) else weights
+    offset <- if (is.null(offset)) rep.int(0, nrow(X)) else offset
 
-    if (master$iter == 1) {
+    if (first_iteration) {
         vtg::log$debug("First iteration. Initializing variables.")
-        etastart = NULL
 
         # Initializes n and fitted values mustart
-        if (family$family=="rs.poi") {
-            mustart= pmax(y,dstar) + 0.1
+        if (family$family == "rs.poi") {
+            mustart <- pmax(y, dstar) + 0.1
         } else {
             # (!) needed by the initialize expression below
-            nobs = nrow(X)
-            nvars = ncol(X)
+            etastart <- NULL #nolint
+            nobs <- nrow(X) #nolint
+            nvars <- ncol(X) #nolint
             # Initializes n and fitted values mustart
             eval(family$initialize)
         }
 
         # Initialize eta
-        eta = family$linkfun(mustart) + offset
-        mu_old = family$linkinv(eta)
-        dev_old = 0
+        eta <- family$linkfun(mustart) + offset
+        mu_old <- family$linkinv(eta)
+        dev_old <- 0
 
     } else {
-        mu_old <- family$linkinv(X %*% master$coef[,ncol(master$coef)-1])
-        dev_old <- sum(family$dev.resids(y, mu_old,weights))
+        mu_old <- family$linkinv(X %*% coeff_old)
+        dev_old <- sum(family$dev.resids(y, mu_old, weights))
     }
 
     vtg::log$debug("Updating the variables for node deviance.")
-    eta <- X %*% master$coef[,ncol(master$coef)] + offset #calcaute updated eta
+    eta <- X %*% coeff + offset #calcaute updated eta
     mu <- family$linkinv(eta - offset)
     dev <- sum(family$dev.resids(y, mu, weights)) #calculate new deviance
-    dev.null <- sum(family$dev.resids(y, master$wtdmu, weights))
+    dev_null <- sum(family$dev.resids(y, wtdmu, weights))
 
-    # Return
-    list(dev_old = dev_old, dev = dev, dev.null = dev.null)
+    output <- list(dev_old = dev_old, dev = dev, dev_null = dev_null)
+    print(output)
+    return(output)
 }
