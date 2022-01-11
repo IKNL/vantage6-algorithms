@@ -15,17 +15,19 @@ dglm(
 )
 }
 \arguments{
-\item{client}{vtg::Client instance}
+\item{client}{vtg::Client instance, profided by the node}
 
 \item{formula}{an object of class formula (or one that can be coerced to that
 class: a symbolic description of the model to be fitted. E.g.:
 dependant_variable ~ explanatory_variable(i) + ...}
 
-\item{dstar}{...}
+\item{dstar}{name of the dstar sensor column (e.g. expected deaths).
+Only applicable when using the glm relative survival model with
+Poisson regression)}
 
 \item{types}{types of the columns that are used in the formula}
 
-\item{family:}{to this up it uses the Gaussian as this is the default value}
+\item{family}{family type, Gaussian is used by default}
 
 \item{tol:}{tolerance level}
 
@@ -33,8 +35,15 @@ dependant_variable ~ explanatory_variable(i) + ...}
 }
 \value{
 A GLM model in a dict format. To convert it to a GLM model which
-can be used by R, use the `vtg.glm::as.GLM(output)` to convert it.
+ can be used by R, use the `vtg.glm::as.GLM(output)` to convert it.
 }
 \description{
 Run the federated GLM.
+}
+\author{
+Cellamare, M.
+
+Martin, F.
+
+van Gestel, A.
 }

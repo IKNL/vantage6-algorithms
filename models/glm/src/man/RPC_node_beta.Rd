@@ -4,15 +4,39 @@
 \alias{RPC_node_beta}
 \title{RPC call for the first data loop of the federated GLM}
 \usage{
-RPC_node_beta(data, weights = NULL, master = NULL)
+RPC_node_beta(
+  data,
+  formula,
+  family,
+  first_iteration,
+  coeff,
+  dstar = NULL,
+  types = NULL,
+  weights = NULL
+)
 }
 \arguments{
 \item{data}{dataframe containing the data}
 
-\item{weights}{an optional vector of ‘prior weights’ to be used in the
-fitting process. Should be NULL or a numeric vector.}
+\item{formula}{an object of class formula (or one that can be coerced
+to that class: a symbolic description of the model to be fitted.
+E.g.: dependant_variable ~ explanatory_variable(i) + ...}
 
-\item{master}{a list of parameters used to compute the GLM}
+\item{family}{family type, Gaussian is used by default}
+
+\item{first_iteration}{boolean to indicate if this is the first
+iteration}
+
+\item{coeff}{beta coefficients from previous iteration}
+
+\item{dstar}{name of the dstar sensor column (e.g. expected deaths).
+Only applicable when using the glm relative survival model with
+Poisson regression)}
+
+\item{types}{types of the columns that are used in the formula}
+
+\item{weights}{an optional vector of ‘prior weights’ to be used in the
+fitting process. Should be NULL or a numeric vector}
 }
 \value{
 GLM partials

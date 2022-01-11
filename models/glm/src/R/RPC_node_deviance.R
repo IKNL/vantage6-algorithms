@@ -73,6 +73,5 @@ RPC_node_deviance <- function( #nolint
     dev_null <- sum(family$dev.resids(y, wtdmu, weights))
 
     output <- list(dev_old = dev_old, dev = dev, dev_null = dev_null)
-    print(output)
     return(output)
 }

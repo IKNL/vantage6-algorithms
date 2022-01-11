@@ -4,10 +4,10 @@
 \alias{master_deviance}
 \title{RPC call for the second data loop of the federated GLM}
 \usage{
-master_deviance(nodes = NULL, master)
+master_deviance(partials, family, dstar)
 }
 \arguments{
-\item{nodes}{list of results from the individual nodes}
+\item{partials}{}
 
 \item{master}{a list of parameters used to compute the GLM}
 }

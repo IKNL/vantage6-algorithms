@@ -4,12 +4,17 @@
 \alias{master_beta}
 \title{RPC call for the second data loop of the federated GLM}
 \usage{
-master_beta(nodes = NULL, master = NULL)
+master_beta(partials, family, dstar)
 }
 \arguments{
-\item{nodes}{list of results from the individual nodes}
+\item{partials}{result of rpc_node_beta, partial results from the
+individual nodes}
 
-\item{master}{a list of parameters used to compute the GLM}
+\item{family}{family type}
+
+\item{dstar}{name of the dstar sensor column (e.g. expected deaths).
+Only applicable when using the glm relative survival model with
+Poisson regression)}
 }
 \value{
 global updated parameters

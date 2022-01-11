@@ -58,6 +58,11 @@ dglm <- function(client, formula, dstar=NULL, types=NULL, family=gaussian,
     # Loop until the model is converged or when `maxit` has been hit.
     repeat{
 
+        vtg::log$info("")
+        vtg::log$info("###############################################")
+        vtg::log$info("# Starting iteration {iter}")
+        vtg::log$info("###############################################")
+        vtg::log$info("")
         #######################################################################
         # RPC NODE BETA - COMPUTE BETA PARTIALS
         #######################################################################
@@ -128,7 +133,6 @@ dglm <- function(client, formula, dstar=NULL, types=NULL, family=gaussian,
             (0.1 + abs(deviance$dev)) < tol)
         exceeded_iter <- (iter >= maxit)
 
-        print(deviance$dev_old)
         if (converged | exceeded_iter) {
             if (converged) vtg::log$debug("  - [CONVERGED]")
             if (exceeded_iter) vtg::log$debug("  - [EXCEEDED N. ITERATIONS]")

@@ -4,7 +4,18 @@
 \alias{RPC_node_deviance}
 \title{RPC call for the second data loop of the federated GLM}
 \usage{
-RPC_node_deviance(data, weights = NULL, master)
+RPC_node_deviance(
+  data,
+  formula,
+  family,
+  first_iteration,
+  dstar,
+  coeff,
+  coeff_old,
+  wtdmu,
+  types = NULL,
+  weights = NULL
+)
 }
 \arguments{
 \item{data}{dataframe containing the data}
