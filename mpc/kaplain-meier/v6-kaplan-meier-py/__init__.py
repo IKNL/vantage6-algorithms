@@ -37,7 +37,7 @@ def main(client: ContainerClient, _, alice: int, bob: int, helper: int):
         organization_ids=[alice, bob, helper]
     )
 
-    info("Waiting for resuls")
+    info("Waiting for results")
     task_id = task.get("id")
     task = client.get_task(task_id)
     i = 1
@@ -62,7 +62,7 @@ def RPC_worker(data: pd.DataFrame):
     # configuration
     player = os.environ['player'].capitalize()
     assert player in ['Alice', 'Bob', 'Helper'], \
-        f"Unknown player profided '{player}'"
+        f"Unknown player provided '{player}'"
     info(f'I am player \'{player}\'')
 
     # Wait, and obtain ips and ports of all other parties
