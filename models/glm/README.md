@@ -49,6 +49,9 @@ Run the following in the R console to install the package and its dependencies:
 
 ```R
 # This also installs the package vtg
+devtools::install_github(repo='iknl/vantage6-algorithms', ref='glm', subdir='models/glm/src')
+
+# This will become the following in the future (when the glm branch is merged)
 devtools::install_github('iknl/vantage6-algorithms', subdir='models/glm/src')
 ```
 
