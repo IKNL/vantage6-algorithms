@@ -5,7 +5,7 @@ import numpy
 from vantage6.tools.util import warn, info
 
 
-def master(client, data, columns):
+def master(client, data, columns, organizations_to_include='ALL'):
     """
     Master algorithm to compute a summary of the federated datasets.
 
@@ -37,8 +37,11 @@ def master(client, data, columns):
     }
 
     # obtain organizations that are within my collaboration
-    organizations = client.get_organizations_in_my_collaboration()
-    ids = [organization.get("id") for organization in organizations]
+    if organizations_to_include=='ALL':
+        organizations = client.get_organizations_in_my_collaboration()
+        ids = [organization.get("id") for organization in organizations]
+    else:
+        ids = organizations_to_include
 
     # collaboration and image are stored in the key, so we do not need
     # to specify these
