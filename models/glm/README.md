@@ -48,6 +48,9 @@ harbor2.vantage6.ai/algorithms/glm:COMMIT_HASH
 Run the following in the R console to install the package and its dependencies:
 
 ```R
+# install devtools if haven't got it already
+install.packages("devtools")
+
 # This also installs the package vtg
 devtools::install_github(repo='iknl/vantage6-algorithms', ref='glm', subdir='models/glm/src')
 
