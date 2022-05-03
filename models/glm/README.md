@@ -1,7 +1,7 @@
-<img src="https://github.com/IKNL/guidelines/blob/master/resources/logos/vantage6.png?raw=true" width=200 align="right">
+<img src="https://github.com/IKNL/guidelines/blob/master/resources/logos/iknl_nl.png?raw=true" width=200 align="right">
 
-# vtg.glm
-_Implementation of the federated Generalized Linear Model_
+# Federated Generalized Linear Model
+_Implementation of the federated Generalized Linear Model for horizontally-partitioned data_
 
 <p align="left">
   <a href="#usage">Usage</a> •
@@ -12,18 +12,20 @@ _Implementation of the federated Generalized Linear Model_
 
 -----------------------------------------------------------------------------------------------------
 
-## Intro
-This repo includes an implementation of the federated Generalized Linear Model (GLM) for horizontally partitioned data.
+## Introduction
+This repository includes an implementation of the federated Generalized Linear Model (GLM) for horizontally partitioned data.
 
 Generalized Linear Models estimate regression models for outcomes following exponential distributions. The GLM generalizes linear regression by allowing the linear model to be related to the response variable via a link function and by allowing the magnitude of the variance of each measurement to be a function of its predicted value.
 
-This algorithm is implemented in R, but with help of our R and Python wrappers you can also call the algorithm from Python.
+The algorithm is implemented in R and can be easily used in R as well. However, with the help of our wrapper, you can also call the algorithm from Python.
 
 The current implementation is validated for the following R family inputs: 
-* gaussian(link = "identity"): gaussian regression
-* binomial(link = "logit"): normal logistic regression
-* poisson(link = "log"): poisson regression
-* "rs.poi": custom glm relative survival model with poisson error
+* `gaussian(link = "identity")`: Gaussian regression
+* `binomial(link = "logit")`: Normal logistic regression
+* `poisson(link = "log")`: Poisson regression
+* `rs.poi`: Custom GLM relative survival model with Poisson error
+
+For more
 See the documentation and iknl/vantage6-algorithms/models/glm/src/validation/validation.R .
 
 ## Documentation 
@@ -59,13 +61,12 @@ devtools::install_github('iknl/vantage6-algorithms', subdir='models/glm/src')
 ```
 
 ## Run examples
-To follow the next examples, first prepare:
-* a vantage6 server, 
-* user, 
-* 3 organizations, 
-* a collaboration,
-* 3 nodes, 
-* and configure the nodes with the datasets "data_user1.csv", "data_user2.csv", "data_user3.csv" which you can find in iknl/vantage6-algorithms/models/glm/src/data.
+In order to run the following examples, you need to have prepared:
+* A vantage6 server
+* A user
+* A collaboration with 3 organizations and 3 nodes
+
+Additionally, each node should host and have configured the datasets `data_user1.csv`, `data_user2.csv`, `data_user3.csv` which you can find in iknl/vantage6-algorithms/models/glm/src/data.
 
 ### R
 ```R
@@ -179,5 +180,10 @@ result = client.result.from_task(task_id)[0].get('result')
     * 'Number of Fisher Scoring iterations' printed by R's summary.glm(glm-output) is not included yet.
     * 'Signif. codes:  ... printed by R's summary.glm(glm-output) is not included yet.
 
+## :black_nib: References
+If you are using this algorithm, please cite the accompanying paper as follows:
+> - Matteo Cellamare, Anna J. van Gestel, Hasan Alradhi, Frank Martin, Arturo Moncada-Torres, "A Federated Generalized Linear Model for Privacy-Preserving Analysis". Under review.
 
-
+Additionally, if you are using this algorithm in [vantage6](https://github.com/IKNL/vantage6), please cite the following papers as well:
+> - Arturo Moncada-Torres, Frank Martin, Melle Sieswerda, Johan van Soest, Gijs Gelijnse. VANTAGE6: an open source priVAcy preserviNg federaTed leArninG infrastructurE for Secure Insight eXchange. AMIA Annual Symposium Proceedings, 2020, p. 870-877. [[BibTeX](https://arturomoncadatorres.com/bibtex/moncada-torres2020vantage6.txt), [PDF](https://vantage6.ai/vantage6/)]
+> - Djura Smits*, Bart van Beusekom*, Frank Martin, Lourens Veen, Gijs Geleijnse, Arturo Moncada-Torres, “An Improved Infrastructure for Privacy-Preserving Analysis of Patient Data”, Proceedings of the International Conference of Informatics, Management, and Technology in Healthcare (ICIMTH), 2022
