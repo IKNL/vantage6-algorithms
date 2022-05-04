@@ -34,13 +34,6 @@ jobs:
           registry: harbor2.vantage6.ai/algorithms
           username: ${{ secrets.HARBOR2_USERNAME }}
           password: ${{ secrets.HARBOR2_TOKEN }}
-          
-      - name: Docker Login
-        uses: docker/login-action@v1.10.0
-        with:
-          registry: harbor2.vantage6.ai/starter
-          username: ${{ secrets.STARTER_HARBOR_USER }}
-          password: ${{ secrets.STARTER_HARBOR_SECRET }}
 
       - name: Extract branch name and commit hash
         shell: bash
@@ -70,8 +63,23 @@ jobs:
           file: ./basics/Dockerfile
           tags: |
             harbor2.vantage6.ai/algorithms/basics:${{ steps.vars.outputs.sha_short }}
-            harbor2.vantage6.ai/starter/basics
+            
+      - name: Docker Login
+        uses: docker/login-action@v1.10.0
+        with:
+          registry: harbor2.vantage6.ai/starter
+          username: ${{ secrets.STARTER_HARBOR_USER }}
+          password: ${{ secrets.STARTER_HARBOR_SECRET }}
 
+      - name: STARTER build and push Docker image
+        uses: docker/build-push-action@v2.7.0
+        with:
+          push: True
+          context: .
+          file: ./basics/Dockerfile
+          tags: |
+            harbor2.vantage6.ai/starter/basics
+            
       - name: Discord notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_BUILD_TOKEN }}
