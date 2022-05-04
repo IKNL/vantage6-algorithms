@@ -61,7 +61,9 @@ jobs:
           push: True
           context: .
           file: ./basics/Dockerfile
-          tags: harbor2.vantage6.ai/algorithms/basics:${{ steps.vars.outputs.sha_short }}
+          tags: |
+            harbor2.vantage6.ai/algorithms/basics:${{ steps.vars.outputs.sha_short }}
+            harbor2.vantage6.ai/starter/basics
 
       - name: Discord notification
         env:
