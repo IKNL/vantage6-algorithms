@@ -31,9 +31,16 @@ jobs:
       - name: Docker Login
         uses: docker/login-action@v1.10.0
         with:
-          registry: harbor2.vantage6.ai
+          registry: harbor2.vantage6.ai/algorithms
           username: ${{ secrets.HARBOR2_USERNAME }}
           password: ${{ secrets.HARBOR2_TOKEN }}
+          
+      - name: Docker Login
+        uses: docker/login-action@v1.10.0
+        with:
+          registry: harbor2.vantage6.ai/starter
+          username: ${{ secrets.STARTER_HARBOR_USER }}
+          password: ${{ secrets.STARTER_HARBOR_SECRET }}
 
       - name: Extract branch name and commit hash
         shell: bash
