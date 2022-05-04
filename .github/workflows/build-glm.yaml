@@ -77,7 +77,7 @@ jobs:
           context: .
           file: ./models/glm/docker/Dockerfile
           tags: |
-            harbor2.vantage6.ai/algorithms/glm
+            harbor2.vantage6.ai/starter/glm
             
       - name: Discord notification
         env:
