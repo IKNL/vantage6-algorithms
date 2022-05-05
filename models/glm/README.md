@@ -4,49 +4,29 @@
 _Implementation of the federated Generalized Linear Model for horizontally-partitioned data_
 
 <p align="left">
-  <a href="#usage">Usage</a> •
-  <a href="#development">Development</a>
+  <a href="#handshake-introduction">Introduction</a> •
+  <a href="#computer-installation">Installation</a> •
+  <a href="#man_technologist-examples">Examples</a> •
+  <a href="#books-documentation">Documentation</a> •
+  <a href="#building_construction-builds">Builds</a> •
+  <a href="#balance_scale-validation">Validation</a> •
+  <a href="#spiral_notepad-notes">Notes</a> •
+  <a href="#black_nib-references">References</a>
 </p>
 
 [![GLM Build](https://github.com/IKNL/vantage6-algorithms/actions/workflows/build-glm.yaml/badge.svg)](https://github.com/IKNL/vantage6-algorithms/actions/workflows/build-glm.yaml)
 
 -----------------------------------------------------------------------------------------------------
 
-## Introduction
+## :handshake: Introduction
 This repository includes an implementation of the federated Generalized Linear Model (GLM) for horizontally partitioned data.
 
 Generalized Linear Models estimate regression models for outcomes following exponential distributions. The GLM generalizes linear regression by allowing the linear model to be related to the response variable via a link function and by allowing the magnitude of the variance of each measurement to be a function of its predicted value.
 
 The algorithm is implemented in R and can be easily used in R as well. However, with the help of our wrapper, you can also call the algorithm from Python.
 
-The current implementation is validated for the following R family inputs: 
-* `gaussian(link = "identity")`: Gaussian regression
-* `binomial(link = "logit")`: Normal logistic regression
-* `poisson(link = "log")`: Poisson regression
-* `rs.poi`: Custom GLM relative survival model with Poisson error
-
-For more
-See the documentation and iknl/vantage6-algorithms/models/glm/src/validation/validation.R .
-
-## Documentation 
-Check "Technical Documentation - GLM" for technical details about the algorithm and more. (<- @TODO this should be a link to the .pdf)
-
-## Builds
-This repository is automatically built into a Docker image and pushed to our Docker image registry `harbor2.vantage6.ai`. 
-If this is the `main` branch the image will be uploaded with the `latest` tag.
-
-```
-harbor2.vantage6.ai/algorithms/glm:latest
-```
-
-In case the `glm` branch is used the image is built and tagged with the shortened commit hash.
-
-```
-harbor2.vantage6.ai/algorithms/glm:COMMIT_HASH
-```
-
-## Installation
-### R
+## :computer: Installation
+### :bar_chart: R
 Run the following in the R console to install the package and its dependencies:
 
 ```R
@@ -60,7 +40,7 @@ devtools::install_github(repo='iknl/vantage6-algorithms', ref='glm', subdir='mod
 devtools::install_github('iknl/vantage6-algorithms', subdir='models/glm/src')
 ```
 
-## Run examples
+## :man_technologist: Examples
 In order to run the following examples, you need to have prepared:
 * A vantage6 server
 * A user
@@ -102,7 +82,7 @@ client$setCollaborationId(1)
 result <- vtg.glm::dglm(client, formula = num_awards ~ prog + math, family='poisson', tol=1e-08, maxit=25)
 ```
 
-### Python
+### :snake: Python
 ```Python
 import time
 from vantage6.client import Client
@@ -132,13 +112,13 @@ ORGANIZATION_IDS = [i['id'] for i in client.collaboration.get(COLLABORATION_ID).
 # Prepare task input
 input_ = {'master': True,
           'method': 'dglm',
-          'args': [], 
+          'args': [],
           'kwargs': {'formula': 'num_awards ~ prog + math',
-                     'types': {'prog': {'type': 'factor', 
-                                        'levels': ['General','Vocational','Academic']}}, 
+                     'types': {'prog': {'type': 'factor',
+                                        'levels': ['General','Vocational','Academic']}},
                      'family': 'poisson',
                      'tol': 1e-08,
-                     'maxit': 25 
+                     'maxit': 25
                     },
           'output_format': 'json'
           }
@@ -151,7 +131,7 @@ my_task = client.task.create(collaboration=COLLABORATION_ID,
                              image='harbor2.vantage6.ai/algorithms/glm:latest',
                              input=input_,
                              data_format='json'
-                            ) 
+                            )
 
 task_id = my_task.get('id')
 print(f'Task id: {task_id}')
@@ -167,18 +147,50 @@ print('Results are ready!')
 # Retrieve result
 result = client.result.from_task(task_id)[0].get('result')
 ```
-
-### API
+### :keyboard: API
 @TODO add a section about API calls (not sure if it should be at 'Run examples')
 
-## Notes
-1. Added 'as.GLM.R' to convert the result to a glm/lm object
-    * Simply wrap the object with the as.GLM -> as.GLM(object) where 'object' is the final output (the trained model).
-2. The as.GLM() function misses some outputs compared to the R built-in glm function:
-    * AIC output set to 1, not properly implemented yet.
-    * 'Deviance Residuals' printed by R's summary.glm(glm-output) is not included yet.
-    * 'Number of Fisher Scoring iterations' printed by R's summary.glm(glm-output) is not included yet.
-    * 'Signif. codes:  ... printed by R's summary.glm(glm-output) is not included yet.
+
+## :books: Documentation
+Check "Technical Documentation - GLM" for technical details about the algorithm and more. (<- @TODO this should be a link to the .pdf)
+
+## :building_construction: Builds
+This repository is automatically built into a Docker image and pushed to our Docker image registry `harbor2.vantage6.ai`.
+If this is the `main` branch the image will be uploaded with the `latest` tag.
+
+```
+harbor2.vantage6.ai/algorithms/glm:latest
+```
+
+In case the `glm` branch is used the image is built and tagged with the shortened commit hash.
+
+```
+harbor2.vantage6.ai/algorithms/glm:COMMIT_HASH
+```
+
+
+
+## :balance_scale: Validation
+The code used for the validation of the algorithm (i.e., comparing its performance against its centralized counterpart) can be found in [`./src/validation`](./src/validation). The `R` notebook `validation.ipynb` contains the complete procedure, while the `Python` script `create_data.py` allows generating the data needed.
+
+So farr, the current implementation is validated for the following model families:
+* `gaussian(link = "identity")`: Linear regression
+* `poisson(link = "log")`: Poisson regression
+* `binomial(link = "logit")`: Logistic regression
+* `rs.poi`: Custom GLM relative survival model with Poisson error
+
+For more
+See the documentation and iknl/vantage6-algorithms/models/glm/src/validation/validation.R .
+
+
+## :spiral_notepad: Notes
+1. Added `as.GLM.R` to convert the result to a `glm/lm` object
+    * Simply wrap the object with the `as.GLM` -> `as.GLM(object)` where `object` is the final output (i.e., the trained model).
+2. The `as.GLM()` function misses some outputs compared to the `R` built-in `glm` function:
+    * For now, `AIC` output is set to 1. It isn't properly implemented yet.
+    * `Deviance Residuals` printed by `R`'s `summary.glm(glm-output)` are not included yet.
+    * `Number of Fisher Scoring iterations` printed by `R`'s `summary.glm(glm-output)` is not included yet.
+    * `Signif. codes:  ...` printed by `R`'s `summary.glm(glm-output)` are not included yet.
 
 ## :black_nib: References
 If you are using this algorithm, please cite the accompanying paper as follows:
