@@ -152,7 +152,7 @@ result = client.result.from_task(task_id)[0].get('result')
 
 
 ## :books: Documentation
-Check "Technical Documentation - GLM" for technical details about the algorithm and more. (<- @TODO this should be a link to the .pdf)
+Check "Technical Documentation - GLM" for technical details about the algorithm as well as the accompanying [PDF](./manual/main.pdf).
 
 ## :building_construction: Builds
 This repository is automatically built into a Docker image and pushed to our Docker image registry `harbor2.vantage6.ai`.
@@ -173,15 +173,10 @@ harbor2.vantage6.ai/algorithms/glm:COMMIT_HASH
 ## :balance_scale: Validation
 The code used for the validation of the algorithm (i.e., comparing its performance against its centralized counterpart) can be found in [`./src/validation`](./src/validation). The `R` notebook `validation.ipynb` contains the complete procedure, while the `Python` script `create_data.py` allows generating the data needed.
 
-So farr, the current implementation is validated for the following model families:
+So far, the current implementation is validated for the following model families:
 * `gaussian(link = "identity")`: Linear regression
 * `poisson(link = "log")`: Poisson regression
 * `binomial(link = "logit")`: Logistic regression
-* `rs.poi`: Custom GLM relative survival model with Poisson error
-
-For more
-See the documentation and iknl/vantage6-algorithms/models/glm/src/validation/validation.R .
-
 
 ## :spiral_notepad: Notes
 1. Added `as.GLM.R` to convert the result to a `glm/lm` object
