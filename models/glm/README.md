@@ -48,7 +48,7 @@ In order to run the following examples, you need to have prepared:
 
 Additionally, each node should host and have configured the datasets `data_user1.csv`, `data_user2.csv`, `data_user3.csv` which you can find in iknl/vantage6-algorithms/models/glm/src/data.
 
-### R
+### :bar_chart: R
 ```R
 setup.client <- function() {
   # Define parameters
