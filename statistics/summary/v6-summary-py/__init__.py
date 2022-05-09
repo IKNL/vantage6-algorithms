@@ -5,7 +5,7 @@ import numpy
 from vantage6.tools.util import warn, info
 
 
-def master(client, data, columns, organizations_to_include='ALL'):
+def master(client, data, columns, organizations_to_include='ALL', subset=None):
     """
     Master algorithm to compute a summary of the federated datasets.
 
@@ -15,13 +15,19 @@ def master(client, data, columns, organizations_to_include='ALL'):
         Interface to the central server. This is supplied by the wrapper.
     data : dataframe
         Pandas dataframe. This is supplied by the wrapper / node.
-    columns : Dictonairy
+    columns : Dictionairy
         Dict containing column names and types
+    organizations_to_include : list
+        List of organizations id's to include for the statistics, or 'ALL' if 
+        you want to include all organizations of the collaboration.
+    subset : Dictionairy
+        Dictionary of columns you want to filter on (keys), and values you 
+        want to keep (values). 
 
     Returns
     -------
     Dict
-        A dictonairy containing summary statistics for all the columns of the
+        A dictionairy containing summary statistics for all the columns of the
         dataset.
     """
 
@@ -32,7 +38,8 @@ def master(client, data, columns, organizations_to_include='ALL'):
         "method": "summary",
         "args": [],
         "kwargs": {
-            "columns": columns
+            "columns": columns,
+            "subset": subset
         }
     }
 
@@ -109,7 +116,8 @@ def master(client, data, columns, organizations_to_include='ALL'):
         "method": "federated_variance_part",
         "args": [],
         "kwargs": {
-            "g_means": g_means
+            "g_means": g_means,
+            "subset": subset
         }
     }
 
@@ -156,7 +164,7 @@ def master(client, data, columns, organizations_to_include='ALL'):
     return g_stats
 
 
-def RPC_summary(dataframe, columns):
+def RPC_summary(dataframe, columns, subset=None):
     """
     Computes a summary of all columns of the dataframe
 
@@ -166,12 +174,17 @@ def RPC_summary(dataframe, columns):
         Pandas dataframe that contains the local data.
     columns : Dictionairy
         Dict containing column name and column (panda) type pairs
+    subset : Dictionairy
+        Dictionary of columns you want to filter on (keys), and values you 
+        want to keep (values). 
 
     Returns
     -------
     Dict
         A Dict containing some simple statistics for the local dataset.
     """
+    if subset:
+        dataframe = subset_data(dataframe, subset)
 
     # create series from input column names
     columns_series = pandas.Series(data=columns)
@@ -241,7 +254,7 @@ def RPC_summary(dataframe, columns):
         "statistics": columns
     }
 
-def RPC_federated_variance_part(dataframe, g_means):
+def RPC_federated_variance_part(dataframe, g_means, subset=None):
     """
     Federated variance can be calculated by:
     Var(X) = 1/(n_a + n_b) * sum_(j∈{a,b}) (sum_(i=1)^n_j (x_(j,i) - g_mean)^2)
@@ -258,6 +271,9 @@ def RPC_federated_variance_part(dataframe, g_means):
         Pandas dataframe that contains the local data.
     g_means : Dictionairy
         Dictionary of the (numeric) headers (column names) of the dataframe and their corresponding global means.
+    subset : Dictionairy
+        Dictionary of columns you want to filter on (keys), and values you 
+        want to keep (values). 
 
     Returns
     -------
@@ -266,6 +282,9 @@ def RPC_federated_variance_part(dataframe, g_means):
             number of values (n_b) - part of part 1
             sum_(i=1)^n_j (x_(j,i) - g_mean)^2 for party b - part of part 2
     """
+
+    if subset:
+        dataframe = subset_data(dataframe, subset)
 
     federated_variance_parts = dict()
     
@@ -279,6 +298,33 @@ def RPC_federated_variance_part(dataframe, g_means):
         federated_variance_parts[header] = {'len': n, 'fv_part2': fv_p2}
 
     return federated_variance_parts
+
+
+def subset_data(dataframe, subset):
+    """
+    Subsets, or filters the dataframe, based on the dictionary 'subset'.
+
+    Parameters
+    ----------
+    dataframe : pandas dataframe
+    subset : Dictionary
+        Dictionary of which the keys point to columns you want to filter on, 
+        and values you want to keep. 
+        
+        Example: 
+        subset = {'sex': ['Female'], 'treatment': [1,2,4]}
+        With this subset we get the data for females that got either treatment 1, 2 or 4.
+
+    Returns
+    -------
+    pandas dataframe
+        The filtered dataframe.
+    """
+    for k,v in subset.items():
+        dataframe = dataframe.loc[dataframe[k].isin(v)]
+    print(f'Length of subsetted dataframe: {len(dataframe)}')
+
+    return dataframe
 
 
 def convert_np_to_py(d):
