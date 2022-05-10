@@ -8,7 +8,7 @@ from vantage6.tools.util import warn, info
 # minimal number of patients required before the RPC_summary reports the
 # descriptive statistics, by default only 1 patient is allowed. You can set
 # this parameter in the node configuration file in the `algorithm_env` section
-MIN_NUM_PATIENTS = os.environ('MIN_NUM_PATIENTS') or 1
+MIN_NUM_PATIENTS = os.environ.get('MIN_NUM_PATIENTS') or 1
 
 
 def master(client, _, columns, organizations_to_include='ALL', subset=None):
