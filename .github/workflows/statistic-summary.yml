@@ -1,0 +1,87 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Build Statistic Summary
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches:
+      - main
+      - statistics/summary
+  pull_request:
+    branches:
+      - main
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Docker Login
+        uses: docker/login-action@v1.10.0
+        with:
+          registry: harbor2.vantage6.ai
+          username: ${{ secrets.HARBOR2_USERNAME }}
+          password: ${{ secrets.HARBOR2_TOKEN }}
+
+      - name: Extract branch name and commit hash
+        shell: bash
+        run: |
+          echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+          echo "${GITHUB_REF#refs/heads/}"
+        id: vars
+
+      - name: RELEASE build and push Docker image
+        uses: docker/build-push-action@v2.7.0
+        if: steps.vars.outputs.branch == 'main'
+        with:
+          push: True
+          context: .
+          file: ./statistics/summary/Dockerfile
+          tags: |
+            harbor2.vantage6.ai/algorithms/summary:latest
+            harbor2.vantage6.ai/algorithms/summary:${{ steps.vars.outputs.sha_short }}
+
+      - name: TEST build and push Docker image
+        uses: docker/build-push-action@v2.7.0
+        if: steps.vars.outputs.branch == 'statistics/summary'
+        with:
+          push: True
+          context: .
+          file: ./statistics/summary/Dockerfile
+          tags: harbor2.vantage6.ai/algorithms/summary:${{ steps.vars.outputs.sha_short }}
+
+      - name: Docker Login (starter)
+        uses: docker/login-action@v1.10.0
+        with:
+          registry: harbor2.vantage6.ai/starter
+          username: ${{ secrets.STARTER_HARBOR_USER }}
+          password: ${{ secrets.STARTER_HARBOR_SECRET }}
+
+      - name: STARTER build and push Docker image
+        uses: docker/build-push-action@v2.7.0
+        with:
+          push: True
+          context: .
+          file: ./statistics/summary/Dockerfile
+          tags: |
+            harbor2.vantage6.ai/starter/summary
+
+      - name: Discord notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_BUILD_TOKEN }}
+        uses: Ilshidur/action-discord@0.3.2
+        with:
+          args: 'harbor2.vantage6.ai/algorithms/summary:${{ steps.vars.outputs.sha_short }} has been build.'
