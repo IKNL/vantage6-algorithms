@@ -1,11 +1,17 @@
+import os
 import pandas
 import time
 import numpy
 
 from vantage6.tools.util import warn, info
 
+# minimal number of patients required before the RPC_summary reports the
+# descriptive statistics, by default only 1 patient is allowed. You can set
+# this parameter in the node configuration file in the `algorithm_env` section
+MIN_NUM_PATIENTS = os.environ('MIN_NUM_PATIENTS') or 1
 
-def master(client, data, columns, organizations_to_include='ALL', subset=None):
+
+def master(client, _, columns, organizations_to_include='ALL', subset=None):
     """
     Master algorithm to compute a summary of the federated datasets.
 
@@ -15,14 +21,14 @@ def master(client, data, columns, organizations_to_include='ALL', subset=None):
         Interface to the central server. This is supplied by the wrapper.
     data : dataframe
         Pandas dataframe. This is supplied by the wrapper / node.
-    columns : Dictionairy
+    columns : dict
         Dict containing column names and types
     organizations_to_include : list
-        List of organizations id's to include for the statistics, or 'ALL' if 
+        List of organizations id's to include for the statistics, or 'ALL' if
         you want to include all organizations of the collaboration.
-    subset : Dictionairy
-        Dictionary of columns you want to filter on (keys), and values you 
-        want to keep (values). 
+    subset : dict
+        Dictionary of columns you want to filter on (keys), and values you
+        want to keep (values).
 
     Returns
     -------
@@ -31,7 +37,7 @@ def master(client, data, columns, organizations_to_include='ALL', subset=None):
         dataset.
     """
 
-    
+
     # define the input for the summary algorithm
     info("Defining input parameters")
     input_ = {
@@ -110,7 +116,7 @@ def master(client, data, columns, organizations_to_include='ALL', subset=None):
 
     # get variance and std, from global mean
     g_means = {header:g_stats.get(header, {}).get('mean') for header in numeric_columns.keys()}
-    
+
     info("Calculating federated variance")
     input_ = {
         "method": "federated_variance_part",
@@ -132,10 +138,10 @@ def master(client, data, columns, organizations_to_include='ALL', subset=None):
 
         sum_n = sum([node_res[header]['len'] for node_res in federated_variance_parts])
         sum_fv_p2 = sum([node_res[header]['fv_part2'] for node_res in federated_variance_parts])
-        
+
         var_federated = sum_fv_p2/sum_n
         std_federated = numpy.sqrt(var_federated) # Population Standard Deviation
-        
+
         g_stats[header].update({'var': var_federated})
         g_stats[header].update({'std': std_federated})
 
@@ -175,8 +181,8 @@ def RPC_summary(dataframe, columns, subset=None):
     columns : Dictionairy
         Dict containing column name and column (panda) type pairs
     subset : Dictionairy
-        Dictionary of columns you want to filter on (keys), and values you 
-        want to keep (values). 
+        Dictionary of columns you want to filter on (keys), and values you
+        want to keep (values).
 
     Returns
     -------
@@ -207,11 +213,12 @@ def RPC_summary(dataframe, columns, subset=None):
     # count the number of rows in the dataset
     info("Counting number of rows")
     number_of_rows = len(dataframe)
-    if number_of_rows < 10:
-        warn("Dataset has less than 10 rows. Exiting.")
+    if number_of_rows < MIN_NUM_PATIENTS:
+        warn(f"Dataset has less than {MIN_NUM_PATIENTS} rows. Exiting.")
         return {
             "column_names_correct": column_names_correct,
-            "number_of_rows": number_of_rows
+            "number_of_rows": number_of_rows,
+            "statistics": {}
         }
 
     # min, max, median, average, Q1, Q3, missing_values
@@ -261,10 +268,10 @@ def RPC_federated_variance_part(dataframe, g_means, subset=None):
     Where,
     Part 1: 1/(n_a + n_b)
     Part 2: sum_(j∈{a,b}) (sum_(i=1)^n_j (x_(j,i) - g_mean)^2)
-        
-    This function computes Part 2 of the variance needed for calculating the 
+
+    This function computes Part 2 of the variance needed for calculating the
     federated variance, for a single party, let's say party b in this case.
-    
+
     Parameters
     ----------
     dataframe : pandas dataframe
@@ -272,13 +279,13 @@ def RPC_federated_variance_part(dataframe, g_means, subset=None):
     g_means : Dictionairy
         Dictionary of the (numeric) headers (column names) of the dataframe and their corresponding global means.
     subset : Dictionairy
-        Dictionary of columns you want to filter on (keys), and values you 
-        want to keep (values). 
+        Dictionary of columns you want to filter on (keys), and values you
+        want to keep (values).
 
     Returns
     -------
     Dict
-        A Dict containing, pet key in g_means: 
+        A Dict containing, pet key in g_means:
             number of values (n_b) - part of part 1
             sum_(i=1)^n_j (x_(j,i) - g_mean)^2 for party b - part of part 2
     """
@@ -287,14 +294,14 @@ def RPC_federated_variance_part(dataframe, g_means, subset=None):
         dataframe = subset_data(dataframe, subset)
 
     federated_variance_parts = dict()
-    
+
     for header, g_mean in g_means.items():
-        
+
         data = dataframe[header]
         data.dropna(inplace=True)
         n = len(data)
         fv_p2 = sum((data-g_mean)**2)
-        
+
         federated_variance_parts[header] = {'len': n, 'fv_part2': fv_p2}
 
     return federated_variance_parts
@@ -308,10 +315,10 @@ def subset_data(dataframe, subset):
     ----------
     dataframe : pandas dataframe
     subset : Dictionary
-        Dictionary of which the keys point to columns you want to filter on, 
-        and values you want to keep. 
-        
-        Example: 
+        Dictionary of which the keys point to columns you want to filter on,
+        and values you want to keep.
+
+        Example:
         subset = {'sex': ['Female'], 'treatment': [1,2,4]}
         With this subset we get the data for females that got either treatment 1, 2 or 4.
 
@@ -330,8 +337,8 @@ def subset_data(dataframe, subset):
 def convert_np_to_py(d):
     """
     Converts numpy instances in a dictionary to native python instances.
-    Background information : the wrapper could not serialize numpy instances to JSON. 
-    
+    Background information : the wrapper could not serialize numpy instances to JSON.
+
     Parameters
     ----------
     d : Dictionairy
@@ -352,9 +359,9 @@ def convert_np_to_py(d):
 
 def wait_and_collect(client, task):
     """
-    Waits till the nodes are done with processing a task, and 
+    Waits till the nodes are done with processing a task, and
     collects the results.
-    
+
     Parameters
     ----------
     client : ContainerClient
