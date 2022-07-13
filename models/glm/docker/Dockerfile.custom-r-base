@@ -1,0 +1,17 @@
+# The Dockerfile tells Docker how to construct the image with your algorithm.
+# Once pushed to a repository, images can be downloaded and executed by the
+# network hubs.
+
+# Use R as the base image.
+FROM r-base:latest
+
+RUN apt-get update
+RUN apt-get install -y libssl-dev libcurl4-openssl-dev libxml2-dev
+
+# Change directory to '/app’. This means the subsequent ‘RUN’ steps will
+# execute in this directory.
+WORKDIR /app
+
+COPY docker/install_base_packages.R /app
+RUN Rscript install_base_packages.R
+

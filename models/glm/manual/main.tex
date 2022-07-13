@@ -1,0 +1,327 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Diaz Essay
+% LaTeX Template
+% Version 2.0 (13/1/19)
+%
+% This template originates from:
+% http://www.LaTeXTemplates.com
+%
+% Authors:
+% Vel (vel@LaTeXTemplates.com)
+% Nicolas Diaz (nsdiaz@uc.cl)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[11pt]{vantage6} % Font size (can be 10pt, 11pt or 12pt)
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{\textbf{Generalized Linear Model} \\ {\Large\itshape Federated linear regression}} % Title and subtitle
+\author{\textbf{M. Cellamare, F. Martin, A. van Gestel} \\ \textit{IKNL}} % Author and institution
+\date{\today} % Date, use \date{} for no date
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+\thispagestyle{firstpage}
+\vantage6logo
+\vspace{5cm}
+\maketitle % Print the title section
+\pagebreak
+
+%----------------------------------------------------------------------------------------
+%	INTRODUCTION
+%----------------------------------------------------------------------------------------
+
+\tableofcontents
+\pagebreak
+
+%----------------------------------------------------------------------------------------
+%	INTRODUCTION
+%----------------------------------------------------------------------------------------
+
+\section{Introduction}
+The term generalized linear model (GLM) refers to a larger class of models
+popularized by McCullagh and Nelder (1982, 2nd edition 1989). In these models,
+the response variable $y_i$ is assumed to follow an exponential family distribution
+with mean $\mu_i$, which is assumed to be some (often nonlinear) function of $x_i^T \beta$.
+
+%----------------------------------------------------------------------------------------
+%	MATHMATICS
+%----------------------------------------------------------------------------------------
+
+\section{Mathematics}
+
+\subsection{Central}
+There are three components to any GLM:
+\begin{itemize}
+\item \textbf{Random Component} - refers to the probability distribution of the response variable $y$; e.g. normally distributed in the linear regression, or binomially distributed in the binary logistic regression.  More generally, we consider all distribution that can be expressed in the form:
+$$
+f(y;\theta)=exp \Bigg\lbrace \frac{y\theta-b(\theta)}{a(\phi)}+c(y,\phi) \Bigg\rbrace,
+$$
+where $\theta$ is the canonical parameter, such that $\mathbb{E}(y)=\mu=b'(\theta)$ and $Var(y)=a(\phi)b''(\theta)$. This is also called exponential family.
+Can be easily showed that, for instance, the canonical parameter for $y \sim N(\mu, \sigma^2)$ is $\theta = \mu$, and the canonical parameter for $y\sim Bin(n, \pi)$ is $\theta = logit(\pi)=log\Big(\frac{\pi}{1-\pi}\Big)$.\\
+\item \textbf{Systematic Component} - specifies the explanatory variables $x=(x_1, x_2, \ldots, x_k)$ in the model, more specifically their linear combination define the so called linear predictor
+$$\eta=x^T\beta,$$
+where $\beta$ must be estimated.
+\item \textbf{Link Function $g(\cdot)$} - specifies the link between random and systematic components. It says how the expected value of the response relates to the linear predictor of explanatory variables
+$$
+g(\mu)=\eta
+$$
+The most commonly used link function for a normal model is $\eta = \mu$, and the most commonly used link function for the binomial model is $\eta = logit(\pi)$. When $\eta=\theta$ we say that the model has a canonical link.
+
+\end{itemize}
+
+\subsubsection*{Estimation procedure}
+In the GLM estimation procedure, the maximum likelihood estimation for $\beta$ can be carried out via Fisher scoring. The generic $(j+1)$-th step can be calculate by
+\begin{equation}
+\beta^{(j+1)}=\beta^{(j)}+ \Big[ -\mathbb{E}l''\big( \beta^{(j)} \big) \Big]^{-1} l'(\beta^{(j)})
+\end{equation}\label{step}
+
+where $l$ is the log-likelihood of the entire sample. Ignoring constants, the log-likelihood is
+$$
+l(\theta; y) = \frac{y \theta - b(\theta)}{a(\phi)}
+$$
+After some mathematical operations and using the canonical link $\eta=\theta$, the first derivative and expected second derivative of the log-likelihood are
+\begin{align*}
+\frac{\delta l}{\delta \beta_j}&=\frac{y-\mu}{Var(y)}\Bigg(\frac{\delta \mu}{\delta \eta} \Bigg) x_{ij}\\
+-\mathbb{E}\Bigg(\frac{\delta^2 l}{\delta \beta_j \delta \beta_k} \Bigg)&=\frac{1}{Var(y)}\Bigg(\frac{\delta \mu}{\delta \eta} \Bigg)^2 x_{ij}x_{ik}
+\end{align*}
+where $x_{ij}$ (or $x_{ik}$) is the $j$-th element of the covariate vector $x_i = x$ for the $i$-th observation.
+
+It follows that the score vector for the entire data set $y_1,\ldots, y_N$ can be written as
+\begin{equation}
+\frac{\delta l}{\delta \beta}=X^TA(y-\mu)
+\end{equation}\label{score}
+where $X=(x_1,\ldots,x_N)^T$, and
+$
+A=diag \Big[ Var(y_i) \Big(\frac{\delta \eta_i}{\delta \mu_i} \Big) \Big]^{-1}
+$
+and the expected Hessian matrix becomes
+$$
+-\mathbb{E}\Bigg(\frac{\delta^2 l}{\delta \beta_j \delta \beta_k} \Bigg)=X^TWX
+$$
+where
+$
+W=diag \Big[ Var(y_i) \Big(\frac{\delta \eta_i}{\delta \mu_i} \Big)^2 \Big]^{-1}.
+$
+
+Therefore the Fisher scoring iteration in \ref{step} can be expressed as
+\begin{equation}
+\beta^{(j+1)}=\beta^{(j)}+ \big(X^TWX\big)^{-1} X^TA(y-\mu)
+\end{equation}\label{step2}
+
+We can arrange the step of Fisher scoring to make it resemble weighted least squares.
+%Let us rewrite \ref{step2} as
+%\begin{equation}
+%\beta^{(j+1)}=\big(X^TWX\big)^{-1} \Big[ \big(X^TWX\big)\beta^{(j)} + X^TA(y-\mu)\Big]
+%\end{equation}\label{step3}
+
+Noting that $X\beta=\eta$ and $A=W \frac{\delta \eta}{\delta \mu}$, we can rewrite \ref{step2} as
+\begin{equation}
+\beta^{(j+1)}=\big(X^TWX\big)^{-1} X^TWz
+\end{equation}\label{step4}
+where $z=\eta + \frac{\delta \eta}{\delta \mu}(y-\mu)$. Therefore, Fisher scoring can be regarded as Iteratively Reweighted Least
+Squares (IRWLS) carried out on a transformed version of the response variable.
+
+The IRWLS algorithm can be describe as
+
+\begin{algorithm}[H]
+\caption{GLM Fisher Scoring algorithm}\label{glm_algo}
+\begin{algorithmic}[1]
+\Procedure{}{}
+\vspace{2mm}
+\State initialize $\beta^{(0)}$
+\Statex \hskip5.5em $\eta=X\beta^{(0)}$
+\Statex \hskip5.5em $dev^{(0)}$
+\vspace{1mm}
+\Loop
+%\Repeat
+%\State $j=j+1$
+\State compute $\mu=g'(\eta)$
+\Statex \hskip7em $z=\eta+\frac{y-\mu}{\Delta g'}$
+\Statex \hskip7em $W=w\frac{\Delta g'^2}{Var(\mu)}$
+\State update $\beta^{(j)}=\big(X^TWX\big)^{-1} X^TWz$
+\Statex \hskip6.5em $\eta=X\beta^{(j)}$
+\State compute $dev^{(j)}$
+\vspace{2mm}
+\If{$|dev^{(j)}-dev^{(j-1)}|< \epsilon$}
+\Statex \hskip4em \Return $\beta^{(j)}$
+\Statex \hskip4em {\bf end loop}
+\Else
+\Statex \hskip4em $j=j+1$
+ \EndIf
+%\Until{$\Big[\frac{|d^{(j)}-d^{(j-1)}|}{.1 |d^{(j)}|}<1e^{-8} \Big]$ {\bf or} $j= M_{iter}$}
+\EndLoop
+\vspace{2mm}
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+where $g(\cdot)$ is the link function,  $\Delta g'=\frac{\delta \mu}{\delta \eta}$ is the derivative of the inverse-link function $g'(\cdot)$ with respect to the linear predictor and $w={w_1,\ldots,w_n}$ are arbitrary weights assign to the units (by default equal to 1).
+
+\subsection{Federated}
+
+The main idea behind the federated GLM algorithm is that components of equation \ref{step4} can be partially computed in each data sources $k$ and merged together afterwords without pulling together the data.
+
+Let us consider $K\geq2$ data sources (i.e. cancer registries, schools, banks etc..) and let's denote by $n_k$ the number of observations in the $k$-th data source such that the total sample size of the study is $n=n_1+\cdots+n_K$.
+Furthermore, let us denote by $y_{(k)}$ the $n_k$-vector of response variable and by $X_{(k)}$ the $(n_k\times p)$-matrix of $p$ covariates for the data source $k=1,\ldots,K$. It is easy to prove that
+\begin{eqnarray*}
+X^TWX&=\Big[ X_{(1)}^TW_{(1)}X_{(1)}\Big]+\cdots+\Big[X_{(K)}^TW_{(K)}X_{(K)}\Big] \\
+X^TWz&=\Big[ X_{(1)}^TW_{(1)}z_{(1)}\Big]+\cdots+\Big[X_{(K)}^TW_{(K)}z_{(K)}\Big]
+\end{eqnarray*}
+where $z_{(K)}=\eta_{(k)}+\frac{y_{(k)}-\mu_{(k)}}{\Delta g_{(k)}'}$ and $W_{(k)}=diag \Big[ Var\big(y_{(k)}\big) \Delta g_{(K)}'^2 \Big]^{-1}$.
+
+Therefore, following the structure of algorithm \ref{glm_algo}, a federated procedure can be described as follow:
+\begin{algorithm}[H]
+\caption{My algorithm}\label{fl_glm_algo}
+\begin{algorithmic}[1]
+\Statex{\bf Initialization Server}
+\State initialize $\beta^{(0)}$
+\Statex{\bf Initialization Node $k$}
+\State initialize $\eta_{(k)}=X_{(k)}\beta^{(0)}$
+\State initialize $\mu_{(k)}=g'(\eta_{(k)})$
+\State initialize $dev_{(k)}^{(0)}=f(y_{(k)}\mu_{(k)},w_{(k)})$
+
+\end{algorithmic}
+\vspace{2mm}
+
+\begin{algorithmic}[1]
+\Loop
+\vspace{1mm}
+
+\Statex {\bf Node $k$}
+\State compute $z_{(k)}=\eta_{(k)}+\frac{y_{(k)}-\mu_{(k)}}{\Delta g_{(k)}'}$
+\State compute $W_{(k)}=w_{(k)}\frac{\Delta g_{(k)}'^2}{Var(\mu_{(k)})}$
+\State compute $\mathcal{C}^1_{(k)}=X_{(k)}^TW_{(k)}X_{(k)}$ \\
+\hskip5.5em $\mathcal{C}^2_{(k)}=X_{(k)}^TW_{(k)}z_{(k)}$
+\State return to Server $\mathcal{C}^1_{(k)}$ and $\mathcal{C}^2_{(k)}$
+\vspace{2mm}
+
+\Statex {\bf Server}
+\State calculate $X^TWX=\sum_{k=1}^K {C}^1_{(k)}$
+ \State calculate $X^TWz=\sum_{k=1}^K {C}^2_{(k)}$
+\State update $\beta^{(j+1)}=\big(X^TWX\big)^{-1} X^TWz$
+\State return to Nodes $\beta^{(j+1)}$
+\vspace{2mm}
+
+\Statex {\bf Node $k$}
+\State compute $\eta_{(k)}=X_{(k)}\beta^{(j+1)}$
+\State compute $\mu_{(k)}=g'(\eta_{(k)})$
+\State calculate $dev_{(k)}^{(j+1)}=f(y_{(k)}\mu_{(k)},w_{(k)})$
+\State return to Server $dev_{(k)}^{(j+1)}$
+
+\vspace{2mm}
+\Statex {\bf Server}
+\State compute $dev^{(j+1)}=\sum_{k=1}^K dev_{(k)}^{(j+1)}$
+\If{$|dev^{(j+1)}-dev^{(j)}|< \epsilon$}
+\Statex \hskip4em \Return $\beta^{(j+1)}$
+\Statex \hskip4em {\bf break loop}
+\Else
+\Statex \hskip4em $j=j+1$
+ \EndIf
+\EndLoop
+
+\end{algorithmic}
+\end{algorithm}
+
+%----------------------------------------------------------------------------------------
+%	IMPLEMENTATION
+%----------------------------------------------------------------------------------------
+
+\section{Implementation}
+\subsection{Parameters}
+
+\begin{tabular}{|p{2cm}||p{2cm}|p{4cm}|p{8cm}|}
+
+ \hline
+ \multicolumn{4}{|c|}{Input Parameters} \\
+ \hline
+ Parameter 	    & Type  	    & Example 	& Description \\
+ \hline
+ formula	    & string  	    & \text{a \~ b + c}	&  string that can be cast to R formula object, see \href{https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/formula]}{here}\\
+ dstar			& string		& \text{d\_star}		&  Column name of dstar sensor (expected value), only applicable for poison family \\
+ types			& float		    & 1.1 		    &  ...\\
+ family			& float		    & 1.1 		    &  Family type\\
+ tol			& float		    & 1.1 		    &  Tolerance level\\
+ maxit			& int		    & 25 		    &  Max. number of iterations\\
+ \hline
+\end{tabular}
+
+\subsection{Algorithm}
+\begin{algorithm}
+\caption{master}\label{alg:cap}
+\begin{algorithmic}
+\Require $n \geq 0$
+\Ensure $y = x^n$
+\State $y \gets 1$
+\State $X \gets x$
+\State $N \gets n$
+\While{$N \neq 0$}
+\If{$N$ is even}
+    \State $X \gets X \times X$
+    \State $N \gets \frac{N}{2}$  \Comment{This is a comment}
+\ElsIf{$N$ is odd}
+    \State $y \gets y \times X$
+    \State $N \gets N - 1$
+\EndIf
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Output}
+[table of algorithm output(s)]
+
+%----------------------------------------------------------------------------------------
+%	RISKS
+%----------------------------------------------------------------------------------------
+
+\section{Risks}
+% Overview of what is shared with whom. And possible security issues
+
+\begin{enumerate}
+\item Issue 1
+\item issue 2
+\end{enumerate}
+
+%----------------------------------------------------------------------------------------
+%	VALIDATION
+%----------------------------------------------------------------------------------------
+
+\section{Validation}
+% Compare central vs federated results, preferably public dataset]
+\lstinputlisting[language=Python]{snippets/snip.py}
+
+%----------------------------------------------------------------------------------------
+%	EXAMPLES
+%----------------------------------------------------------------------------------------
+
+\section{Examples}
+[Preferable multiple examples of how to run it from R, python and a plain API call]
+\lstinputlisting[language=R]{snippets/R_example.R}
+\lstinputlisting[language=Python]{snippets/snip.py}
+
+%----------------------------------------------------------------------------------------
+%	BIBLIOGRAPHY
+%----------------------------------------------------------------------------------------
+
+\bibliographystyle{unsrt}
+
+\bibliography{references.bib}
+
+%----------------------------------------------------------------------------------------
+
+\end{document}
