@@ -189,8 +189,8 @@ So far, the current implementation is validated for the following model families
 
 ## :black_nib: References
 If you are using this algorithm, please cite the accompanying paper as follows:
-> - Matteo Cellamare, Anna J. van Gestel, Hasan Alradhi, Frank Martin, Arturo Moncada-Torres, "A Federated Generalized Linear Model for Privacy-Preserving Analysis". Under review.
+> * Matteo Cellamare, Anna J. van Gestel, Hasan Alradhi, Frank Martin, Arturo Moncada-Torres, "A Federated Generalized Linear Model for Privacy-Preserving Analysis". *Algorithms*, vol. 15, no. 7, 2022, p. 1-12. [[BibTeX](https://arturomoncadatorres.com/bibtex/cellamare2022federated.txt), [PDF (Open Access)](https://mdpi.com/1999-4893/15/7/243/)]
 
 Additionally, if you are using this algorithm in [vantage6](https://github.com/IKNL/vantage6), please cite the following papers as well:
-> - Arturo Moncada-Torres, Frank Martin, Melle Sieswerda, Johan van Soest, Gijs Gelijnse. VANTAGE6: an open source priVAcy preserviNg federaTed leArninG infrastructurE for Secure Insight eXchange. AMIA Annual Symposium Proceedings, 2020, p. 870-877. [[BibTeX](https://arturomoncadatorres.com/bibtex/moncada-torres2020vantage6.txt), [PDF](https://vantage6.ai/vantage6/)]
-> - Djura Smits*, Bart van Beusekom*, Frank Martin, Lourens Veen, Gijs Geleijnse, Arturo Moncada-Torres, “An Improved Infrastructure for Privacy-Preserving Analysis of Patient Data”, Proceedings of the International Conference of Informatics, Management, and Technology in Healthcare (ICIMTH), 2022
+> * Arturo Moncada-Torres, Frank Martin, Melle Sieswerda, Johan van Soest, Gijs Gelijnse. VANTAGE6: an open source priVAcy preserviNg federaTed leArninG infrastructurE for Secure Insight eXchange. AMIA Annual Symposium Proceedings, 2020, p. 870-877. [[BibTeX](https://arturomoncadatorres.com/bibtex/moncada-torres2020vantage6.txt), [PDF](https://vantage6.ai/vantage6/)]
+> * D. Smits\*, B. van Beusekom\*, F. Martin, L. Veen, G. Geleijnse, A. Moncada-Torres, An Improved Infrastructure for Privacy-Preserving Analysis of Patient Data, Proceedings of the International Conference of Informatics, Management, and Technology in Healthcare (ICIMTH), vol. 25, 2022, p. 144-147. [[BibTeX](https://arturomoncadatorres.com/bibtex/smits2022improved.txt), [PDF](https://ebooks.iospress.nl/volumearticle/60190)]
