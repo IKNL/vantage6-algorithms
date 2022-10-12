@@ -2,16 +2,16 @@
 % Please edit documentation in R/get_family.R
 \name{get_family}
 \alias{get_family}
-\title{translates family input to R family object}
+\title{translates family string input to R family object}
 \usage{
-get_family(family, dstar = NULL, data = NULL)
+get_family(family, dstar = NULL)
 }
 \arguments{
-\item{family}{family input}
+\item{family}{sting identifyer of the family to be returned}
 }
 \value{
 R family object
 }
 \description{
-translates family input to R family object
+translates family string input to R family object
 }

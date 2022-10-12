@@ -18,9 +18,9 @@ A data_frame:
       scores}
   }
 
-An object of class \code{data.frame} with 64 rows and 4 columns.
+An object of class \code{data.frame} with 64 rows and 5 columns.
 
-An object of class \code{data.frame} with 70 rows and 4 columns.
+An object of class \code{data.frame} with 70 rows and 5 columns.
 }
 \source{
 https://stats.idre.ucla.edu/stat/data/poisson_sim.csv

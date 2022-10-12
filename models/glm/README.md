@@ -52,9 +52,9 @@ Additionally, each node should host and have configured the datasets `data_user1
 ```R
 setup.client <- function() {
   # Define parameters
-  username <- 'username@example.com'
+  username <- 'admin'
   password <- 'password'
-  host <- 'https://address-to-vantage6-server.domain:port'
+  host <- 'http://127.0.0.1:5000'
   api_path <- ''
 
   # Create the client
