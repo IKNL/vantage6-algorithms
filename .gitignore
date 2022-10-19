@@ -1,3 +1,6 @@
+
+/docs/_build/*
+
 # act secrets (github actions locally)
 .secrets
 
