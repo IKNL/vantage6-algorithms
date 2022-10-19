@@ -13,7 +13,7 @@ author = 'F.C. Martin, A. van Gestel, ...'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.imgmath', 'sphinxcontrib.pseudocode']
+extensions = ['sphinx.ext.imgmath']
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
