@@ -40,7 +40,6 @@ RPC_localdev <- function(data,
                          family,
                          nAGQ){
 
-    library("lme4")
     lgr::threshold('debug')
     vtg::log$debug("Initializing parameters...")
     formula <- as.formula(formula)
