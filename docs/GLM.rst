@@ -131,15 +131,32 @@ out on a transformed version of the response variable.
 
 The IRWLS algorithm can be describe as
 
-.. _dummy-algorithm:
 .. pcode::
+   :linenos:
 
+    % This quicksort algorithm is extracted from Chapter 7, Introduction to Algorithms (3rd edition)
     \begin{algorithm}
-    \caption{Dummy Algorithm}
+    \caption{GLM Fisher Scoring algorithm}
     \begin{algorithmic}
-    \PRINT \texttt{'hello world'}
+    \PROCEDURE{GLM}{$\epsilon$}
+        \STATE $\beta^{(0)}$
+        \STATE $\eta=X\beta^{(0)}$
+        \STATE $dev^{(0)}$
+
+        \REPEAT
+        \STATE $\mu=g'(\eta)$
+        \STATE $z=\eta+\frac{y-\mu}{\Delta g'}$
+        \STATE $W=w\frac{\Delta g'^2}{Var(\mu)}$
+
+        \STATE $\beta^{(j)}=\big(X^TWX\big)^{-1} X^TWz$
+        \STATE $\eta=X\beta^{(j)}$
+        \STATE compute $dev^{(j)}$
+        \UNTIL{{$|dev^{(j)}-dev^{(j-1)}|< \epsilon$}}
+
+    \ENDPROCEDURE
     \end{algorithmic}
     \end{algorithm}
+
 
 Federated
 ^^^^^^^^^
