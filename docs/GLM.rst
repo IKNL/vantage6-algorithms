@@ -1,13 +1,13 @@
 GLM
 ===
+This algorithm is the implementation of our
+`Open Access Paper <https://www.mdpi.com/1999-4893/15/7/243>`_.
+
 The term generalized linear model (GLM) refers to a larger class of models
 popularized by McCullagh and Nelder (1982, 2nd edition 1989). In these models,
 the response variable :math:`y_i` is assumed to follow an exponential family
 distribution with mean :math:`\mu_i`, which is assumed to be some (often
 nonlinear) function of :math:`x_i^T \beta`.
-
-Author(s):
-Paper:
 
 Mathmatics
 ----------
@@ -46,9 +46,9 @@ There are three components to any GLM:
   systematic components. It says how the expected value of the response relates
   to the linear predictor of explanatory variables
 
-    .. math::
+  .. math::
 
-      g(\mu)=\eta
+    g(\mu)=\eta.
 
   The most commonly used link function for a normal model is
   :math:`\eta = \mu`, and the most commonly used link function for the binomial
@@ -80,10 +80,13 @@ the log-likelihood are
 .. math::
     :label: step
 
-    \frac{\delta l}{\delta \beta_j}&=\frac{y-\mu}{Var(y)}\Bigg(\frac{\delta
+    \frac{\delta l}{\delta \beta_j}=\frac{y-\mu}{Var(y)}\Bigg(\frac{\delta
     \mu}{\delta \eta} \Bigg) x_{ij}
 
-    -\mathbb{E}\Bigg(\frac{\delta^2 l}{\delta \beta_j \delta \beta_k} \Bigg)&=
+.. math::
+    :label: stepB
+
+    -\mathbb{E}\Bigg(\frac{\delta^2 l}{\delta \beta_j \delta \beta_k} \Bigg)=
     \frac{1}{Var(y)}\Bigg(\frac{\delta \mu}{\delta \eta} \Bigg)^2 x_{ij}x_{ik}
 
 where :math:`x_{ij}` (or :math:`x_{ik}`) is the :math:`j`-th element of the
@@ -134,7 +137,6 @@ The IRWLS algorithm can be describe as
 .. pcode::
    :linenos:
 
-    % This quicksort algorithm is extracted from Chapter 7, Introduction to Algorithms (3rd edition)
     \begin{algorithm}
     \caption{GLM Fisher Scoring algorithm}
     \begin{algorithmic}
@@ -160,13 +162,55 @@ The IRWLS algorithm can be describe as
 
 Federated
 ^^^^^^^^^
+The main idea behind the federated GLM algorithm is that components of equation
+:eq:`step4` can be partially computed in each data sources :math:`k` and merged
+together afterwords without pulling together the data.
+
+Let us consider :math:`K\geq2` data sources (i.e. cancer registries, schools,
+banks etc..) and let's denote by :math:`n_k` the number of observations in the
+`k`-th data source such that the total sample size of the study is
+:math:`n=n_1+\cdots+n_K`. Furthermore, let us denote by :math:`y_{(k)}` the
+:math:`n_k`-vector of response variable and by :math:`X_{(k)}` the
+:math:`(n_k\times p)`-matrix of :math:`p` covariates for the data source
+:math:`k=1,\ldots,K`. It is easy to prove that
+
+.. math::
+
+    \begin{eqnarray*}
+    X^TWX&=\Big[ X_{(1)}^TW_{(1)}X_{(1)}\Big]+\cdots+\Big[X_{(K)}^TW_{(K)}X_{(K)}\Big] \\
+    X^TWz&=\Big[ X_{(1)}^TW_{(1)}z_{(1)}\Big]+\cdots+\Big[X_{(K)}^TW_{(K)}z_{(K)}\Big]
+    \end{eqnarray*}
+
+where :math:`z_{(K)}=\eta_{(k)}+\frac{y_{(k)}-\mu_{(k)}}{\Delta g_{(k)}'}` and
+:math:`W_{(k)}=diag \Big[ Var\big(y_{(k)}\big) \Delta g_{(K)}'^2 \Big]^{-1}`.
+
+
 
 
 Implementation
 --------------
 
-Risks
------
+Secutiry Risks
+--------------
+[1] https://doi.org/10.1155/2022/2886795
+
+This section discusses the risks that are involved in using the federated GLM.
+We distinquish two types of thread models: Semi-honest and Malicious [1].
+
+**Semi-honest**
+    The attacker tries to disclose sensitive information by observing the
+    results but not changing the protocol.
+
+**Malicious**
+    An attacker can actively perform arbitrary attacks in an attempt to steal
+    sensitive information from global model parameters shared during the
+    training process. Moreover, the malicious attacker can also conduct
+    devastating attacks on the global model by deviating from the protocol or
+    tampering with data.
+
+Systematic Queries
+^^^^^^^^^^^^^^^^^^
+
 
 Validation
 ----------

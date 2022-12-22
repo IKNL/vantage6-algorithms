@@ -41,8 +41,7 @@ Algorithms
 ----------
 
 .. toctree::
-   :numbered:
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Horizontal:
 
    Summary
