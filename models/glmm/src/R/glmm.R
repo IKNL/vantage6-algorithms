@@ -30,6 +30,9 @@
 #' be distinguished by a vertical bar '|'.
 #'
 #' @return A list object from which
+#'
+#' @export
+#'
 glmm <- function(client,
                  start,
                  local_eval,
@@ -38,61 +41,50 @@ glmm <- function(client,
                  formula){
 
     lgr::threshold('debug')
+
     vtg::log$debug("Starting...")
+
     mixeff <- as.vector(unlist(start, use.names = F))
 
-    family <- get_family(family)
+    family <- vtg.glmm:::get_family(family)
 
     vtg::log$debug("Using nlm to optimize GLMM...")
+
     res <- nlm(f = vtg.glmm::concatenate_results, p=mixeff,
                client = client, local_eval = local_eval,
                formula=formula, family = family, nAGQ = nAGQ,
-               hessian = TRUE, iterlim = 10000,
-               gradtol = 1e-10, steptol = 1e-10, check.analyticals = T)
-    res$'variance.covariance' <- solve(0.5*res$hessian)
+               hessian = TRUE, iterlim = 10000
+               check.analyticals = T)
 
     vtg::log$debug("Collected local deviance...")
 
-    res$'Family' <- family$family
-    res$'Link' <- family$link
-    res$'Formula' <- Reduce(paste, deparse(formula))
-    res$'nAGQ' <- nAGQ
-    res$'nobs' <- get("nobs", envir = -1)
-    res$'groups' <- get("number of groups", envir = -1)
-
-    len.coef <- length(res$estimate)
-
     if(!is.language(formula)){
-        formula = formula(formula)
-    }
 
-    list.of.pars <- mkParsTemplate(formula)
-    fixed_effects = as.table(res$estimate[2:len.coef])
-    rownames(fixed_effects) = names(list.of.pars$beta)
-    random_effect  <- as.table(res$estimate[1])
-    rownames(random_effect) <- names(list.of.pars$theta)
-    names.ran.eff <- as.character(findbars(formula)[[1]][[3]])
-    names.fix.eff <- names(list.of.pars$beta[-1])
+        formula = formula(formula)
+
+    }
 
     output <- list(
         paste("Generalized linear mixed model fit by minimized deviance",
               sprintf("(Adaptive Gauss-Hermite Quadrature, nAGQ = %d)", nAGQ)),
         deviance = res$minimum,
-        fixed_effects = fixed_effects,
-        random_effect = random_effect,
+        fixed_effects = res$estimate[2:length(mixeff)],
+        random_effect = res$estimate[1],
         gradient = res$gradient,
         hessian = res$hessian,
-        variance_covariance = res$variance.covariance,
-        formula = res$Formula,
-        family = res$Family,
-        link = res$Link,
+        variance_covariance = solve(0.5*res$hessian),
+        formula = Reduce(paste, deparse(formula)),
+        family = family$family,
+        link = family$link,
         nlm_code = res$code,
         iterations = res$iterations,
-        number_of_obs = res$nobs,
-        ran_eff_groups = res$groups
+        nAGQ = nAGQ,
+        number_of_groups = vtg::get.option("number_of_groups")
     )
-    return(output)
 
     vtg::log$debug("Finalized...")
-    # return(res)
+
+    return(output)
+
+
 }

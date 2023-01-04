@@ -32,6 +32,8 @@
 #'
 #' This function is the precursor to the `vtg.glmm::glmm` function.
 #'
+#' @export
+#'
 concatenate_results <- function(start,
                                 local_eval,
                                 client,
@@ -44,66 +46,30 @@ concatenate_results <- function(start,
 
     len.mix.eff <- length(unlist(start, use.names = F))
 
-    # family <- get_family(family)
-
     nodes <- client$call(local_eval, start=start, family=family,
                          formula=formula, nAGQ=nAGQ)
-
-    # dev <- 0
-    # grad <- rep(0, len.mix.eff)
-    # hess <- matrix(0, len.mix.eff, len.mix.eff)
-    # nobs <- 0
-    # r.e <- list()
 
     contributers <- seq(length(nodes))
 
     vtg::log$debug("Concatenating partial calculations to update mixed effects...")
 
-
-    # first collect all the results from each site
-    # for (j in 1:length(nodes)){
-    #
-    #     temp.site <- nodes[[j]]
-    #
-    #     deviance <- dev +  temp.site
-    #
-    #     gradient <- grad + attr(temp.site, "gradient")
-    #
-    #     hessian <- hess + attr(temp.site, "hessian")
-    #
-    #     nobs <- nobs + attr(temp.site, "nobs")
-    #
-    #     r.e[[j]] <- attr(temp.site, "r.e")
-    # }
-
     deviance <- Reduce(`+`, lapply(contributers, function(i) nodes[[i]][1]))
 
     gradient <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
                                                                   "gradient")))
-
     hessian <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
                                                                  "hessian")))
 
-    nobs <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
-                                                              "nobs")))
-
-    r.e <- 0
-
-    # For now the correct family
-
-    family <- attr(nodes, "family")
-
-    r.e <- sapply(unlist(r.e), unique)
+    number_of_groups <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
+                                                             "number_of_groups")))
 
     res <- deviance
 
     attr(res, "gradient") <- gradient
+
     attr(res, "hessian") <- hessian
-    # attr(res)
-    ### for now this needs to change desperately ###
-    assign("nobs", nobs, envir = .GlobalEnv)
-    assign("unique raneff levels", r.e, envir = .GlobalEnv)
-    assign("number of groups", length(r.e), envir = .GlobalEnv)
+
+    vtg::set.option("number_of_groups", number_of_groups)
 
     return(res)
 }

@@ -1,56 +1,70 @@
-as.GLMM <- function(result, data=NULL){
+#'
+#' Convert federated glmm output to glmm object
+#'
+#' @export
+#'
 
-    fixed_effects <- result$fixed_effects
+as.GLMM <- function(result, data=NULL, ...){
 
-    random_effect <- result$random_effect
-
-    title <- result[[1]][1]
-
-    # terms <- terms(as.formula(result$formula), data = data)
+    new_env <- new.env(parent = baseenv())
 
     out <- list()
 
+    f <- if(!is.language(result$formula)) {
+        as.formula(result$formula)
+    } else {
+        result$formula
+    }
+
+    setClass(Class = "glmm",
+             slots = list(
+                 title = "character",
+                 formula = "formula",
+                 theta = "numeric",
+                 beta = "numeric",
+                 Data = "numeric",
+                 family = "family",
+                 frame = "data.frame",
+                 X = "matrix",
+                 Z = "dgCMatrix",
+                 groups = "list",
+                 gradient = "numeric",
+                 hessian = "matrix",
+                 vcov = "matrix",
+                 nAGQ = "numeric",
+                 call = "call"),
+             where = new_env)
+
     if(!is.null(data)){
 
-        mf <- model.frame(lme4::subbars(as.formula(result$formula)), data=data)
+        tt <- lme4::glFormula(formula = f, data = data, family = result$family)
 
-        terms <- terms(subbars(as.formula(result$formula)))
+        pars <- lme4::mkParsTemplate(formula = f, data=data)
 
-        vars <- sapply(attr(terms, "variables")[-1], deparse)
+        out <- new(
+            "glmm",
+            title = result[[1]],
+            formula = f,
+            Data = c(-0.5*result$deviance, result$deviance),
+            theta = result$random_effect,
+            beta = result$fixed_effects,
+            family = get(result$family, mode = "function")(),
+            frame = tt$fr,
+            X = tt$X,
+            Z = tt$reTrms$Zt,
+            groups = tt$reTrms$flist,
+            gradient = result$gradient,
+            hessian = result$hessian,
+            vcov = result$variance_covariance,
+            nAGQ = result$nAGQ,
+            call = call("glmm_FL", f, family = result$family)
+        )
 
-        if(yvar <- attr(terms, "response")>0){
-            vars <- vars[-yvar]
-        }
-
-        xlvl <- lapply(data[vars], function(i) {
-            if(is.factor(i)){
-                levels(i)
-            }else if(is.character(i)){
-                levels(as.factor(i))
-            }else{
-                NULL
-            }
-        })
-
-        attr(out, "xlevels") <- xlvl[!vapply(xlvl, is.null, NA)]
-        attr(terms, "dataClasses") <- sapply(data[vars], stats:::.MFclass)
+        names(out@beta) <- names(pars$beta)
+        names(out@theta) <- names(pars$theta)
+        names(out@Data) <- c("loglik", "deviance")
 
     }
 
-    out$terms <- terms
-
-    stopifnot(length(random_effect) == 1
-              & length(fixed_effects) > 1
-              & !is.null(names(random_effect))
-              & !is.null(names(fixed_effects)))
-
-
-    Groups =  gsub(pattern = ".(Intercept)", x = names(y$random_effect), fixed = T, replacement = "")
-    Name = gsub(pattern = paste0(Groups,"."), replacement = "", x = names(y$random_effect), fixed = T)
-    Std.Dev. = y$random_effect[[1]]
-
-    out$"Random effects:" <- data.frame("Groups" = Groups, "Name" = Name, "Std.Dev." = Std.Dev.)
-    row.names(out$"Random effects:") <- ""
-
-
+    return(out)
 }

@@ -34,6 +34,8 @@
 #' @return A Single Iteration of the nAGQ approximation of the minimized
 #' Deviance. Along with this, the gradient and hessian are given as attributes.
 #'
+#' @export
+#'
 RPC_localdev <- function(data,
                          formula,
                          start,
@@ -52,7 +54,7 @@ RPC_localdev <- function(data,
 
     if(is.null(nAGQ)){
 
-        nAGQ <- 10
+        nAGQ <- 20
 
     }
 
@@ -77,13 +79,12 @@ RPC_localdev <- function(data,
                                                       theta = ranef)
                                     )
                      )
-    r.e <- unique(data[[as.character(lme4::findbars(f)[[1]][[3]])]])
+    number_of_groups <- length(unique(data[[as.character(lme4::findbars(f)[[1]][[3]])]]))
     res <- as.numeric(iter1@devcomp$cmp["dev"])
     attr(res, "gradient") <- iter1@optinfo$derivs$gradient
     attr(res, "hessian") <- iter1@optinfo$derivs$Hessian
-    attr(res, "nobs") <- nobs(iter1)
     attr(res, "family") <- iter1@resp$family
-    attr(res, "r.e") <- r.e
+    attr(res, "number_of_groups") <- number_of_groups
 
     return(res)
 
