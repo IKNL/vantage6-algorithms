@@ -41,8 +41,7 @@ concatenate_results <- function(start,
                                 nAGQ,
                                 formula){
 
-    vtg::log$debug("Collecting partial results from local sites...")
-
+    vtg::log$debug("Collecting partial results from nodes...")
 
     len.mix.eff <- length(unlist(start, use.names = F))
 
@@ -51,7 +50,7 @@ concatenate_results <- function(start,
 
     contributers <- seq(length(nodes))
 
-    vtg::log$debug("Concatenating partial calculations to update mixed effects...")
+    vtg::log$debug("Summing partials to update mixed effects...")
 
     deviance <- Reduce(`+`, lapply(contributers, function(i) nodes[[i]][1]))
 

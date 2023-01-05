@@ -46,14 +46,14 @@ glmm <- function(client,
 
     mixeff <- as.vector(unlist(start, use.names = F))
 
-    family <- vtg.glmm:::get_family(family)
+    family <- vtg.glmm::get_family(family)
 
     vtg::log$debug("Using nlm to optimize GLMM...")
 
     res <- nlm(f = vtg.glmm::concatenate_results, p=mixeff,
                client = client, local_eval = local_eval,
                formula=formula, family = family, nAGQ = nAGQ,
-               hessian = TRUE, iterlim = 10000
+               hessian = TRUE, iterlim = 10000,
                check.analyticals = T)
 
     vtg::log$debug("Collected local deviance...")

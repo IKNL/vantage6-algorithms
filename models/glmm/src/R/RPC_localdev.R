@@ -42,25 +42,44 @@ RPC_localdev <- function(data,
                          family,
                          nAGQ){
 
-    library("lme4")
     lgr::threshold('debug')
+
     vtg::log$debug("Initializing parameters...")
-    formula <- as.formula(formula)
-    family <- get_family(family)
+
+    formula <- if(!class(formula) == "formula"){
+
+        as.formula(formula)
+
+    }else{
+
+        formula
+
+    }
+
+
+
+    family <- if(!is.null(family)){
+
+        vtg.glmm::get_family(family)
+
+    }else{
+
+        get("gaussian")()
+
+    }
+
+
     len.theta <- 1
+
     mixeff <- as.vector(unlist(start, use.names = F))
+
     beta <- mixeff[(len.theta+1):length(mixeff)]
+
     ranef <- mixeff[1:len.theta]
 
     if(is.null(nAGQ)){
 
         nAGQ <- 20
-
-    }
-
-    if(is.null(family)){
-
-        family <- get_family("gaussian")
 
     }
 
@@ -80,10 +99,15 @@ RPC_localdev <- function(data,
                                     )
                      )
     number_of_groups <- length(unique(data[[as.character(lme4::findbars(f)[[1]][[3]])]]))
+
     res <- as.numeric(iter1@devcomp$cmp["dev"])
+
     attr(res, "gradient") <- iter1@optinfo$derivs$gradient
+
     attr(res, "hessian") <- iter1@optinfo$derivs$Hessian
+
     attr(res, "family") <- iter1@resp$family
+
     attr(res, "number_of_groups") <- number_of_groups
 
     return(res)

@@ -2,10 +2,10 @@
 % Please edit documentation in R/asGLMM.R
 \name{as.GLMM}
 \alias{as.GLMM}
-\title{Convert federated glmm output to glmm object}
+\title{Convert federated glmm output glmm class}
 \usage{
-as.GLMM(result, data = NULL, ...)
+as.GLMM(result, ..., data = NULL)
 }
 \description{
-Convert federated glmm output to glmm object
+Convert federated glmm output glmm class
 }

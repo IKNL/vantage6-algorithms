@@ -1,6 +1,12 @@
+#'
+#' Family for glm and glmm objects
+#'
+#' @export
+#'
 get_family <- function(family, dstar = NULL) {
 
     # Functions of the family required (gaussian, poisson, logistic,...)
+
     if (is.character(family))
     {
         if(family == 'rs.poi')
@@ -16,7 +22,7 @@ get_family <- function(family, dstar = NULL) {
             family$linkfun <- function(mu) log(mu - dstar)
             family$linkinv <- function(eta) dstar + exp(eta)
         } else {
-            family <- get(family, mode = "function", envir = parent.frame())()
+            family <- get(family, mode = "function")()
         }
     }
 

@@ -3,4 +3,5 @@
 export(RPC_localdev)
 export(as.GLMM)
 export(concatenate_results)
+export(get_family)
 export(glmm)
