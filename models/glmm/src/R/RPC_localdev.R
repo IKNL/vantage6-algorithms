@@ -90,9 +90,7 @@ RPC_localdev <- function(data,
                                           nAGQ = nAGQ,
                                           control = glmerControl(
                                               optimizer = "nlminbwrap",
-                                              optCtrl = list(maxfun=1,
-                                                        xtol_abs=1e-8,
-                                                        ftol_abs=1e-8)
+                                              optCtrl = list(maxfun=1)
                                     ),
                                          start = list(fixef = beta,
                                                       theta = ranef)

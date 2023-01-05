@@ -13,8 +13,8 @@ tryCatch({
     vtg::writeln("Package 'vantage.infrastructure' already loaded.")
 })
 
-df1 = read.csv(paste0(getwd(), "/data/data1.csv"))[1:50,]
-df2 = read.csv(paste0(getwd(), "/data/data2.csv"))
+load("src/data/df1.rda")
+load("src/data/df2.rda")
 
 datasets <- list(df1, df2)
 start = list(theta=0.1, fixef = c(0.1, 0.1,0.1,0.1,0.1))
@@ -47,10 +47,10 @@ packaged_result = vtg.glmm::as.GLMM(y, data= df1)
 df <- rbind(datasets[[1]], datasets[[2]])
 df$cid = as.factor(df$cid)
 
-xx <- suppressWarnings(glmer(formula = f, data = df, control = glmerControl(optimizer = "nlminbwrap", optCtrl = list(trace = 1)),
+glmer_ans <- suppressWarnings(glmer(formula = f, data = df, control = glmerControl(optimizer = "nlminbwrap", optCtrl = list(trace = 1)),
             start = list(theta=start$theta, fixef = start$fixef),
             family = family, nAGQ = nAGQ))
 
-grad = xx@optinfo$derivs$gradient
-hess = xx@optinfo$derivs$Hessian
+grad = glmer_ans@optinfo$derivs$gradient
+hess = glmer_ans@optinfo$derivs$Hessian
 var.covar = solve(0.5*hess)

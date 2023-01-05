@@ -50,7 +50,7 @@ glmm <- function(client,
 
     vtg::log$debug("Using nlm to optimize GLMM...")
 
-    res <- nlm(f = vtg.glmm::concatenate_results, p=mixeff,
+    res <- stats::nlm(f = vtg.glmm::concatenate_results, p=mixeff,
                client = client, local_eval = local_eval,
                formula=formula, family = family, nAGQ = nAGQ,
                hessian = TRUE, iterlim = 10000,
