@@ -7,13 +7,13 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'vantage6-algorithms'
-copyright = '2022, F.C. Martin, A. van Gestel, ...'
+copyright = '2023, F.C. Martin, A. van Gestel, ...'
 author = 'F.C. Martin, A. van Gestel, ...'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinxcontrib.pseudocode', 'sphinx.ext.autosummary']
+extensions = ['sphinxcontrib.pseudocode', 'sphinx.ext.autosummary', 'sphinx_design']
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
