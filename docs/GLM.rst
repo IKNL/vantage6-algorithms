@@ -488,7 +488,7 @@ If you are using this algorithm, please cite the accompanying paper as follows:
 
 
 Additionally, if you are using this algorithm in
-`vantage6 <https://github.com/IKNL/vantage6>`_, please cite the following
+`vantage6 <https://github.com/vantage6/vantage6>`_, please cite the following
 papers as well:
 
 * Arturo Moncada-Torres, Frank Martin, Melle Sieswerda, Johan van Soest,
