@@ -62,7 +62,7 @@ jobs:
           context: .
           file: ./models/glm/docker/Dockerfile
           tags: harbor2.vantage6.ai/algorithms/glm:${{ steps.vars.outputs.sha_short }}
-      
+
       - name: Docker Login (starter)
         uses: docker/login-action@v1.10.0
         with:
@@ -78,10 +78,9 @@ jobs:
           file: ./models/glm/docker/Dockerfile
           tags: |
             harbor2.vantage6.ai/starter/glm
-            
+
       - name: Discord notification
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_BUILD_TOKEN }}
-        uses: Ilshidur/action-discord@0.3.2
+        uses: fateyan/action-discord-notifier@v1
         with:
-          args: 'harbor2.vantage6.ai/algorithms/glm:${{ steps.vars.outputs.sha_short }} has been built.'
+          message-title: 'harbor2.vantage6.ai/algorithms/glm:${{ steps.vars.outputs.sha_short }} has been built.'
+          webhook: ${{ secrets.DISCORD_BUILD_TOKEN }}
