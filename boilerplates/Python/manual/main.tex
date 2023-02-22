@@ -1,0 +1,156 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Diaz Essay
+% LaTeX Template
+% Version 2.0 (13/1/19)
+%
+% This template originates from:
+% http://www.LaTeXTemplates.com
+%
+% Authors:
+% Vel (vel@LaTeXTemplates.com)
+% Nicolas Diaz (nsdiaz@uc.cl)
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND OTHER DOCUMENT CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[11pt]{vantage6} % Font size (can be 10pt, 11pt or 12pt)
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{\textbf{[Algorithm name]} \\ {\Large\itshape [Short description]}} % Title and subtitle
+
+\author{\textbf{[Thor A.U., ... ]} \\ \textit{[Organization]}} % Author and institution
+
+\date{\today} % Date, use \date{} for no date
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+\thispagestyle{firstpage}
+\vantage6logo
+\vspace{5cm}
+\maketitle % Print the title section
+\pagebreak
+
+%----------------------------------------------------------------------------------------
+%	INTRODUCTION
+%----------------------------------------------------------------------------------------
+
+\tableofcontents
+\pagebreak
+
+%----------------------------------------------------------------------------------------
+%	INTRODUCTION
+%----------------------------------------------------------------------------------------
+
+\section{Introduction}
+% Introduction
+
+%----------------------------------------------------------------------------------------
+%	MATHMATICS
+%----------------------------------------------------------------------------------------
+
+\section{Mathematics}
+\subsection{Central}
+% Briefly explain the mathematics in a central setting
+
+\begin{equation}
+f(x) = \frac{1}{\sum_i{a_i}}
+\end{equation}
+
+
+\subsection{Federated}
+[Explain the federated derivation]
+
+%----------------------------------------------------------------------------------------
+%	IMPLEMENTATION
+%----------------------------------------------------------------------------------------
+
+\section{Implementation}
+\subsection{Parameters}
+
+\begin{tabular}{|l||l|l|l|}
+
+ \hline
+ \multicolumn{4}{|c|}{Input Parameters} \\
+ \hline
+ Parameter 	& type  	& example 	& description \\
+ \hline
+ a			& string    & "a" 		&  a value, with a extra long description\\
+ b 			& int 		& 1 		&  b value\\
+ c			& float		& 1.1 		&  ...\\
+ \hline
+\end{tabular}
+
+\subsection{Algorithm}
+\begin{algorithm}
+\caption{master}\label{alg:cap}
+\begin{algorithmic}
+\Require $n \geq 0$
+\Ensure $y = x^n$
+\State $y \gets 1$
+\State $X \gets x$
+\State $N \gets n$
+\While{$N \neq 0$}
+\If{$N$ is even}
+    \State $X \gets X \times X$
+    \State $N \gets \frac{N}{2}$  \Comment{This is a comment}
+\ElsIf{$N$ is odd}
+    \State $y \gets y \times X$
+    \State $N \gets N - 1$
+\EndIf
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Output}
+[table of algorithm output(s)]
+
+%----------------------------------------------------------------------------------------
+%	RISKS
+%----------------------------------------------------------------------------------------
+
+\section{Risks}
+% Overview of what is shared with whom. And possible security issues
+
+\begin{enumerate}
+\item Issue 1
+\item issue 2
+\end{enumerate}
+
+%----------------------------------------------------------------------------------------
+%	VALIDATION
+%----------------------------------------------------------------------------------------
+
+\section{Validation}
+% Compare central vs federated results, preferably public dataset]
+\lstinputlisting[language=Python]{snippets/snip.py}
+
+%----------------------------------------------------------------------------------------
+%	EXAMPLES
+%----------------------------------------------------------------------------------------
+
+\section{Examples}
+[Preferable multiple examples of how to run it from R, python and a plain API call]
+\lstinputlisting[language=R]{snippets/R_example.R}
+\lstinputlisting[language=Python]{snippets/snip.py}
+
+%----------------------------------------------------------------------------------------
+%	BIBLIOGRAPHY
+%----------------------------------------------------------------------------------------
+
+\bibliographystyle{unsrt}
+
+\bibliography{references.bib}
+
+%----------------------------------------------------------------------------------------
+
+\end{document}
