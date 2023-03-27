@@ -96,7 +96,10 @@ RPC_localdev <- function(data,
                                                       theta = ranef)
                                     )
                      )
-    number_of_groups <- length(unique(data[[as.character(lme4::findbars(f)[[1]][[3]])]]))
+
+    groups <- unique(data[[as.character(lme4::findbars(f)[[1]][[3]])]])
+
+    number_of_groups <- length(groups)
 
     res <- as.numeric(iter1@devcomp$cmp["dev"])
 
@@ -107,6 +110,12 @@ RPC_localdev <- function(data,
     attr(res, "family") <- iter1@resp$family
 
     attr(res, "number_of_groups") <- number_of_groups
+
+    intercept <- iter1@u
+
+    names(intercept) <- groups
+
+    attr(res, "intercept") <- intercept
 
     return(res)
 

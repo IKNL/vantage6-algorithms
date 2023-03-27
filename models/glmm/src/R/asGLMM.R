@@ -51,8 +51,13 @@ as.GLMM <- function(result, ..., data=NULL){
     out$logLik <- -0.5 * result$deviance
 
     out$terms <- tt
+
+    out$shrinkage <- result$shrinkage[attributes(out$terms)$predvars.random$levels]
+
     names(dots) <- paste0(c(as.character(names(pars$theta)), as.character(names(pars$beta))))
+
     coef <- as.numeric(dots)
+
     names(coef) <- names(dots)
 
     out$coefficients <- coef

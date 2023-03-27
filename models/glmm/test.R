@@ -38,7 +38,7 @@ y = glmm.mock(datasets=datasets, start=list(theta=start$theta, fixef=start$fixef
               local_eval = "localdev", formula = f,
               family = family, nAGQ = nAGQ)
 
-packaged_result = vtg.glmm::as.GLMM(y, data= df1)
+packaged_result = vtg.glmm::as.GLMM(y, data=df1)
 
 ################################
 ###### Compare with GLMER ######

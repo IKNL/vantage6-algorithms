@@ -59,6 +59,9 @@ concatenate_results <- function(start,
     hessian <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
                                                                  "hessian")))
 
+    intercepts <- Reduce(`c`, lapply(contributers, function(i) attr(nodes[[i]],
+                                                                    "intercept")))
+
     number_of_groups <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
                                                              "number_of_groups")))
 
@@ -67,6 +70,9 @@ concatenate_results <- function(start,
     attr(res, "gradient") <- gradient
 
     attr(res, "hessian") <- hessian
+
+    # attr(res, "intercepts") <- intercepts
+    vtg::set.option("intercepts", intercepts)
 
     vtg::set.option("number_of_groups", number_of_groups)
 

@@ -79,7 +79,8 @@ glmm <- function(client,
         nlm_code = res$code,
         iterations = res$iterations,
         nAGQ = nAGQ,
-        number_of_groups = vtg::get.option("number_of_groups")
+        number_of_groups = vtg::get.option("number_of_groups"),
+        shrinkage = vtg::get.option("intercepts")
     )
 
     vtg::log$debug("Finalized...")
