@@ -1,16 +1,17 @@
 # The Dockerfile tells Docker how to construct the image with your algorithm.
 # Once pushed to a repository, images can be downloaded and executed by the
 # network hubs.
-FROM custom-r-base
+FROM harbor2.vantage6.ai/base/custom-r-base
 
 # This is a placeholder that should be overloaded by invoking
 # docker build with '--build-arg PKG_NAME=...'
-ARG PKG_NAME='algorithm'
+ARG PKG_NAME='vtg.glmm'
 
-LABEL maintainer="Main Tainer <user@example.com>"
+LABEL maintainer="Hasan Alradhi <h.alradhi@iknl.nl>"
 
-# Install federated chisq package
-COPY src /usr/local/R/${PKG_NAME}/
+# Install federated glmm package
+COPY ./models/glmm/src /usr/local/R/${PKG_NAME}/
+
 WORKDIR /usr/local/R/${PKG_NAME}
 RUN Rscript -e 'library(devtools)' -e 'install_deps(".")'
 RUN R CMD INSTALL --no-multiarch --with-keep.source .
@@ -25,4 +26,3 @@ RUN touch database
 # Tell docker to execute `docker.wrapper()` when the image is run.
 ENV PKG_NAME=${PKG_NAME}
 CMD Rscript -e "vtg::docker.wrapper('$PKG_NAME')"
-

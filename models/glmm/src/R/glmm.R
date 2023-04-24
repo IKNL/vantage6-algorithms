@@ -80,7 +80,9 @@ glmm <- function(client,
         iterations = res$iterations,
         nAGQ = nAGQ,
         number_of_groups = vtg::get.option("number_of_groups"),
-        shrinkage = vtg::get.option("intercepts")
+        intercepts = vtg::get.option("intercepts"),
+        modes = vtg::get.option("b"),
+        spherical_modes = vtg::get.option("u")
     )
 
     vtg::log$debug("Finalized...")

@@ -111,11 +111,15 @@ RPC_localdev <- function(data,
 
     attr(res, "number_of_groups") <- number_of_groups
 
-    intercept <- iter1@u
+    intercept <- lme4::ranef(iter1)[[1]][[1]]
 
     names(intercept) <- groups
 
-    attr(res, "intercept") <- intercept
+    attr(res, "intercepts") <- intercept
+
+    attr(res, "conditional_mode_spherical_ranef") <- lme4::getME(iter1, "u")
+
+    attr(res, "condtional_mode_ranef") <- as.numeric(lme4::getME(iter1,"b"))
 
     return(res)
 

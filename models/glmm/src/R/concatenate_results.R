@@ -56,14 +56,21 @@ concatenate_results <- function(start,
 
     gradient <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
                                                                   "gradient")))
+
     hessian <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
                                                                  "hessian")))
 
-    intercepts <- Reduce(`c`, lapply(contributers, function(i) attr(nodes[[i]],
-                                                                    "intercept")))
+    intercepts <- Reduce(`c`, lapply(contributers, function(i)
+        attr(nodes[[i]], "intercepts")))
 
-    number_of_groups <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
-                                                             "number_of_groups")))
+    number_of_groups <- Reduce(`+`, lapply(contributers, function(i)
+        attr(nodes[[i]], "number_of_groups")))
+
+    cond_mode_u <- Reduce(`c`, lapply(contributers, function(i)
+        attr(nodes[[i]], "conditional_mode_spherical_ranef")))
+
+    cond_mode_b <- Reduce(`c`, lapply(contributers, function(i)
+        attr(nodes[[i]], "condtional_mode_ranef")))
 
     res <- deviance
 
@@ -71,10 +78,13 @@ concatenate_results <- function(start,
 
     attr(res, "hessian") <- hessian
 
-    # attr(res, "intercepts") <- intercepts
     vtg::set.option("intercepts", intercepts)
 
     vtg::set.option("number_of_groups", number_of_groups)
+
+    vtg::set.option("u", cond_mode_u)
+
+    vtg::set.option("b", cond_mode_b)
 
     return(res)
 }

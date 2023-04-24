@@ -3,7 +3,7 @@
 #'
 #' @export
 #'
-as.GLMM <- function(result, ..., data=NULL){
+as.GLMM <- function(data=NULL, result, ...){
 
     out <- list("Title" = result[[1]])
 
@@ -44,15 +44,19 @@ as.GLMM <- function(result, ..., data=NULL){
         attr(tt, "predvars.random") <- c(attr(tt, "predvars.random"), attributes(glF$reTrms$flist[[1]]))
     }
 
-    out$model.frame <- glF$fr
+    out$model.frame <- mf
 
     out$deviance <- result$deviance
 
-    out$logLik <- -0.5 * result$deviance
+    out$logLik <- - 0.5 * result$deviance
 
     out$terms <- tt
 
-    out$shrinkage <- result$shrinkage[attributes(out$terms)$predvars.random$levels]
+    out$intercepts <- result$intercepts[attributes(out$terms)$predvars.random$levels]
+
+    out$modes <- result$modes
+
+    out$spherical_modes <- result$spherical_modes
 
     names(dots) <- paste0(c(as.character(names(pars$theta)), as.character(names(pars$beta))))
 
@@ -91,5 +95,5 @@ as.GLMM <- function(result, ..., data=NULL){
 
     class(out) <- c("glmm")
 
-    return(out)
+    # return(out)
 }
