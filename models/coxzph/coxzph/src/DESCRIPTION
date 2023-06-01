@@ -1,0 +1,26 @@
+vantage6-Comment:
+    **************************************************
+    * This file was generated from DESCRIPTION.tpl   *
+    * Please don't modify it directly! Instead,      *
+    * modify DESCRIPTION.tpl and run the following   *
+    * command:                                       *
+    *   make DESCRIPTION                             *
+    **************************************************
+Package: vtg.coxzph
+Type: Package
+Version: 1.0.0
+Title: vtg.coxzph
+Description: This package can be used with the vantage6 federated
+    learning infrastructure (see https://github.com/IKNL/vantage6).
+Encoding: UTF-8
+LazyData: true
+Imports:
+    glue,
+    vtg,
+    survival,
+    dplyr,
+    splines,
+    survminer,
+    vtg.coxph
+Remotes:
+RoxygenNote: 7.2.3
