@@ -115,4 +115,13 @@ dcoxzph <- function(client, fit, time, event, resid=TRUE, se=TRUE, df=4,
         coxfit = coxfit,
         transform = transform
     )
+    vtg::log$info("")
+    vtg::log$info("###############################################")
+    vtg::log$info("# Plotting CoxZPH.")
+    vtg::log$info("###############################################")
+    vtg::log$info("")
+
+    return(coxfit)
+
+
 }
