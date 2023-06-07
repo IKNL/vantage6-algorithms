@@ -18,7 +18,7 @@ test_cox_zph <- function(
         gtest = rowSums(sapply(partials, function(j) j$gtest))
         z <- c(gtest %*% betavar %*% gtest) * length(event_time) / sum2
         z.ph <- rbind(z.ph, c(z, length(beta),1-pchisq(z, length(beta))))
-        dimnames(z.ph) <- list(c(row.names(coxfit$var), "GLOBAL"),
+        dimnames(z.ph) <- list(c(row.names(coxfit$betavar), "GLOBAL"),
                                c( "chisq",'df', "p"))
     }
     SCH=c()
