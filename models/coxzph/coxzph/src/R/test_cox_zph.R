@@ -1,8 +1,7 @@
 #' @export
 test_cox_zph <- function(
         partials=NULL,
-        coxfit,
-        transform) {
+        coxfit) {
     beta=coxfit$beta
     betavar=coxfit$betavar
     event_time = as.numeric(rep(names(coxfit$timevents),coxfit$timevents))
@@ -27,9 +26,13 @@ test_cox_zph <- function(
     sch_residuals=as.matrix(SCH) %*% betavar*nrow(SCH) + rep(as.vector(beta),
                                                              each=nrow(SCH))
     colnames(sch_residuals)=names(SCH)
+    jpeg(filename = "coxzph_plot%03d.jpg", width = 960, height = 960,
+         quality = 70)
     vtg.coxzph::plot_cox_zph(cox_zph = list(event_time=event_time,
                                             sch_residuals=sch_residuals,
                                             beta=beta,
-                                            betavar=betavar))
+                                            betavar=betavar,
+                                            transform=coxfit$transform))
+    dev.off()
     return(round(z.ph,3))
 }

@@ -2,8 +2,7 @@
 #' @importMethodsFrom splines ns
 #' @export
 plot_cox_zph <- function(cox_zph, resid=TRUE, se=TRUE, df=4, num_pts=40,
-                         xlab="Time", ylab="", lty=1:2, col=1, lwd=1,
-                         transform='identity'){
+                         xlab="Time", ylab="", lty=1:2, col=1, lwd=1){
     event_time <- cox_zph$event_time
     sch_residuals <- cox_zph$sch_residuals
     betavar <- cox_zph$betavar
@@ -16,7 +15,7 @@ plot_cox_zph <- function(cox_zph, resid=TRUE, se=TRUE, df=4, num_pts=40,
     pmat <- lmat[1:num_pts,]
     xmat <- lmat[-(1:num_pts),]
     ylab <- paste("Beta(t) for", dimnames(sch_residuals)[[2]])
-    if (transform == 'log') {
+    if (cox_zph$transform == 'log') {
         event_time <- exp(event_time)
         pred.x <- exp(pred.x)
     }
@@ -42,14 +41,14 @@ plot_cox_zph <- function(cox_zph, resid=TRUE, se=TRUE, df=4, num_pts=40,
 
             temp <- 2*sqrt(betavar[i,i]*seval)
             yup <- yhat + temp
-            ylow<- yhat - temp
+            ylow <- yhat - temp
             yr <- range(yr, yup, ylow)
         }
-        if (transform=='identity'){
+        if (cox_zph$transform=='identity'){
             plot(range(event_time), yr, type='n', xlab=xlab, ylab=ylab[i],
                  main="Federated")
         }
-        if (transform=='log'){
+        if (cox_zph$transform=='log'){
             plot(range(event_time[keep]), yr, type='n', xlab=xlab,
                  ylab=ylab[i],log='x',main="Federated")
         }

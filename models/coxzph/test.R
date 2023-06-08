@@ -21,8 +21,10 @@ ylab=""
 lty=1:2
 col=1
 lwd=1
-transform='identity'
+transform='log'
 regfit <- coxph(Surv(time, censor)~drug+age, data=Data,ties="breslow")
+
+Rzph <- cox.zph(regfit,transform = "identity")
 
 path <- "src/data/"
 
@@ -40,4 +42,5 @@ client <- vtg::MockClient$new(datasets, pkgname = "vtg.coxph")
 fit <- vtg.coxph::dcoxph(client, expl_vars, time_col, censor_col)
 
 client <- vtg::MockClient$new(datasets, pkgname = "vtg.coxzph")
-coxzph <- vtg.coxzph::dcoxzph(client, fit = fit, time = time, event = event)
+coxzph <- vtg.coxzph::dcoxzph(client, fit = fit, time = time, event = event,
+                              transform = transform)

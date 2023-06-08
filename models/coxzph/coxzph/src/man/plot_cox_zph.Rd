@@ -14,8 +14,7 @@ plot_cox_zph(
   ylab = "",
   lty = 1:2,
   col = 1,
-  lwd = 1,
-  transform = "identity"
+  lwd = 1
 )
 }
 \description{

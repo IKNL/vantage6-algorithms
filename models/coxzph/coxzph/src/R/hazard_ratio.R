@@ -1,5 +1,5 @@
 #' extract hazard ratio
-#' @importMethodsFrom dplyr left_join
+#' @importMethodsFrom   left_join
 #' @export
 hazard_ratio=function(nodes=NULL, coxfit=NULL){
     if(is.null(nodes))  {

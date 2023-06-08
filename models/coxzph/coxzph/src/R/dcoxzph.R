@@ -1,7 +1,7 @@
 #' @importMethodsFrom glue glue
-dcoxzph <- function(client, fit, time, event, resid=TRUE, se=TRUE, df=4,
-                    num_pts=40, xlab="Time", ylab="", lty=1:2, col=1, lwd=1,
-                    transform='identity'){
+dcoxzph <- function(client, fit, time, event, transform='identity',resid=TRUE,
+                    se=TRUE, df=4,num_pts=40, xlab="Time", ylab="", lty=1:2,
+                    col=1, lwd=1){
 
     vtg::log$debug("Initializing...")
     lgr::threshold("debug")
@@ -36,7 +36,7 @@ dcoxzph <- function(client, fit, time, event, resid=TRUE, se=TRUE, df=4,
     #######################################################################
     # Central Part of algorithm - Global Beta and Betavar
     #######################################################################
-    coxfit <- vtg.coxzph::coxfit(fit)
+    coxfit <- vtg.coxzph::coxfit(fit, transform)
 
     vtg::log$info("")
     vtg::log$info("###############################################")
@@ -112,8 +112,7 @@ dcoxzph <- function(client, fit, time, event, resid=TRUE, se=TRUE, df=4,
     #######################################################################
     coxfit <- vtg.coxzph::test_cox_zph(
         partials = schoenfeld_residuals,
-        coxfit = coxfit,
-        transform = transform
+        coxfit = coxfit
     )
     vtg::log$info("")
     vtg::log$info("###############################################")

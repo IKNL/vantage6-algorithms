@@ -1,7 +1,7 @@
 <img src="https://github.com/IKNL/guidelines/blob/master/resources/logos/iknl_nl.png?raw=true" width=200 align="right">
 
-# Federated Generalized Linear Model
-_Implementation of the federated Generalized Linear Model for horizontally-partitioned data_
+# Federated Cox Z-score PH (CoxZPH)
+_Implementation of the federated Cox Z-score PH (CoxZPH) for horizontally-partitioned data_
 
 <p align="left">
   <a href="#handshake-introduction">Introduction</a> •
@@ -78,7 +78,7 @@ print( client$getCollaborations() )
 # Select a collaboration
 client$setCollaborationId(1)
 
-# vtg.glm contains the function `dglm`.
+# First need to extract analysis from CoxPH model. Assumed this is there. 
 result <- vtg.glm::dglm(client, formula = num_awards ~ prog + math, family='poisson', tol=1e-08, maxit=25)
 ```
 

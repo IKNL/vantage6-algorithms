@@ -12,7 +12,16 @@ RPC_schoenfeld_residuals <- function( #nolint
         })
     schoenfeld <- data[case,row.names(coxfit$beta)]-coxfit$ratio[index_event,]
     ss_res <- (as.matrix(schoenfeld) %*% coxfit$betavar) * length(event_time)
-    diff <- data_at_time - mean(event_time)
+    # diff <- data_at_time - mean(event_time)
+    if(coxfit$transform=='log'){
+        diff=log(data_at_time)-mean(log(event_time))
+    }
+    if(coxfit$transform=='rank'){
+        diff=rank(data_at_time)-mean(rank(event_time))
+    }
+    if(coxfit$transform=='identity'){
+        diff=(data_at_time)-mean((event_time))
+    }
     t_statistic <- diff %*% ss_res
     sx2 <- sum(diff^2)
     schoenfeld_res <- diff %*% as.matrix(schoenfeld)

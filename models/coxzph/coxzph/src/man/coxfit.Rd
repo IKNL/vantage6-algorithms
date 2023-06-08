@@ -4,7 +4,7 @@
 \alias{coxfit}
 \title{Server side, collects the coxfit run by vtg.coxph}
 \usage{
-coxfit(fit)
+coxfit(fit, transform = "identity")
 }
 \value{
 return list with beta coefficients and betavar
