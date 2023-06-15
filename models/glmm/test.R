@@ -13,19 +13,22 @@ tryCatch({
     vtg::writeln("Package 'vantage.infrastructure' already loaded.")
 })
 
-load("src/data/df1.rda")
+# load("src/data/df1.rda")
 # load("src/data/df2.rda")
 
 # datasets <- list(df1, df2)
+data <- lme4::cbpp
+data$obs = 1:nrow(data)
+
 datasets <-
     list(
-        df1 =cbpp[cbpp$herd%in% c(1:5),],
-        df2 =cbpp[cbpp$herd%in% c(6:10),],
-        df3 =cbpp[cbpp$herd%in% c(11:15),]
+        df1 =data[data$herd%in% c(1:5),],
+        df2 =data[data$herd%in% c(6:10),],
+        df3 =data[data$herd%in% c(11:15),]
     )
-start = list(theta=0.1, fixef = c(0.1, 0.1,0.1,0.1))
+start = list(theta=c(0.1,0.1), fixef = c(0.1, 0.1,0.1,0.1))
 # f = awards ~ math+female+prog+(1|cid)
-f = formula(cbind(incidence, size - incidence) ~ period + (1 | herd))
+f = formula(cbind(incidence, size - incidence) ~ period + (1 | herd) + (1|obs))
 family = "binomial"
 nAGQ = 20
 client <- vtg::MockClient$new(datasets, pkgname='vtg.glmm')
@@ -34,16 +37,17 @@ client <- vtg::MockClient$new(datasets, pkgname='vtg.glmm')
 ####### Mock Client Run ########
 ################################
 
-glmm.mock <- function(datasets, start, local_eval, formula, family, nAGQ, ...) {
+glmm.mock <- function(datasets, start, local_eval, formula, family, nAGQ) {
     client <- vtg::MockClient$new(datasets, pkgname='vtg.glmm')
     # client$set.task.image()
-    results <- vtg.glmm::glmm(client, start, local_eval, formula=formula, family=family, nAGQ=nAGQ,...)
+    results <- vtg.glmm::glmm(client=client, start=start, local_eval=local_eval
+                              ,formula=formula, family=family, nAGQ=nAGQ)
     return(results)
 }
 
-y = glmm.mock(datasets=datasets, start=list(theta=start$theta, fixef=start$fixef),
-              local_eval = "localdev", formula = f,
-              family = family, nAGQ = nAGQ)
+y = glmm.mock(datasets=datasets, start=list(theta=start$theta,fixef=start$fixef)
+              ,local_eval = "localdev", formula = f,family = family,
+              nAGQ = nAGQ)
 
 packaged_result = vtg.glmm::as.GLMM(y, data=datasets$df1)
 
@@ -52,8 +56,7 @@ packaged_result = vtg.glmm::as.GLMM(y, data=datasets$df1)
 ################################
 
 
-(gm1 <- glmer(cbind(incidence, size - incidence) ~ period + (1 | herd),
-              data = cbpp, family = binomial, nAGQ = 20, verbose = 2))
+(gm1 <- glmer(formula = f, data = data, family = binomial, nAGQ = 1L, verbose = 2))
 
 
 (adap1 <- mixed_model(fixed =  cbind(incidence, size - incidence) ~ period, random = ~ 1|herd, data=cbpp, family=binomial, control=list("nAGQ" = 20)))

@@ -8,13 +8,17 @@ FROM harbor2.vantage6.ai/base/custom-r-base
 ARG PKG_NAME='vtg.glmm'
 
 LABEL maintainer="Hasan Alradhi <h.alradhi@iknl.nl>"
-
 # Install federated glmm package
 COPY ./models/glmm/src /usr/local/R/${PKG_NAME}/
 
 WORKDIR /usr/local/R/${PKG_NAME}
-RUN Rscript -e 'library(devtools)' -e 'install_deps(".")'
-RUN R CMD INSTALL --no-multiarch --with-keep.source .
+RUN Rscript -e 'install.packages("glue", repos = "http://cran.rstudio.com/")'
+RUN Rscript -e 'install.packages("lme4", repos = "http://cran.rstudio.com/")'
+RUN Rscript -e 'install.packages("usethis", repos = "http://cran.rstudio.com/")'
+RUN Rscript -e 'install.packages("stats", repos = "http://cran.rstudio.com/")'
+RUN Rscript -e 'install.packages("mexhaz", repos = "http://cran.rstudio.com/")'
+RUN Rscript -e 'library(devtools)' -e 'install_github("IKNL/vtg")'
+RUN Rscript -e 'install.packages(".", repos = NULL, type = "source", INSTALL_opts = "--no-multiarch")'
 
 # Change directory to '/app’ and create files that will be
 # used to mount input, output and database.

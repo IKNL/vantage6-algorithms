@@ -34,6 +34,14 @@
 #' @return A Single Iteration of the nAGQ approximation of the minimized
 #' Deviance. Along with this, the gradient and hessian are given as attributes.
 #'
+#' @importFrom lme4 findbars
+#' @importFrom lme4 glmer
+#' @importFrom lme4 getME
+#' @importFrom lgr threshold
+#' @importFrom vtg log
+#' @importFrom numDeriv grad
+#' @importFrom numDeriv hessian
+#'
 #' @export
 #'
 RPC_localdev <- function(data,
@@ -41,87 +49,120 @@ RPC_localdev <- function(data,
                          start,
                          family,
                          nAGQ){
-
-    lgr::threshold('debug')
-
-    vtg::log$debug("Initializing parameters...")
-
+    # lgr::threshold('debug')
+    # log$debug("Initializing parameters...")
     formula <- if(!class(formula) == "formula"){
-
         as.formula(formula)
-
     }else{
-
         formula
-
     }
-
-
-
-    family <- if(!is.null(family)){
-
-        vtg.glmm::get_family(family)
-
-    }else{
-
-        get("gaussian")()
-
-    }
-
-
-    len.theta <- 1
-
-    mixeff <- as.vector(unlist(start, use.names = F))
-
-    beta <- mixeff[(len.theta+1):length(mixeff)]
-
-    ranef <- mixeff[1:len.theta]
-
-    if(is.null(nAGQ)){
-
-        nAGQ <- 20
-
-    }
-
-    vtg::log$debug("Running Objective Deviance...")
-    suppressWarnings(iter1 <- lme4::glmer(formula = formula,
-                                          data = data,
-                                          family = family,
-                                          nAGQ = nAGQ,
-                                          control = glmerControl(
-                                              optimizer = "nlminbwrap",
-                                              optCtrl = list(maxfun=1)
-                                    ),
-                                         start = list(fixef = beta,
-                                                      theta = ranef)
-                                    )
-                     )
-
-    groups <- unique(data[[as.character(lme4::findbars(f)[[1]][[3]])]])
-
+    # family <- if(is.null(family)){
+    #     get_family(family)
+    #
+    # }else{
+    #     get("gaussian")()
+    # }
+    mixeff <- as.vector(unlist(start, use.names = T))
+    ranef <- mixeff[1:length(findbars(formula))]
+    beta <- mixeff[(length(ranef)+1):length(mixeff)]
+    ME <- collect_ME(ranef, beta)
+    re_names = as.character(lapply(findbars(formula), function(i) i[[3]]))
+    groups = sapply(re_names, function(i) unique(data[[i]]))
     number_of_groups <- length(groups)
+    if(number_of_groups > 1){
+        nAGQ = 1L
+    }
+    # log$debug("Running Objective Deviance...")
+    # suppressWarnings(iter1 <- glmer(formula=formula,
+    #                                 data=data,
+    #                                 family=family,
+    #                                 nAGQ=nAGQ,
+    #                                 control=glmerControl(
+    #                                     optimizer="nlminbwrap",
+    #                                     optCtrl=list(maxfun=1)
+    #                                     ),
+    #                                 start=list(fixef=beta,
+    #                                              theta=ranef)))
+    single_iteration <- function(formula, data, family, nAGQ, params){
+        fn <- function(params){
+            suppressWarnings(glmer(formula = formula, data = data,
+                                   family = family,nAGQ = nAGQ,
+                                   control = glmerControl(
+                                       optimizer = "nlminbwrap",
+                                       optCtrl = list(maxfun = 1)
+                                   ), start = list(fixef = params[["beta"]],
+                                                   theta = params[["ranef"]]))
+                             )}
+        execute <- fn(params)
+        out <- execute@devcomp$cmp["dev"]
+        attr(out, "gradient") <- numDeriv::grad(
+            func = function(x) {
+                as.numeric(fn(list(beta = x[(number_of_groups+1):length(x)],
+                                   ranef = x[1:number_of_groups])
+                              )@devcomp$cmp["dev"])
+            },x = unlist(params, use.names = F))
+        attr(out, "hessian") <- numDeriv::hessian(
+            func = function(x) {
+                as.numeric(fn(list(beta = x[(number_of_groups+1):length(x)],
+                                   ranef = x[1:number_of_groups])
+                )@devcomp$cmp["dev"])
+            },x = unlist(params, use.names = F))
+        attr(out, "number_of_groups") <- number_of_groups
+        intercept <- lapply(1:number_of_groups, function(i){
+            lme4::ranef(execute)[[re_names[i]]]}
+        )
+        names(intercept) <- names(groups)
+        attr(out, "intercepts") <- intercept
+        attr(out, "conditional_mode_spherical_ranef") <- getME(execute, "u")
+        attr(out, "condtional_mode_ranef") <- as.numeric(getME(execute,"b"))
+        attr(out, "ME") <- ME
+        attr(out, "nAGQ") <- nAGQ
+        return(out)
+    }
+    return(single_iteration(formula, data, family, nAGQ, start))
+    # groups <- unique(data[[as.character(lme4::findbars(f)[[1]][[3]])]])
 
-    res <- as.numeric(iter1@devcomp$cmp["dev"])
+    # iter1 <- single_iteration(
+    #             formula,
+    #             data,
+    #             family,
+    #             nAGQ,
+    #             beta,
+    #             ranef
+    #         )
+    # res <- as.numeric(iter1@devcomp$cmp["dev"])
+    # attr(res, "gradient") <- iter1@optinfo$derivs$gradient
+    # grad_hess <- client$call("grad_hes", fn=single_iteration, formula=formula,
+    #                          data=data, family=family, nAGQ=nAGQ, beta=beta,
+    #                          ranef=ranef)
 
-    attr(res, "gradient") <- iter1@optinfo$derivs$gradient
+    # attr(res, "gradient") <- function(formula, data, family, nAGQ, beta, ranef){
+    #     numDeriv::grad(single_iteration(formula,data,family,nAGQ,beta,ranef))@devcomp$cmp["dev"]
+    # }
+    # attr(res, "hessian") <- grad_hess$hessian
+    # attr(res, "hessian") <- iter1@optinfo$derivs$Hessian
 
-    attr(res, "hessian") <- iter1@optinfo$derivs$Hessian
 
-    attr(res, "family") <- iter1@resp$family
-
-    attr(res, "number_of_groups") <- number_of_groups
-
-    intercept <- lme4::ranef(iter1)[[1]][[1]]
-
-    names(intercept) <- groups
-
-    attr(res, "intercepts") <- intercept
-
-    attr(res, "conditional_mode_spherical_ranef") <- lme4::getME(iter1, "u")
-
-    attr(res, "condtional_mode_ranef") <- as.numeric(lme4::getME(iter1,"b"))
-
-    return(res)
+    # attr(res, "number_of_groups") <- number_of_groups
+    #
+    # # intercept <- lme4::ranef(iter1)[[1]][[1]]
+    # intercept <- lapply(1:number_of_groups, function(i){
+    #     ranef(iter1)[[re_names[i]]]}
+    #     )
+    #
+    # names(intercept) <- names(groups)
+    #
+    # attr(res, "intercepts") <- intercept
+    #
+    # attr(res, "conditional_mode_spherical_ranef") <- getME(iter1, "u")
+    #
+    # attr(res, "condtional_mode_ranef") <- as.numeric(getME(iter1,"b"))
+    #
+    # attr(res, "ME") <- ME
+    #
+    # attr(res, "nAGQ") <- nAGQ
+    #
+    # return(res)
 
 }
 

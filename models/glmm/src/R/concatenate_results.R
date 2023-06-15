@@ -41,7 +41,9 @@ concatenate_results <- function(start,
                                 nAGQ,
                                 formula){
 
-    vtg::log$debug("Collecting partial results from nodes...")
+    # vtg::log$debug("Collecting partial results from nodes...")
+
+    mixeff <- unlist(start, use.names = T)
 
     len.mix.eff <- length(unlist(start, use.names = F))
 
@@ -72,6 +74,20 @@ concatenate_results <- function(start,
     cond_mode_b <- Reduce(`c`, lapply(contributers, function(i)
         attr(nodes[[i]], "condtional_mode_ranef")))
 
+    ME <- lapply(contributers, function(i) {
+        lapply(attr(nodes[[i]], "ME"), function(j) j[1])
+    })
+
+    fe_assertion <- all.equal(unlist(lapply(ME, function(i) i$N_fe)),
+                              unlist(lapply(ME, function(i) i$N_fe)))
+    re_assertion <- all.equal(unlist(lapply(ME, function(i) i$N_re)),
+                              unlist(lapply(ME, function(i) i$N_re)))
+
+    if(!isTRUE(all(c(fe_assertion, re_assertion)))){
+        stop("The number of random effects and fixed effects must be the same
+             at each site.")
+    }
+
     res <- deviance
 
     attr(res, "gradient") <- gradient
@@ -85,6 +101,10 @@ concatenate_results <- function(start,
     vtg::set.option("u", cond_mode_u)
 
     vtg::set.option("b", cond_mode_b)
+
+    vtg::set.option("N_re", unique(unlist(lapply(ME, function(i) i$N_re))))
+
+    vtg::set.option("N_fe", unique(unlist(lapply(ME, function(i) i$N_fe))))
 
     return(res)
 }

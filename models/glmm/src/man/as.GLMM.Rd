@@ -4,7 +4,7 @@
 \alias{as.GLMM}
 \title{Convert federated glmm output glmm class}
 \usage{
-as.GLMM(result, ..., data = NULL)
+as.GLMM(data = NULL, result, ...)
 }
 \description{
 Convert federated glmm output glmm class

@@ -5,7 +5,6 @@ Title: {{PKG_NAME}}
 Description: This package can be used with the vantage6 federated
     learning infrastructure (see https://github.com/IKNL/vantage6).
 Author:
-    Hadrien Charvat
     Hasan Alradhi
 Encoding: UTF-8
 LazyData: true
@@ -16,6 +15,6 @@ Imports:
     lme4,
     stats,
     foreign,
-    mexhaz
-Remotes:
+    numDeriv
+Remotes: iknl/vtg
 RoxygenNote: 7.0.0
