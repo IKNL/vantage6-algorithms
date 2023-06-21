@@ -1,46 +1,99 @@
-<h1 align="center">
-  <br>
-  <a href="https://vantage6.ai"><img src="https://github.com/IKNL/guidelines/blob/master/resources/logos/vantage6.png?raw=true" alt="vantage6" width="400"></a>
-</h1>
+<img src="https://github.com/IKNL/guidelines/blob/master/resources/logos/iknl_nl.png?raw=true" width=200 align="right">
 
-<h3 align=center> A privacy preserving federated learning solution</h3>
+# Federated Cox Z-score PH (CoxZPH)
+_Implementation of the federated Cox Z-score PH (CoxZPH) for horizontally-partitioned data_
 
---------------------
+<p align="left">
+  <a href="#handshake-introduction">Introduction</a> •
+  <a href="#computer-installation">Installation</a> •
+  <a href="#man_technologist-examples">Examples</a> •
+  <a href="#books-documentation">Documentation</a> •
+  <a href="#building_construction-builds">Builds</a> •
+  <a href="#balance_scale-validation">Validation</a> •
+  <a href="#spiral_notepad-notes">Notes</a> •
+  <a href="#black_nib-references">References</a>
+</p>
 
-# v6-boilerplate-py
-This algoithm is part of the [vantage6](https://vantage6.ai) solution. Vantage6 allowes to execute computations on federated datasets. This repository provides a boilerplate for new algorithms.
+-----------------------------------------------------------------------------------------------------
 
-## Usage
-First clone the repository.
-```bash
-# Clone this repository
-git clone https://github.com/IKNL/v6-boilerplate-py
+## :handshake: Introduction
+This repository includes an implementation of the federated Cox Z-score PH for horizontally partitioned data.
+
+Cox Z-score PH is a useful tool for validating the proportionality assumption under the Cox regression via a (Schoenfeld) residual-plot. 
+
+The algorithm is implemented in R and can be easily used in R as well.
+
+## :computer: Installation
+### :bar_chart: R
+Run the following in the R console to install the package and its dependencies:
+
+```R
+# install devtools if haven't got it already
+install.packages("devtools")
+
+# This also installs the package vtg
+devtools::install_github(repo='iknl/vantage6-algorithms', ref='coxzph', subdir='models/coxzph/src')
+
+# It is also a requirement to install the `coxph` package
+devtools::install_github(repo='iknl/vantage6-algorithms', ref='coxph', subdir='models/coxph/src')
+
+# This will become the following in the future (when the coxzph/coxph branch is merged)
+devtools::install_github('iknl/vantage6-algorithms', subdir='models/coxzph/src')
+devtools::install_github('iknl/vantage6-algorithms', subdir='models/coxph/src')
 ```
-Rename the directories to something that fits your algorithm, we use the convention `v6-{name}-{language}`. Then you can edit the following files:
 
-### Dockerfile
-Update the `ARG PKG_NAME=...` to the name of your algorithm (preferable the same as the directory name).
+## :man_technologist: Examples
+In order to run the following examples, you need to have prepared:
+* A vantage6 server
+* A user
+* A collaboration with 3 organizations and 3 nodes
 
-### LICENCE
-Determine which license suits your project.
+Additionally, each node should host and have configured the datasets `data_1.csv`, `data_2.csv`, `data_3.csv` which you can find in iknl/vantage6-algorithms/models/coxzph/src/data.
 
-### `{algorithm_name}/__init__.py`
-Contains all the methods that can be called at the nodes. All __regular__ definitions in this file that have the prefix `RPC_` are callable by an external party. If you define a __master__ method, it should *not* contain the prefix! The __master__ and __regular__ definitions both have there own signature. __Master__ definitions have a __client__ and __data__ argument (and possible some other arguments), while the __regular__ definition only has the __data__ argument. The data argument is a [pandas dataframe](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html?highlight=dataframe#pandas.DataFrame) and the client argument is a `ClientContainerProtocol` or `ClientMockProtocol` from the [vantage6-toolkit](https://github.com/IKNL/vantage6-toolkit). The master and regular definitions signatures should look like:
-```python
-def some_master_name(client, data, *args, **kwargs):
-    # do something
-    pass
+### :bar_chart: R
+```R
+rm(list=ls(all.names=T));set.seed(1234L);
+library(vtg);library(vtg.coxzph);library(vtg.coxph);
 
-def RPC_some_regular_method(data, *args, **kwargs):
-    # do something
-    pass
+setup.client <- function() {
+  # Define parameters
+  username <- 'admin'
+  password <- 'password'
+  host <- 'http://127.0.0.1:5000'
+  api_path <- ''
+
+  # Create the client
+  client <- vtg::Client$new(host, api_path=api_path)
+  client$authenticate(username, password)
+
+  return(client)
+}
+
+# Create a client
+client <- setup.client()
+
+# Select a collaboration
+client$setCollaborationId(1)
+
+# Setup some variables for analysis... 
+time='time';event='censor';transform='log';expl_vars=c("drug", "age"); time_col=c("censor");
+
+# First need to extract analysis from CoxPH model. Assumed this is there. 
+coxfit <- vtg.coxph::dcoxph(client, expl_vars = expl_vars, time_col = time_col, censor_col = censor_col)
+# Run CoxZPH based of the coxfit
+result <- vtg.coxzph::dcoxzph(client, fit = coxfit, time = time, event = event, transform = transform)
 ```
 
-### setup.py
-In order for the Docker image to find the methods the algorithm needs to be installable. Make sure the *name* matches the `ARG PKG_NAME` in the Dockerfile.
+## :building_construction: Builds
+This repository is automatically built into a Docker image and pushed to our Docker image registry `harbor2.vantage6.ai`.
+If this is the `main` branch the image will be uploaded with the `latest` tag.
 
-## Read more
-See the [documentation](https://docs.vantage6.ai/) for detailed instructions on how to install and use the server and nodes.
+```
+harbor2.vantage6.ai/algorithms/coxzph:latest
+```
 
-------------------------------------
-> [vantage6](https://vantage6.ai)
+In case the `coxzph` branch is used the image is built and tagged with the shortened commit hash.
+
+```
+harbor2.vantage6.ai/algorithms/coxzph:COMMIT_HASH
+```
