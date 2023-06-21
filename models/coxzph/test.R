@@ -10,8 +10,7 @@ tryCatch({
 
 Data <- read.table("https://stats.idre.ucla.edu/stat/r/examples/asa/hmohiv.csv"
                    , sep=",", header = TRUE)
-time='time'
-event='censor'
+time='time';event='censor';
 resid=TRUE
 se=TRUE
 df=4
