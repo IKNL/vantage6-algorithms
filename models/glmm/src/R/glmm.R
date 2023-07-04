@@ -51,7 +51,7 @@ glmm <- function(client,
     res <- stats::nlm(f = vtg.glmm::concatenate_results, p=mixeff,
                client = client, local_eval = local_eval,
                formula=formula, family = family, nAGQ = nAGQ,
-               hessian = TRUE, iterlim = 30, print.level =2,
+               hessian = TRUE, iterlim = 30, print.level = 2,
                check.analyticals = T)
 
     family <- vtg.glmm::get_family(family)
@@ -61,7 +61,7 @@ glmm <- function(client,
         paste("Generalized linear mixed model fit by minimized deviance",
               sprintf("(Adaptive Gauss-Hermite Quadrature, nAGQ = %d)", nAGQ)),
         deviance = res$minimum,
-        fixed_effects = res$estimate[get.option("N_re")+1:length(mixeff)],
+        fixed_effects = res$estimate[vtg::get.option("N_re")+1:length(mixeff)],
         random_effect = res$estimate[1:vtg::get.option("N_re")],
         gradient = res$gradient,
         hessian = res$hessian,

@@ -47,8 +47,18 @@ concatenate_results <- function(start,
 
     len.mix.eff <- length(unlist(start, use.names = F))
 
-    nodes <- client$call(local_eval, start=start, family=family,
-                         formula=formula, nAGQ=nAGQ)
+    vtg::log$debug("Running GLM on fixed effects to find init params...")
+
+    # fe_term_init <- client$call("initparams", formula_str=formula, family=family)
+
+    # contributers <- seq(length(fe_term_init))
+
+    # fe_term_init <- Reduce(`mean`, lapply(contributers, function(i){
+        # fe_term_init}))
+
+    nodes <- client$call(local_eval, start = start,
+        family=family, formula=formula,
+        nAGQ=nAGQ)
 
     contributers <- seq(length(nodes))
 

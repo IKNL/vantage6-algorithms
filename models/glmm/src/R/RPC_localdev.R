@@ -83,6 +83,8 @@ RPC_localdev <- function(data,
     #                                     ),
     #                                 start=list(fixef=beta,
     #                                              theta=ranef)))
+
+    ## I want to run normal GLM
     single_iteration <- function(formula, data, family, nAGQ, params){
         fn <- function(params){
             suppressWarnings(glmer(formula = formula, data = data,
@@ -113,8 +115,10 @@ RPC_localdev <- function(data,
         )
         names(intercept) <- names(groups)
         attr(out, "intercepts") <- intercept
-        attr(out, "conditional_mode_spherical_ranef") <- getME(execute, "u")
-        attr(out, "condtional_mode_ranef") <- as.numeric(getME(execute,"b"))
+        attr(out, "conditional_mode_spherical_ranef") <- lme4::getME(execute,
+                                                                     "u")
+        attr(out, "condtional_mode_ranef") <- as.numeric(lme4::getME(execute,
+                                                                     "b"))
         attr(out, "ME") <- ME
         attr(out, "nAGQ") <- nAGQ
         return(out)
