@@ -11,6 +11,7 @@
 #' @param family family type, Gaussian is used by default
 #' @param tol tolerance level
 #' @param maxit maximum number of iterations
+#' @param organizations_to_include specify which organizations to run the task in
 #'
 #' @return A GLM model in a dict format. To convert it to a GLM model which
 #'  can be used by R, use the `vtg.glm::as.GLM(output)` to convert it.
@@ -20,7 +21,7 @@
 #' @author van Gestel, A.
 #'
 dglm <- function(client, formula, dstar=NULL, types=NULL, family=gaussian,
-                 tol=1e-08, maxit=25) {
+                 tol=1e-08, maxit=25, organizations_to_include=NULL) {
 
     vtg::log$debug("Initializing...")
     lgr::threshold("debug")
@@ -29,7 +30,42 @@ dglm <- function(client, formula, dstar=NULL, types=NULL, family=gaussian,
     # will do nothing. This is needed when Python (or other langauges) is used
     # as a client.
     formula <- as.formula(formula)
+  
+    # Update the client organizations according to those specified
+    if (!is.null(organizations_to_include)) {
+        vtg::log$info("Sending tasks only to specified organizations")
+        organisations_in_collaboration = client$collaboration$organizations
 
+        # Clear the current list of organisations in the collaboration
+        # Will remove them for current task, not from actual collaboration
+        client$collaboration$organizations <- list()
+
+        # Reshape list when the organizations_to_include is not already a list
+        # Relevant when e.g., Python is used as client
+        if (!is.list(organizations_to_include)){
+            organisations_to_use <- toString(organizations_to_include)
+
+            # Remove leading and trailing spaces as in python list
+            organisations_to_use <-
+                gsub(" ", "", organisations_to_use, fixed=TRUE)
+
+            # Convert to list assuming it is comma separated
+            organisations_to_use <-
+                as.list(strsplit(organisations_to_use, ",")[[1]])
+        }
+
+        # Loop through the organisation ids in the collaboration
+        for (organisation in organisations_in_collaboration) {
+
+            # Include the organisations only when desired
+            if (organisation$id %in% organisations_to_use) {
+
+                client$collaboration$organizations[[length(client$collaboration$organizations)+1]] <-
+                    organisation
+            }
+        }
+    }
+  
     # Run in a MASTER container. Note that this will call this method but then
     # within a Docker container. The client used here below has set the
     # property `use.master.container` set to `False`, therefore it will skip
