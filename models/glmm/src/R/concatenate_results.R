@@ -1,15 +1,15 @@
 #' "Server-side" function that collects partial results from the individual
 #' nodes.
 #'
-#' @param start List of starting values for the Random Effect Term and the
+#' @param params List of starting values for the Random Effect Term and the
 #' Fixed Effect Term(s). Note that one should invoke the list in the following
-#' manner: start = list(theta = x, fixef = y) where `x` is a single value, and
+#' manner: params = list(ranef = x, fixef = y) where `x` is a single value, and
 #' `y` can be a vector of starting values depending on how many fixed effects
 #' are included in the model.
 #'
 #' @param local_eval String, RPC call to run a single iteration of
 #' the `lme4::glmer` function. This evaluates the deviance at the supplied set
-#' of starting values given by the `start` parameter via the Adaptive Gauss
+#' of starting values given by the `params` parameter via the Adaptive Gauss
 #' Hermite Quadrature Scheme.
 #'
 #' @param vtg::Client instance, provided by the node
@@ -34,7 +34,7 @@
 #'
 #' @export
 #'
-concatenate_results <- function(start,
+concatenate_results <- function(params,
                                 local_eval,
                                 client,
                                 family,
@@ -43,9 +43,9 @@ concatenate_results <- function(start,
 
     # vtg::log$debug("Collecting partial results from nodes...")
 
-    mixeff <- unlist(start, use.names = T)
+    mixeff <- unlist(params, use.names = T)
 
-    len.mix.eff <- length(unlist(start, use.names = F))
+    len.mix.eff <- length(unlist(params, use.names = F))
 
     vtg::log$debug("Running GLM on fixed effects to find init params...")
 
@@ -56,7 +56,7 @@ concatenate_results <- function(start,
     # fe_term_init <- Reduce(`mean`, lapply(contributers, function(i){
         # fe_term_init}))
 
-    nodes <- client$call(local_eval, start = start,
+    nodes <- client$call(local_eval, params = params,
         family=family, formula=formula,
         nAGQ=nAGQ)
 
@@ -66,11 +66,11 @@ concatenate_results <- function(start,
 
     deviance <- Reduce(`+`, lapply(contributers, function(i) nodes[[i]][1]))
 
-    gradient <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
-                                                                  "gradient")))
-
-    hessian <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
-                                                                 "hessian")))
+    # gradient <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
+    #                                                               "gradient")))
+    #
+    # hessian <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
+    #                                                              "hessian")))
 
     intercepts <- Reduce(`c`, lapply(contributers, function(i)
         attr(nodes[[i]], "intercepts")))
@@ -100,9 +100,9 @@ concatenate_results <- function(start,
 
     res <- deviance
 
-    attr(res, "gradient") <- gradient
-
-    attr(res, "hessian") <- hessian
+    # attr(res, "gradient") <- gradient
+    #
+    # attr(res, "hessian") <- hessian
 
     vtg::set.option("intercepts", intercepts)
 

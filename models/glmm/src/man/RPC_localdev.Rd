@@ -4,7 +4,7 @@
 \alias{RPC_localdev}
 \title{RPC call for single iteration of nAGQ procedure to find minimized Deviance.}
 \usage{
-RPC_localdev(data, formula, start, family, nAGQ)
+RPC_localdev(data, formula, params, family, nAGQ)
 }
 \arguments{
 \item{data}{Dataframe containing the data which is automatically supplied by
@@ -16,18 +16,18 @@ on the left hand side of a '~' operator and the independent variables that
 follow must be separated with a '+' operator. The random effect term must
 be distinguished by a vertical bar '|'.}
 
-\item{start}{List of starting values for the Random Effect Term and the
-Fixed Effect Term(s). Note that one should invoke the list in the following
-manner: start = list(theta = x, fixef = y) where `x` is a single value, and
-`y` can be a vector of starting values depending on how many fixed effects
-are included in the model.}
-
 \item{family}{Family type, if non is supplied then Gaussian Family is used.}
 
 \item{nAGQ}{Integer Scalar of the number of points per axis for evaluating
 the Adaptive Gauss Hermite Quadrature approximation to the log-likelihood.
 The default number we take is 10, but this can go up to 25 or as few as 1.
 The latter will simply be the Laplace Approximation of the Deviance.}
+
+\item{start}{List of starting values for the Random Effect Term and the
+Fixed Effect Term(s). Note that one should invoke the list in the following
+manner: start = list(theta = x, fixef = y) where `x` is a single value, and
+`y` can be a vector of starting values depending on how many fixed effects
+are included in the model.}
 
 \item{len.theta}{Integer Scalar- since the current implementation of the
 Adaptive Gauss Hermite Quadrature Scheme used in glmer only allows for one

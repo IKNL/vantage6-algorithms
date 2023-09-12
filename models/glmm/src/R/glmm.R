@@ -5,15 +5,15 @@
 #'
 #' @param vtg::Client instance, provided by the node
 #'
-#' @param start List of starting values for the Random Effect Term and the
+#' @param params List of starting values for the Random Effect Term and the
 #' Fixed Effect Term(s). Note that one should invoke the list in the following
-#' manner: start = list(theta = x, fixef = y) where `x` is a single value, and
+#' manner: params = list(theta = x, fixef = y) where `x` is a single value, and
 #' `y` can be a vector of starting values depending on how many fixed effects
 #' are included in the model.
 #'
 #' @param local_eval String, RPC call to run a single iteration of
 #' the `lme4::glmer` function. This evaluates the deviance at the supplied set
-#' of starting values given by the `start` parameter via the Adaptive Gauss
+#' of starting values given by the `params` parameter via the Adaptive Gauss
 #' Hermite Quadrature Scheme.
 #'
 #' @param family Family type, if non is supplied then Gaussian Family is used.
@@ -34,7 +34,7 @@
 #' @export
 #'
 glmm <- function(client,
-                 start,
+                 params,
                  local_eval,
                  family,
                  nAGQ,
@@ -44,25 +44,24 @@ glmm <- function(client,
 
     vtg::log$debug("Starting...")
 
-    mixeff <- as.vector(unlist(start, use.names = F))
+    mixeff <- as.vector(unlist(params, use.names = F))
 
     vtg::log$debug("Using nlm to optimize GLMM...")
 
     res <- stats::nlm(f = vtg.glmm::concatenate_results, p=mixeff,
                client = client, local_eval = local_eval,
                formula=formula, family = family, nAGQ = nAGQ,
-               hessian = TRUE, iterlim = 30, print.level = 2,
+               hessian = TRUE, iterlim = 1000, print.level = 2,
                check.analyticals = T)
 
     family <- vtg.glmm::get_family(family)
-
     vtg::log$debug("Collected local deviance...")
     output <- list(
         paste("Generalized linear mixed model fit by minimized deviance",
               sprintf("(Adaptive Gauss-Hermite Quadrature, nAGQ = %d)", nAGQ)),
         deviance = res$minimum,
-        fixed_effects = res$estimate[vtg::get.option("N_re")+1:length(mixeff)],
-        random_effect = res$estimate[1:vtg::get.option("N_re")],
+        beta = res$estimate[-1:-(vtg::get.option("N_re"))],
+        ranef = res$estimate[1:(vtg::get.option("N_re"))],
         gradient = res$gradient,
         hessian = res$hessian,
         variance_covariance = solve(0.5*res$hessian),

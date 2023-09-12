@@ -4,18 +4,18 @@
 \alias{glmm}
 \title{Federated Generalized Mixed Effect Function.}
 \usage{
-glmm(client, start, local_eval, family, nAGQ, formula)
+glmm(client, params, local_eval, family, nAGQ, formula)
 }
 \arguments{
-\item{start}{List of starting values for the Random Effect Term and the
+\item{params}{List of starting values for the Random Effect Term and the
 Fixed Effect Term(s). Note that one should invoke the list in the following
-manner: start = list(theta = x, fixef = y) where `x` is a single value, and
+manner: params = list(theta = x, fixef = y) where `x` is a single value, and
 `y` can be a vector of starting values depending on how many fixed effects
 are included in the model.}
 
 \item{local_eval}{String, RPC call to run a single iteration of
 the `lme4::glmer` function. This evaluates the deviance at the supplied set
-of starting values given by the `start` parameter via the Adaptive Gauss
+of starting values given by the `params` parameter via the Adaptive Gauss
 Hermite Quadrature Scheme.}
 
 \item{family}{Family type, if non is supplied then Gaussian Family is used.}

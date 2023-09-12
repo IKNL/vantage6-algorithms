@@ -26,7 +26,7 @@ datasets <-
         df2 =data[data$herd%in% c(6:10),],
         df3 =data[data$herd%in% c(11:15),]
     )
-start = list(theta=c(0.1,0.1), fixef = c(0.1, 0.1,0.1,0.1))
+params = list(ranef=c(0.1,0.1), fixef = c(0.1, 0.1,0.1,0.1))
 # f = awards ~ math+female+prog+(1|cid)
 f = formula(cbind(incidence, size - incidence) ~ period + (1 | herd) + (1|obs))
 family = "binomial"
@@ -37,17 +37,16 @@ client <- vtg::MockClient$new(datasets, pkgname='vtg.glmm')
 ####### Mock Client Run ########
 ################################
 
-glmm.mock <- function(datasets, start, local_eval, formula, family, nAGQ) {
+glmm.mock <- function(datasets, params, local_eval, formula, family, nAGQ) {
     client <- vtg::MockClient$new(datasets, pkgname='vtg.glmm')
     # client$set.task.image()
-    results <- vtg.glmm::glmm(client=client, start=start, local_eval=local_eval
+    results <- vtg.glmm::glmm(client=client, params=params, local_eval=local_eval
                               ,formula=formula, family=family, nAGQ=nAGQ)
     return(results)
 }
 
-y = glmm.mock(datasets=datasets, start=list(theta=start$theta,fixef=start$fixef)
-              ,local_eval = "localdev", formula = f,family = family,
-              nAGQ = nAGQ)
+y = glmm.mock(datasets = datasets, params = params ,local_eval = "localdev",
+              formula = f,family = family, nAGQ = nAGQ)
 
 packaged_result = vtg.glmm::as.GLMM(y, data=datasets$df1)
 
