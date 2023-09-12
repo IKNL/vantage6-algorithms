@@ -62,10 +62,11 @@ dcoxph <- function(client, expl_vars, time_col, censor_col) {
     # z_hat: vector of same length m
     # Need to jump through a few hoops because apply simplifies a matrix
     # with one row to a numeric (vector) :@
-    z_hat <- list.to.matrix(summed_zs)
-    z_hat <- apply(z_hat, 2, as.numeric)
-    z_hat <- matrix(z_hat, ncol=m, dimnames=list(NULL, expl_vars))
-    z_hat <- colSums(z_hat)
+    # z_hat <- list.to.matrix(summed_zs)
+    # z_hat <- apply(z_hat, 2, as.numeric)
+    # z_hat <- matrix(z_hat, ncol=m, dimnames=list(NULL, expl_vars))
+    # z_hat <- colSums(z_hat)
+    z_hat <- Reduce(`+`, summed_zs)
 
     # Initialize the betas to 0 and start iterating
     vtg::log$debug("Starting iterations ...")

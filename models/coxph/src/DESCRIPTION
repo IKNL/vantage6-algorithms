@@ -3,7 +3,7 @@ Vantage-Comment:
     * This file was generated from DESCRIPTION.tpl *
     * Please don't modify it directly!             *
     ************************************************
-Package: vtg.coxph
+Package: coxph
 Type: Package
 Version: 0.1.0
 Title: Cox Proportional Hazards implementation for the vantage6 infrastructure
