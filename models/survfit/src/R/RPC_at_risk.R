@@ -14,3 +14,4 @@ RPC_at_risk=function(data,master,stratum=NULL){
     for(i in 2:length(times)) n.at.risk=c(n.at.risk,n.at.risk[i-1]-(n.event[i-1]+n.censor[i-1]))
     return(list(n.at.risk=n.at.risk,event=sum(n.event)))
 }
+#lapply(dataset, RPC_at_risk,master=master,stratum=stratum)

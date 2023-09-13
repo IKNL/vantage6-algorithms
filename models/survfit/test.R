@@ -9,7 +9,7 @@ tryCatch({
     vtg::writeln("Package 'vantage.infrastructure' already loaded.")
 })
 
-library(vtg.basic)
+library(vtg.survfit)
 
 dataset=list(vtg.survfit::D1,vtg.survfit::D2,vtg.survfit::D3)
 

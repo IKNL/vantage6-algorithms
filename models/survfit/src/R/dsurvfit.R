@@ -67,7 +67,7 @@ dsurvfit=function(client,formula,conf.int=0.95,conf.type='log',timepoints=NULL,p
             master=master,
             stratum=stratum
         )
-        master=vtg.survfit::serv_at_risk(nodes = node_at_risk,master=master)
+        master=serv_at_risk(nodes = node_at_risk,master=master)
 
         vtg::log$info("RPC KM surv")
         node_KMsurv <- client$call(
