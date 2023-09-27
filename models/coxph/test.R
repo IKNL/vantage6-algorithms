@@ -26,4 +26,5 @@ ties <- "breslow"
 
 # First... #
 client <- vtg::MockClient$new(datasets, pkgname = "vtg.coxph")
-fit <- vtg.coxph::dcoxph(client, expl_vars, time_col, censor_col)
+fit <- vtg.coxph::dcoxph(client, expl_vars, time_col, censor_col,
+                         organizations_to_include = list(1,2))

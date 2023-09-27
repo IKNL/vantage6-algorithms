@@ -4,7 +4,13 @@
 \alias{dcoxph}
 \title{Run the distributed CoxPH algorithm.}
 \usage{
-dcoxph(client, expl_vars, time_col, censor_col)
+dcoxph(
+  client,
+  expl_vars,
+  time_col,
+  censor_col,
+  organizations_to_include = NULL
+)
 }
 \description{
 Params:
@@ -14,6 +20,9 @@ Params:
      time_col: name of the column that contains the event/censor times
      censor_col: name of the column that explains whether an event occurred
                  or the patient was censored
+     organizations_to_include: either NULL meaning all  participating
+                               organisations or select organisation ids;
+                               must be list of id(s).
 }
 \details{
 Return:
