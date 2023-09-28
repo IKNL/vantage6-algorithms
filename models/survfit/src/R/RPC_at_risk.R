@@ -1,4 +1,4 @@
-RPC_at_risk=function(data,master,stratum=NULL){
+RPC_at_risk <- function(data,master,stratum=NULL){
     time=master$time
     event=master$event
     if(!is.na(master$strata)){

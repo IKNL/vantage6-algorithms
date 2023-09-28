@@ -47,7 +47,7 @@ dsurvfit=function(client,formula,conf.int=0.95,conf.type='log',timepoints=NULL,p
     }
     # initialization variables
     vars=all.vars(formula)
-    KM=function(vars,stratum=NULL){
+    KM <- function(vars,stratum=NULL){
         master=list(time=vars[1],event=vars[2],strata=vars[3],conf.int=conf.int,conf.type=conf.type,timepoints=timepoints)
         if(is.null(timepoints)){
             vtg::log$info("RPC Time")
@@ -104,11 +104,9 @@ dsurvfit=function(client,formula,conf.int=0.95,conf.type='log',timepoints=NULL,p
     Tab=as.table(t(Tab))
     row.names(Tab)=names(master)
     colnames(Tab)=c('n','events','median','0.95LCL','0.95UCL')
-    print(Tab)
     master$Tab=Tab
-
     vtg.survfit::plotKM(master,plotCI = plotCI)
-
+    print(master$Tab)
     vtg::log$debug("  - [DONE]")
     return(master)
 }

@@ -20,7 +20,7 @@ timepoints=NULL
 plotCI=T
 #timepoints = seq(0,1000,20)
 
-survfit.mock=function(dataset,formula,conf.type,conf.int,timepoints,plotCI){
+survfit.mock <- function(dataset,formula,conf.type,conf.int,timepoints,plotCI){
     client=vtg::MockClient$new(datasets = dataset,pkgname = 'vtg.survfit')
     result=vtg.survfit::dsurvfit(client = client,
                                  formula=formula,
