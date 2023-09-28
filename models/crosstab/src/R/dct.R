@@ -10,10 +10,48 @@
 #'
 #' @export
 #'
-dct <- function(client, f){
+dct <- function(client, f, organizations_to_include = NULL){
 
     vtg::log$debug("Initializing...")
     lgr::threshold("debug")
+
+    image.name <- "harbor2.vantage6.ai/starter/crosstab:latest"
+
+    client$set.task.image(
+        image.name,
+        task.name="crosstab"
+    )
+
+    # Update the client organizations according to those specified
+    if (!is.null(organizations_to_include)) {
+
+        vtg::log$info("Sending tasks only to specified organizations")
+        organisations_in_collaboration = client$collaboration$organizations
+        # Clear the current list of organisations in the collaboration
+        # Will remove them for current task, not from actual collaboration
+        client$collaboration$organizations <- list()
+        # Reshape list when the organizations_to_include is not already a list
+        # Relevant when e.g., Python is used as client
+        if (!is.list(organizations_to_include)){
+            organisations_to_use <- toString(organizations_to_include)
+
+            # Remove leading and trailing spaces as in python list
+            organisations_to_use <-
+                gsub(" ", "", organisations_to_use, fixed=TRUE)
+
+            # Convert to list assuming it is comma separated
+            organisations_to_use <-
+                as.list(strsplit(organisations_to_use, ",")[[1]])
+        }
+        # Loop through the organisation ids in the collaboration
+        for (organisation in organisations_in_collaboration) {
+            # Include the organisations only when desired
+            if (organisation$id %in% organisations_to_use) {
+                client$collaboration$organizations[[length(
+                    client$collaboration$organizations)+1]] <- organisation
+            }
+        }
+    }
 
     ct <- init_formula(f)
 
