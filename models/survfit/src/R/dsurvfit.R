@@ -140,7 +140,7 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
 
     ######################################
 
-    Tab=sapply(1:length(master), function(i){
+    Tab <- sapply(1:length(master), function(i){
         med=which(master[[i]]$surv<=.5)[1]
         medL=which(master[[i]]$lower<=.5)[1]
         medU=which(master[[i]]$upper<=.5)[1]
@@ -153,8 +153,12 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
     row.names(Tab)=names(master)
     colnames(Tab)=c('n','events','median','0.95LCL','0.95UCL')
     master$Tab=Tab
-    vtg.survfit::plotKM(master, plotCI = plotCI)
     print(master$Tab)
+    jpeg(filename = "plotKM_plot%03d.jpg", width = 960, height = 960,
+         quality = 100)
+    vtg.survfit::plotKM(master, plotCI = plotCI)
+    dev.off()
     vtg::log$debug("  - [DONE]")
-    return(master)
+    return(master$Tab)
+
 }

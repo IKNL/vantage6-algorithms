@@ -23,5 +23,10 @@ serv_KM=function(nodes=NULL,master=NULL){
         master$lower=exp(-exp(log(-log(surv)) - std.err/surv/log(surv) * qnorm(1-(1-master$conf.int)/2)))
         master$upper=exp(-exp(log(-log(surv)) + std.err/log(surv) * qnorm(1-(1-master$conf.int)/2)))
     }
+    master$upper = ifelse(master$upper > 1, 1, master$upper)
+    master$upper = ifelse(master$upper < 0, 0, master$upper)
+    master$lower = ifelse(master$lower > 1, 1, master$lower)
+    master$lower = ifelse(master$lower < 0, 0, master$lower)
+
     return(master)
 }
