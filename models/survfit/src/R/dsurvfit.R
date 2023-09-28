@@ -15,8 +15,11 @@
 #' @author Alradhi, H.
 #' @author Martin, F.
 #'
+#' @export
+#'
+dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
+                     timepoints=NULL,plotCI=F){
 
-dsurvfit=function(client,formula,conf.int=0.95,conf.type='log',timepoints=NULL,plotCI=F){
     vtg::log$debug("Initializing...")
     lgr::threshold("debug")
 
@@ -48,7 +51,9 @@ dsurvfit=function(client,formula,conf.int=0.95,conf.type='log',timepoints=NULL,p
     # initialization variables
     vars=all.vars(formula)
     KM <- function(vars,stratum=NULL){
-        master=list(time=vars[1],event=vars[2],strata=vars[3],conf.int=conf.int,conf.type=conf.type,timepoints=timepoints)
+        master=list(time=vars[1],event=vars[2],strata=vars[3],
+                    conf.int=conf.int,conf.type=conf.type,
+                    timepoints=timepoints)
         if(is.null(timepoints)){
             vtg::log$info("RPC Time")
             node_time <- client$call(
@@ -93,19 +98,21 @@ dsurvfit=function(client,formula,conf.int=0.95,conf.type='log',timepoints=NULL,p
     }
 
     ######################################
+
     Tab=sapply(1:length(master), function(i){
         med=which(master[[i]]$surv<=.5)[1]
         medL=which(master[[i]]$lower<=.5)[1]
         medU=which(master[[i]]$upper<=.5)[1]
         tab=c(master[[i]]$n.at.risk[1],master[[i]]$n.events,
-              master[[i]]$times[med],master[[i]]$times[medL],master[[i]]$times[medU])
+              master[[i]]$times[med],master[[i]]$times[medL],
+              master[[i]]$times[medU])
         return(tab)
     })
     Tab=as.table(t(Tab))
     row.names(Tab)=names(master)
     colnames(Tab)=c('n','events','median','0.95LCL','0.95UCL')
     master$Tab=Tab
-    vtg.survfit::plotKM(master,plotCI = plotCI)
+    vtg.survfit::plotKM(master, plotCI = plotCI)
     print(master$Tab)
     vtg::log$debug("  - [DONE]")
     return(master)

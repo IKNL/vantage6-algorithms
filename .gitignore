@@ -360,3 +360,6 @@ TSWLatexianTemp*
 
 # Ignore plot files
 *.pdf
+
+# Ignore make .DS_Store
+*.DS_Store
