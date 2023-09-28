@@ -11,4 +11,5 @@ Imports:
     vtg,
     stats
 Remotes:
+    iknl/vtg
 RoxygenNote: 7.1.0

@@ -9,6 +9,8 @@
 #' var_cat which belong to the data. In other words, frequency distribution
 #' per categorical variable.
 #'
+#' @export
+#'
 RPC_CT <- function(data, master){
     for (i in all.vars(master$formula)) {
         data[,i] = factor(data[,i],levels = master$var_cat[[i]])
