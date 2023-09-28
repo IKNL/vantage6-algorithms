@@ -26,7 +26,7 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
     vtg::log$debug("Initializing...")
     lgr::threshold("debug")
 
-    image.name <- "harbor2.vantage6.ai/starter/vtg.survfit:latest"
+    image.name <- "harbor2.vantage6.ai/starter/survfit:latest"
 
     client$set.task.image(
         image.name,
