@@ -23,7 +23,7 @@ dcoxph <- function(client, expl_vars, time_col, censor_col,
     MAX_COMPLEXITY = 250000
     USE_VERBOSE_OUTPUT = getOption('vtg.verbose_output', F)
 
-    image.name <- "harbor2.vantage6.ai/starter/vtg.coxph:latest"
+    image.name <- "harbor2.vantage6.ai/starter/coxph:latest"
 
     client$set.task.image(
         image.name,
