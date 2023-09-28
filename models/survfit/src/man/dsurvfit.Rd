@@ -10,7 +10,8 @@ dsurvfit(
   conf.int = 0.95,
   conf.type = "log",
   timepoints = NULL,
-  plotCI = F
+  plotCI = F,
+  organizations_to_include = NULL
 )
 }
 \arguments{
@@ -27,6 +28,9 @@ E.g.: dependant_variable ~ explanatory_variable(i) + ...}
 \item{timepoints}{time points to calculate KM (bins instead of individual time point)}
 
 \item{plotCI}{True if the researcher wants to plot Confidence Interval for the KM curves}
+
+\item{organizations_to_include}{either NULL meaning all participating organizations
+or select organizations ids; must be list of id(s)}
 }
 \value{
 for each strata returns a table with (n events median 0.95LCL 0.95UCL) KM plot and ...
