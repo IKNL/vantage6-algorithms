@@ -26,13 +26,16 @@ test_cox_zph <- function(
     sch_residuals=as.matrix(SCH) %*% betavar*nrow(SCH) + rep(as.vector(beta),
                                                              each=nrow(SCH))
     colnames(sch_residuals)=names(SCH)
-    jpeg(filename = "coxzph_plot%03d.jpg", width = 960, height = 960,
-         quality = 70)
+    # jpeg(filename = "coxzph_plot%03d.jpg", width = 960, height = 960,
+    #      quality = 70)
+    jpeg(plot <- tempfile(fileext = ".jpg"), width=960, height=960, quality=70)
     vtg.coxzph::plot_cox_zph(cox_zph = list(event_time=event_time,
                                             sch_residuals=sch_residuals,
                                             beta=beta,
                                             betavar=betavar,
                                             transform=coxfit$transform))
     dev.off()
-    return(round(z.ph,3))
+    txt <- RCurl::base64Encode(readBin(plot, "raw", file.info(plot)[1, "size"])
+                               , "txt")
+    return(list(z=round(z.ph,3), imgtxt=txt))
 }
