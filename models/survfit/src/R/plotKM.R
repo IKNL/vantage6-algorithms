@@ -13,7 +13,7 @@ plotKM <- function(master,plotCI=F){
         }
     }
     if(length(temp.master)>1){
-        legend('topright',legend = names(temp.master),lty = 2, lwd = 2, cex.axis=2,
+        legend('topright',legend = names(temp.master),lty = 2, lwd = 2,
                col = 1:length(temp.master))
     }
 }

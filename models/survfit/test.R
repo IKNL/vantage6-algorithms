@@ -31,7 +31,7 @@ survfit.mock <- function(dataset,formula,conf.type,conf.int,timepoints,plotCI){
     return(result)
 }
 
-survfit.mock(dataset = dataset,
+res <- survfit.mock(dataset = dataset,
              formula = formula,
              conf.int = conf.int,
              conf.type = conf.type,

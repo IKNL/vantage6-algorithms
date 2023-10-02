@@ -154,11 +154,21 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
     colnames(Tab)=c('n','events','median','0.95LCL','0.95UCL')
     master$Tab=Tab
     print(master$Tab)
-    jpeg(filename = "plotKM_plot%03d.jpg", width = 960, height = 960,
-         quality = 100)
+    # plot <- jpeg(filename = "plotKM_plot%03d.jpg", width = 960, height = 960,
+    #              quality = 100)
+    jpeg(plot <- tempfile(fileext = ".jpg"), width = 960, height = 960, quality = 100)
     vtg.survfit::plotKM(master, plotCI = plotCI)
     dev.off()
     vtg::log$debug("  - [DONE]")
-    return(master$Tab)
+    # read jpeg file
+    # base64 encode
+    # return result to server return master$base64
+    txt <- RCurl::base64Encode(readBin(plot, "raw",
+                                       file.info(plot)[1, "size"]), "txt")
+    master$imgtxt <- txt
+    return(list(
+        Tab=master$Tab,
+        imgtxt=master$imgtxt
+    ))
 
 }
