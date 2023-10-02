@@ -25,9 +25,6 @@ censor_col <- c("censor")
 ties <- "breslow"
 
 # First... #
-client <- vtg::MockClient$new(datasets, pkgname = "vtg.coxph")
+client <- vtg::MockClient$new(datasets[[1]], pkgname = "vtg.coxph")
 fit <- vtg.coxph::dcoxph(client, expl_vars, time_col, censor_col,
                          organizations_to_include = NULL)
-
-
-# client <-
