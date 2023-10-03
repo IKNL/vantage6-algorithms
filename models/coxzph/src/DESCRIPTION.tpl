@@ -13,7 +13,6 @@ Imports:
     dplyr,
     splines,
     survminer,
-    vtg.coxph,
     RCurl
 Remotes:
 RoxygenNote: 7.1.0

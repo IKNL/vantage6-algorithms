@@ -30,7 +30,7 @@ test_cox_zph <- function(
     # jpeg(filename = "coxzph_plot%03d.jpg", width = 960, height = 960,
     #      quality = 70)
     jpeg(plot <- tempfile(fileext = ".jpg"), width=960, height=960, quality=70)
-    vtg.coxzph::plot_cox_zph(cox_zph = list(event_time=event_time,
+    plot_cox_zph(cox_zph = list(event_time=event_time,
                                             sch_residuals=sch_residuals,
                                             beta=beta,
                                             betavar=betavar,
