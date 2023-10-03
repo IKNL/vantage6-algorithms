@@ -1,4 +1,6 @@
-# node-side function used further in calculatin of Hazard Ratio.
+#' node-side function used further in calculatin of Hazard Ratio.
+#' @export
+#'
 RPC_ratio=function(data,time,event,coxfit){
     beta=coxfit$beta
     betavar=coxfit$betavar

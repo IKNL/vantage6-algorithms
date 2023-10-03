@@ -1,4 +1,5 @@
 #' @export
+#'
 test_cox_zph <- function(
         partials=NULL,
         coxfit) {

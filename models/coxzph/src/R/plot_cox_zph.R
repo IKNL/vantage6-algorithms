@@ -1,6 +1,7 @@
 #' This plots the Cox Zph and the Schoenfeld Residuals...
 #' @importMethodsFrom splines ns
 #' @export
+#'
 plot_cox_zph <- function(cox_zph, resid=TRUE, se=TRUE, df=4, num_pts=40,
                          xlab="Time", ylab="", lty=1:2, col=1, lwd=1){
     event_time <- cox_zph$event_time

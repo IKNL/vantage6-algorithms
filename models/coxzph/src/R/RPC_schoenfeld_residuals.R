@@ -1,3 +1,5 @@
+#' @export
+#'
 RPC_schoenfeld_residuals <- function( #nolint
         data,
         time,

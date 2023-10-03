@@ -1,4 +1,6 @@
 #' @importMethodsFrom glue glue
+#' @export
+#'
 dcoxzph <- function(client, fit, time, event, transform='identity',resid=TRUE,
                     se=TRUE, df=4,num_pts=40, xlab="Time", ylab="", lty=1:2,
                     col=1, lwd=1, organizations_to_include=NULL){
@@ -74,7 +76,7 @@ dcoxzph <- function(client, fit, time, event, transform='identity',resid=TRUE,
     #######################################################################
     # Central Part of algorithm - Global Beta and Betavar
     #######################################################################
-    coxfit <- vtg.coxzph::coxfit(fit, transform)
+    coxfit <- coxfit(fit, transform)
 
     vtg::log$info("")
     vtg::log$info("###############################################")
@@ -98,7 +100,7 @@ dcoxzph <- function(client, fit, time, event, transform='identity',resid=TRUE,
     #######################################################################
     # Updating coxfit with the unique events
     #######################################################################
-    coxfit <- vtg.coxzph::sort_vars_list(
+    coxfit <- sort_vars_list(
         nodes = unique_events,
         coxfit = coxfit
     )
@@ -126,7 +128,7 @@ dcoxzph <- function(client, fit, time, event, transform='identity',resid=TRUE,
     #######################################################################
     # Calculating Hazard Ratio, updating coxfit
     #######################################################################
-    coxfit <- vtg.coxzph::hazard_ratio(
+    coxfit <- hazard_ratio(
         nodes = ratio,
         coxfit = coxfit
     )
@@ -148,7 +150,7 @@ dcoxzph <- function(client, fit, time, event, transform='identity',resid=TRUE,
     #######################################################################
     # Testing the Cox Proportionality Assumption
     #######################################################################
-    coxfit <- vtg.coxzph::test_cox_zph(
+    coxfit <- test_cox_zph(
         partials = schoenfeld_residuals,
         coxfit = coxfit
     )

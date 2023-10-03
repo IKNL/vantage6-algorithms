@@ -1,6 +1,7 @@
 #' extract hazard ratio
 #' @importMethodsFrom   left_join
 #' @export
+#'
 hazard_ratio=function(nodes=NULL, coxfit=NULL){
     if(is.null(nodes))  {
         # place the dots into a list
