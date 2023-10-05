@@ -9,18 +9,12 @@ ARG PKG_NAME='vtg.coxzph'
 
 LABEL maintainer="Hasan Alradhi <h.alradhi@iknl.nl>"
 
-WORKDIR /usr/local/R/${PKG_NAME}
-RUN Rscript -e 'install.packages("glue", repos = "http://cran.rstudio.com/")'
-RUN Rscript -e 'install.packages("survival", repos = "http://cran.rstudio.com/")'
-RUN Rscript -e 'install.packages("dplyr", repos = "http://cran.rstudio.com/")'
-RUN Rscript -e 'install.packages("splines", repos = "http://cran.rstudio.com/")'
-RUN Rscript -e 'install.packages("survminer", repos = "http://cran.rstudio.com/")'
-RUN Rscript -e 'install.packages("RCurl", repos = "http://cran.rstudio.com/")'
-RUN Rscript -e 'library(devtools)' -e 'install_github("IKNL/vtg")'
-RUN Rscript -e 'install.packages(".", repos = NULL, type = "source", INSTALL_opts = "--no-multiarch")'
-
 # Install federated coxzph package
 COPY ./models/coxzph/src /usr/local/R/${PKG_NAME}/
+
+WORKDIR /usr/local/R/${PKG_NAME}
+RUN Rscript -e 'library(devtools)' -e 'install_deps(".")'
+RUN R CMD INSTALL --no-multiarch --with-keep.source .
 
 # Change directory to '/app’ and create files that will be
 # used to mount input, output and database.

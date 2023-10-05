@@ -12,7 +12,7 @@ Imports:
     survival,
     dplyr,
     splines,
-    survminer,
     RCurl
 Remotes:
+    iknl/vtg
 RoxygenNote: 7.1.0
