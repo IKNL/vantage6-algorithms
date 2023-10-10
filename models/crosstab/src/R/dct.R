@@ -128,6 +128,8 @@ dct <- function(client, f, margin = NULL, percentage = F,
         # all results should be sent!!!
         node.contribution <- percentage(node[[1]], output)
 
-    return(ct)
+    df.ct <- as.data.frame(ct)
+
+    return(df.ct)
 
 }
