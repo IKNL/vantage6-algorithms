@@ -139,7 +139,7 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
     }
 
     ######################################
-
+    master = master[sort(names(master))]
     Tab <- sapply(1:length(master), function(i){
         med=which(master[[i]]$surv<=.5)[1]
         medL=which(master[[i]]$lower<=.5)[1]
