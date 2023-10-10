@@ -10,7 +10,8 @@
 #'
 #' @export
 #'
-dct <- function(client, f, organizations_to_include = NULL){
+dct <- function(client, f, margin = NULL, percentage = F,
+                organizations_to_include = NULL){
 
     vtg::log$debug("Initializing...")
     lgr::threshold("debug")
@@ -117,7 +118,15 @@ dct <- function(client, f, organizations_to_include = NULL){
         master = ct
     )
 
-    # doesn't make sense to do it on cts vars!
+    if(!is.null(margin) && (1 <= margin) && (3 >= margin)){
+        ct <- vtg.crosstab::proportion(ct, margin)
+    }
+
+    if(!isFALSE(percentage))
+        # TODO : This should loop ideally over the nodes but only
+        # return the right node result to the client, not
+        # all results should be sent!!!
+        node.contribution <- percentage(node[[1]], output)
 
     return(ct)
 

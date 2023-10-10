@@ -4,7 +4,7 @@
 \alias{dct}
 \title{Federated Cross Tabulation}
 \usage{
-dct(client, f, organizations_to_include = NULL)
+dct(client, f, margin = NULL, percentage = F, organizations_to_include = NULL)
 }
 \arguments{
 \item{client}{vtg::Client instance, provided by the node}
