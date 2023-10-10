@@ -117,8 +117,8 @@ dct <- function(client, f, organizations_to_include = NULL){
         master = ct
     )
 
-    # doesn't make sense to do it on cts vars!
+    df <- as.data.frame(ct)
 
-    return(ct)
+    return(df)
 
 }
