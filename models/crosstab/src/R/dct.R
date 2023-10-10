@@ -118,7 +118,8 @@ dct <- function(client, f, margin = NULL, percentage = F,
         master = ct
     )
 
-    if(!is.null(margin) && (1 <= margin) && (3 >= margin)){
+    if(!is.null(margin) && (is.integer(margin)) && (1 <= margin) &&
+       (3 >= margin)){
         ct <- vtg.crosstab::proportion(ct, margin)
     }
 
