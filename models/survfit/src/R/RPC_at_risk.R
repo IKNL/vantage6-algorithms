@@ -1,5 +1,7 @@
 RPC_at_risk <- function(data,master,stratum=NULL){
     time=master$time
+    time2=master$time2
+    if(!is.na(time2)) data[,time]=data[,time2]-data[,time]
     event=master$event
     if(!is.na(master$strata)){
        data=data[data[,master$strata]==stratum,]

@@ -12,8 +12,11 @@ tryCatch({
 library(vtg.survfit)
 
 dataset=list(vtg.survfit::D1,vtg.survfit::D2,vtg.survfit::D3)
+###exapl
 
 formula = Surv(time, status) ~ trt
+#formula = Surv(time,time2, status) ~ trt
+
 conf.int=0.95
 conf.type='log'
 timepoints=NULL
