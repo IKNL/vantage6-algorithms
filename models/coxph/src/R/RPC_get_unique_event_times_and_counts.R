@@ -6,7 +6,11 @@
 #'
 #' Return:
 #'   dataframe with columns time and Freq
-RPC_get_unique_event_times_and_counts <- function(df, time_col, censor_col) {
+RPC_get_unique_event_times_and_counts <- function(df, time_col, censor_col,
+                                                  types=NULL){
+
+    # Specify data types for the columns in the data
+    if (!is.null(types)) df <- assign_types(df, types)
 
     time <- df[df[, censor_col]==1, time_col]
     time <- sort(time)

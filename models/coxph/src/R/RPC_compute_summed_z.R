@@ -11,7 +11,10 @@
 #'
 #' Return:
 #'   numeric vector with sums and named index with covariates.
-RPC_compute_summed_z <- function(df, expl_vars, time_col, censor_col) {
+RPC_compute_summed_z <- function(df, expl_vars, time_col, censor_col, types) {
+
+    # Specify data types for the columns in the data
+    if (!is.null(types)) df <- assign_types(df, types)
 
     data <- preprocess.data(df, expl_vars, censor_col, time_col)
 

@@ -10,7 +10,8 @@ RPC_perform_iteration(
   time_col,
   censor_col,
   beta,
-  unique_event_times
+  unique_event_times,
+  types = NULL
 )
 }
 \description{

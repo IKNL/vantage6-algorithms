@@ -17,7 +17,7 @@
 #'
 #' @export
 #'
-dcoxph <- function(client, expl_vars, time_col, censor_col,
+dcoxph <- function(client, expl_vars, time_col, censor_col, types,
                    organizations_to_include = NULL) {
 
     MAX_COMPLEXITY = 250000
@@ -75,7 +75,7 @@ dcoxph <- function(client, expl_vars, time_col, censor_col,
     # Ask all nodes to return their unique event times with counts
     vtg::log$debug("Getting unique event times and counts")
     results <- client$call("get_unique_event_times_and_counts", time_col,
-                           censor_col)
+                           censor_col, types)
 
     Ds <- lapply(results, as.data.frame)
 
@@ -95,7 +95,7 @@ dcoxph <- function(client, expl_vars, time_col, censor_col,
     # Ask all nodes to compute the summed Z statistic
     vtg::log$debug("Getting the summed Z statistic")
     summed_zs <- client$call("compute_summed_z", expl_vars, time_col,
-                             censor_col)
+                             censor_col, types)
 
     # z_hat: vector of same length m
     # Need to jump through a few hoops because apply simplifies a matrix

@@ -9,6 +9,7 @@ dcoxph(
   expl_vars,
   time_col,
   censor_col,
+  types,
   organizations_to_include = NULL
 )
 }

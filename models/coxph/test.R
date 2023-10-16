@@ -23,8 +23,9 @@ expl_vars <- c("drug", "age")
 time_col <- c("time")
 censor_col <- c("censor")
 ties <- "breslow"
+types <- NULL
 
 # First... #
-client <- vtg::MockClient$new(datasets[[1]], pkgname = "vtg.coxph")
-fit <- vtg.coxph::dcoxph(client, expl_vars, time_col, censor_col,
+client <- vtg::MockClient$new(datasets, pkgname = "vtg.coxph")
+fit <- vtg.coxph::dcoxph(client, expl_vars, time_col, censor_col,types = NULL,
                          organizations_to_include = NULL)
