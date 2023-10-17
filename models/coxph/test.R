@@ -13,12 +13,11 @@ regfit <-  coxph(Surv(time, censor)~drug+age, data=Data,ties="breslow")
 time='time'
 event='censor'
 
-path <- "src/data/"
+# path <- "src/data/"
 
-for (i in dir(path)) {
-    load(file = paste0(path,i))
-}
-datasets <- list(D1,D2,D3)
+# for (i in dir(path)) load(file = paste0(path,i))
+
+datasets <- list(vtg.coxph::D1,vtg.coxph::D2,vtg.coxph::D3)
 expl_vars <- c("drug", "age")
 time_col <- c("time")
 censor_col <- c("censor")
@@ -27,5 +26,5 @@ types <- NULL
 
 # First... #
 client <- vtg::MockClient$new(datasets, pkgname = "vtg.coxph")
-fit <- vtg.coxph::dcoxph(client, expl_vars, time_col, censor_col,types = NULL,
-                         organizations_to_include = NULL)
+fit <- vtg.coxph::dcoxph(client, expl_vars, time_col, censor_col,
+                         types = NULL, organizations_to_include = NULL)
