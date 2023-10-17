@@ -1,4 +1,4 @@
-#' Federated survfit (Kaplan Mayer)
+#' Federated survfit (Kaplan Meier)
 #'
 #' @param client vtg::Client instance, provided by the node
 #' @param formula an object of class formula (or one that can be coerced
@@ -6,12 +6,15 @@
 #'   E.g.: dependant_variable ~ explanatory_variable(i) + ...
 #' @param conf.int confidence interval coverage (95% default)
 #' @param conf.type type of confidence interval (log, identity, log-log)
-#' @param timepoints time points to calculate KM (bins instead of individual time point)
-#' @param plotCI True if the researcher wants to plot Confidence Interval for the KM curves
-#' @param organizations_to_include either NULL meaning all participating organizations
-#' or select organizations ids; must be list of id(s)
+#' @param timepoints time points to calculate KM (bins instead of individual
+#' time point)
+#' @param plotCI True if the researcher wants to plot Confidence Interval for
+#' the KM curves
+#' @param organizations_to_include either NULL meaning all participating
+#' organizations or select organizations ids; must be list of id(s)
 #'
-#' @return  for each strata returns a table with (n events median 0.95LCL 0.95UCL) KM plot and ...
+#' @return  for each strata returns a table with (n events median 0.95LCL
+#' 0.95UCL) KM plot and ...
 #'
 #' @author Cellamare, M.
 #' @author Alradhi, H.
@@ -64,7 +67,7 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
         }
     }
 
-     # Parse a string to formula type. If it already is a formula this statement
+    # Parse a string to formula type. If it already is a formula this statement
     # will do nothing. This is needed when Python (or other langauges) is used
     # as a client.
 
@@ -92,16 +95,26 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
     # initialization variables
     vars=all.vars(formula)
     KM <- function(vars,stratum=NULL){
-        master=list(time=vars[1],event=vars[2],strata=vars[3],
+
+        master <-
+            if(length(vars) > 3){
+                list(time=vars[1],time2=vars[2],event=vars[3],strata=vars[4],
+                conf.int=conf.int,conf.type=conf.type,
+                timepoints=timepoints)
+                }else{
+                    list(time=vars[1],time2=NA,event=vars[2],strata=vars[3],
                     conf.int=conf.int,conf.type=conf.type,
                     timepoints=timepoints)
+                }
+
+        vtg::log$info("RPC Time")
+        node_time <- client$call(
+            "time",
+            master=master,
+            stratum=stratum
+        )
+
         if(is.null(timepoints)){
-            vtg::log$info("RPC Time")
-            node_time <- client$call(
-                "time",
-                master=master,
-                stratum=stratum
-            )
             master=vtg.survfit::serv_time(nodes = node_time,master=master)
         }else{
             master=vtg.survfit::serv_time(master=master)
@@ -124,7 +137,6 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
         master=vtg.survfit::serv_KM(nodes = node_KMsurv,master=master)
         return(master)
     }
-
     if(is.na(vars[3])){
          master=list(KM(vars))
     }else{
@@ -156,7 +168,8 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
     print(master$Tab)
     # plot <- jpeg(filename = "plotKM_plot%03d.jpg", width = 960, height = 960,
     #              quality = 100)
-    jpeg(plot <- tempfile(fileext = ".jpg"), width = 960, height = 960, quality = 100)
+    jpeg(plot <- tempfile(fileext = ".jpg"), width = 960, height = 960,
+         quality = 100)
     vtg.survfit::plotKM(master, plotCI = plotCI)
     dev.off()
     vtg::log$debug("  - [DONE]")
@@ -170,5 +183,4 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
         Tab=master$Tab,
         imgtxt=master$imgtxt
     ))
-
 }

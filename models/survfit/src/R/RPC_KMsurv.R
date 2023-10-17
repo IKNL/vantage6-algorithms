@@ -1,6 +1,7 @@
 RPC_KMsurv=function(data,master,stratum=NULL){
-    #data=D3
     time=master$time
+    time2=master$time2
+    if(!is.na(time2)) data[,time]=data[,time2]-data[,time]
     event=master$event
     n.at.risk=master$n.at.risk
     if(!is.na(master$strata)){
