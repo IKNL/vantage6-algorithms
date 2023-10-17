@@ -1,0 +1,2 @@
+pandas
+vantage6-algorithm-tools

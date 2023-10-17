@@ -1,9 +1,11 @@
-import pandas
+import pandas as pd
 
-from vantage6.tools.util import info
+from vantage6.algorithm.tools.util import info
+from vantage6.algorithm.tools.decorators import data
 
 
-def RPC_row_count(data: pandas.DataFrame):
+@data(1)
+def row_count(df: pd.DataFrame):
     """
     Reports the number of rows in the local dataset
 
@@ -18,4 +20,4 @@ def RPC_row_count(data: pandas.DataFrame):
         number of rows in the dataset
     """
     info("Counting rows")
-    return len(data.index)
+    return len(df.index)

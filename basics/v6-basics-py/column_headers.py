@@ -1,9 +1,11 @@
-import pandas
+import pandas as pd
 
-from vantage6.tools.util import info
+from vantage6.algorithm.tools.util import info
+from vantage6.algorithm.tools.decorators import data
 
 
-def RPC_column_headers(data: pandas.DataFrame):
+@data(1)
+def column_headers(df: pd.DataFrame):
     """
     Reports the column headers
 
@@ -18,4 +20,4 @@ def RPC_column_headers(data: pandas.DataFrame):
         list of strings containing the column headers
     """
     info("Reading Headers")
-    return list(data.columns)
+    return list(df.columns)
