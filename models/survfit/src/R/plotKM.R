@@ -6,10 +6,13 @@ plotKM <- function(master, plotCI=F){
          ylab='Survival probability', xlab='Time', main="Kaplan-Meier",
          cex.lab=1, cex.main=2, las=1)
     for(i in 1:length(temp.master)){
-        lines(temp.master[[i]]$times, temp.master[[i]]$surv, type='s', col=i, lwd=2)
+        lines(temp.master[[i]]$times, temp.master[[i]]$surv, type='s', col=i,
+              lwd=2)
         if(plotCI){
-            lines(temp.master[[i]]$times, temp.master[[i]]$upper, type='s', col=i, lty=2, lwd=2)
-            lines(temp.master[[i]]$times, temp.master[[i]]$lower, type='s', col=i, lty=2, lwd=2)
+            lines(temp.master[[i]]$times, temp.master[[i]]$upper, type='s',
+                  col=i, lty=2, lwd=2)
+            lines(temp.master[[i]]$times, temp.master[[i]]$lower, type='s',
+                  col=i, lty=2, lwd=2)
         }
     }
     if(length(temp.master)>1){
