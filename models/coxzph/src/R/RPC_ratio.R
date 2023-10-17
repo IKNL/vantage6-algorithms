@@ -18,12 +18,17 @@ RPC_ratio=function(data,time,event,coxfit){
     for(j in coxfit$timevents) {
         #for(j in timevents) {
         risk_set <- which(j<=data[,time])
-        if(length(risk_set)>1){
-            num <- rbind(num,colSums(numerator[risk_set,]))
-            den <- c(den,sum(denominator[risk_set]))
+        if(length(risk_set)>0){
+            if(length(risk_set)>1){
+                num <- rbind(num,colSums(numerator[risk_set,]))
+                den <- c(den,sum(denominator[risk_set]))
+            }else{
+                num <- rbind(num,(numerator[risk_set,]))
+                den <- c(den,(denominator[risk_set]))
+            }
         }else{
-            num <- rbind(num,(numerator[risk_set,]))
-            den <- c(den,(denominator[risk_set]))
+                num <- rbind(num, 0)
+                den <- c(den, 0)
         }
     }
     return(

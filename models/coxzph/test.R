@@ -21,24 +21,30 @@ lty=1:2
 col=1
 lwd=1
 transform='log'
-regfit <- coxph(Surv(time, censor)~drug+age, data=Data,ties="breslow")
+regfit <- coxph(Surv(time, censor)~age + site + hospital_id,
+                data=rbind(data1, data2),ties="breslow")
 
 Rzph <- cox.zph(regfit,transform = "identity")
 
-path <- "src/data/"
 
-for (i in dir(path)) {
-    load(file = paste0(path,i))
-}
-datasets <- list(D1,D2,D3)
-expl_vars <- c("drug", "age")
+data1 = read.csv("C://Users/hal2002.53340//Downloads//teststarter_n100_source1.csv")
+data2 = read.csv("C://Users/hal2002.53340//Downloads//teststarter_n100_source0.csv")
+datasets = list(data1, data2)
+
+# path <- "src/data/"
+#
+# for (i in dir(path)) {
+#     load(file = paste0(path,i))
+# }
+# datasets <- list(D1,D2,D3)
+expl_vars <- c("age", "site", "hospital_id")
 time_col <- c("time")
 censor_col <- c("censor")
 ties <- "breslow"
 
 # First... #
 client <- vtg::MockClient$new(datasets, pkgname = "vtg.coxph")
-fit <- vtg.coxph::dcoxph(client, expl_vars, time_col, censor_col)
+fit <- vtg.coxph::dcoxph(client, expl_vars, time_col, censor_col, types = NULL)
 
 client <- vtg::MockClient$new(datasets, pkgname = "vtg.coxzph")
 coxzph <- vtg.coxzph::dcoxzph(client, fit = fit, time = time, event = event,
