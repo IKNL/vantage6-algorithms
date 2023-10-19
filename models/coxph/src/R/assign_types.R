@@ -14,7 +14,6 @@ assign_types <- function(data, types) {
         column_name <- column_names[i]
         specs <- types[[i]]
         type_ <- specs$type
-
         if (type_ == "numeric") {
             data[[column_name]] <- as.numeric(data[[column_name]])
         } else if (type_ == "factor") {
