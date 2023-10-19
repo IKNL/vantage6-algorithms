@@ -17,7 +17,7 @@
 #'
 #' @export
 #'
-dcoxph <- function(client, expl_vars, time_col, censor_col, types,
+dcoxph <- function(client, expl_vars, time_col, censor_col, types = NULL,
                    organizations_to_include = NULL) {
 
     MAX_COMPLEXITY = 250000

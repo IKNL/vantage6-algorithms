@@ -11,7 +11,8 @@
 #'
 #' Return:
 #'   numeric vector with sums and named index with covariates.
-RPC_compute_summed_z <- function(df, expl_vars, time_col, censor_col, types) {
+RPC_compute_summed_z <- function(df, expl_vars, time_col, censor_col, 
+                                 types=NULL) {
 
     # Specify data types for the columns in the data
     if (!is.null(types)) df <- assign_types(df, types)
