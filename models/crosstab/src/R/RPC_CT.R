@@ -14,7 +14,7 @@
 #'
 RPC_CT <- function(data, subset_rules, master){
 
-    #data pre-processing
+    # data pre-processing
     data <- extend_data(data)
     data <- subset_data(data, subset_rules)
 

@@ -13,10 +13,12 @@
 #' @export
 #'
 RPC_get_vars <- function(data, subset_rules, master){
-
+    
+    # data pre-processing
     data <- extend_data(data)
     data <- subset_data(data, subset_rules)
 
     f <- master$formula
-    return(apply(data[,all.vars(f)], 2, unique))
+    vars <- apply(data[,all.vars(f)], 2, unique, simplify=F)
+    return(vars)
 }
