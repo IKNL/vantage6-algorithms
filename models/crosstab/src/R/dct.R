@@ -16,8 +16,7 @@ dct <- function(client, f, margin = NULL, percentage = F,
     vtg::log$debug("Initializing...")
     lgr::threshold("debug")
 
-    #image.name <- "harbor2.vantage6.ai/starter/crosstab"
-    image.name <- "my_crosstab"
+    image.name <- "harbor2.vantage6.ai/starter/crosstab"
 
     client$set.task.image(
         image.name,
