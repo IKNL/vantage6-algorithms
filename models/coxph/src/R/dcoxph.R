@@ -17,7 +17,7 @@
 #'
 #' @export
 #'
-dcoxph <- function(client, expl_vars, time_col, censor_col, types,
+dcoxph <- function(client, expl_vars, time_col, censor_col, types = NULL,
                    organizations_to_include = NULL) {
 
     MAX_COMPLEXITY = 250000
@@ -65,7 +65,8 @@ dcoxph <- function(client, expl_vars, time_col, censor_col, types,
     if (client$use.master.container) {
         vtg::log$debug("Running `dcoxph` in master container using image
                         '{image.name}'")
-        result <- client$call("dcoxph", expl_vars, time_col, censor_col)
+        result <- client$call("dcoxph", expl_vars, time_col, censor_col, types, 
+                              organizations_to_include)
         return(result)
     }
 
@@ -125,7 +126,7 @@ dcoxph <- function(client, expl_vars, time_col, censor_col, types,
         }
 
         aggregates <- client$call("perform_iteration", expl_vars, time_col,
-                                  censor_col, beta, unique_event_times)
+                                  censor_col, beta, unique_event_times, types)
 
         # Compute the primary and secondary derivatives
         derivatives <- compute.derivatives(z_hat, D_all, aggregates)
