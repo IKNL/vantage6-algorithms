@@ -18,7 +18,7 @@ test_cox_zph <- function(
         gtest = rowSums(sapply(partials, function(j) j$gtest))
         z <- c(gtest %*% betavar %*% gtest) * length(event_time) / sum2
         z.ph <- rbind(z.ph, c(z, length(beta),1-pchisq(z, length(beta))))
-        dimnames(z.ph) <- list(c(row.names(coxfit$betavar), "GLOBAL"),
+        dimnames(z.ph) <- list(c(row.names(coxfit$beta), "GLOBAL"),
                                c( "chisq",'df', "p"))
     }
     SCH=c()
@@ -29,7 +29,8 @@ test_cox_zph <- function(
     colnames(sch_residuals)=names(SCH)
     # jpeg(filename = "coxzph_plot%03d.jpg", width = 960, height = 960,
     #      quality = 70)
-    jpeg(plot <- tempfile(fileext = ".jpg"), width=960, height=960, quality=70)
+    jpeg(plot <- tempfile(fileext = ".jpg"), width=960, height=960,
+         quality=100)
     plot_cox_zph(cox_zph = list(event_time=event_time,
                                             sch_residuals=sch_residuals,
                                             beta=beta,

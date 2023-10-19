@@ -1,5 +1,5 @@
 #' extract hazard ratio
-#' @importMethodsFrom   left_join
+#' @importMethodsFrom  dplyr left_join
 #' @export
 #'
 hazard_ratio=function(nodes=NULL, coxfit=NULL){
@@ -11,14 +11,14 @@ hazard_ratio=function(nodes=NULL, coxfit=NULL){
     }
     timevents = rowSums(sapply(nodes, function(i) i$t))
     num=lapply(nodes,function(s){
-        app=left_join(data.frame(t=names(timevents)), data.frame(
+        app=dplyr::left_join(data.frame(t=names(timevents)), data.frame(
             t=names(s$t),s$n),by='t'
             )
         app=apply(app[,-1], 2, rep,times=timevents)
         return(app)
         })
     den=lapply(nodes,function(s){
-        app=left_join(data.frame(t=names(timevents)), data.frame(
+        app=dplyr::left_join(data.frame(t=names(timevents)), data.frame(
             t=names(s$t),s$d),by='t'
             )
         app=rep(app[,-1],times=timevents)

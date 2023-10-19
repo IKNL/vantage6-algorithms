@@ -11,8 +11,12 @@
 coxfit <- function(fit, transform="identity"){
     vtg::log$debug("Initializing the coxfit...")
     beta <- as.matrix(fit$coef)
-    betavar <- fit$var
-    row.names(beta) <- row.names(betavar)
-
+    betavar <- if(is.list(fit$var)){
+        sapply(fit$var, rbind)
+    }else if(is.matrix(fit$var)){
+        fit$var
+    }
+    row.names(beta) <- row.names(fit)
+    row.names(betavar) <- row.names(fit)
     list(beta=beta,betavar=betavar, transform=transform)
 }

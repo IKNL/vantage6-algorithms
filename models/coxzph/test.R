@@ -21,15 +21,14 @@ lty=1:2
 col=1
 lwd=1
 transform='log'
+data1 = read.csv("C://Users/hal2002.53340//Downloads//teststarter_n100_source1.csv")
+data2 = read.csv("C://Users/hal2002.53340//Downloads//teststarter_n100_source0.csv")
+datasets = list(data1, data2)
+
 regfit <- coxph(Surv(time, censor)~age + site + hospital_id,
                 data=rbind(data1, data2),ties="breslow")
 
 Rzph <- cox.zph(regfit,transform = "identity")
-
-
-data1 = read.csv("C://Users/hal2002.53340//Downloads//teststarter_n100_source1.csv")
-data2 = read.csv("C://Users/hal2002.53340//Downloads//teststarter_n100_source0.csv")
-datasets = list(data1, data2)
 
 # path <- "src/data/"
 #
@@ -45,7 +44,7 @@ ties <- "breslow"
 # First... #
 client <- vtg::MockClient$new(datasets, pkgname = "vtg.coxph")
 fit <- vtg.coxph::dcoxph(client, expl_vars, time_col, censor_col, types = NULL)
-
+fit = jsonlite::fromJSON("C://Users/hal2002.53340/Desktop/input_json_cox.json")
 client <- vtg::MockClient$new(datasets, pkgname = "vtg.coxzph")
 coxzph <- vtg.coxzph::dcoxzph(client, fit = fit, time = time, event = event,
                               transform = transform)
