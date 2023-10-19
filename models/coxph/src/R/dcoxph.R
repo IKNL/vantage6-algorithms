@@ -125,7 +125,7 @@ dcoxph <- function(client, expl_vars, time_col, censor_col, types,
         }
 
         aggregates <- client$call("perform_iteration", expl_vars, time_col,
-                                  censor_col, beta, unique_event_times)
+                                  censor_col, beta, unique_event_times, types)
 
         # Compute the primary and secondary derivatives
         derivatives <- compute.derivatives(z_hat, D_all, aggregates)
