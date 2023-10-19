@@ -14,6 +14,7 @@ COPY ./models/coxzph/src /usr/local/R/${PKG_NAME}/
 
 WORKDIR /usr/local/R/${PKG_NAME}
 RUN Rscript -e 'library(devtools)' -e 'install_github("IKNL/vtg")'
+RUN Rscript -e 'install.packages("splines",repos = "http://cran.rstudio.com/")'
 RUN Rscript -e 'devtools::install_deps(".")'
 RUN Rscript -e 'install.packages(".", repos = NULL, type = "source", INSTALL_opts = "--no-multiarch")'
 
