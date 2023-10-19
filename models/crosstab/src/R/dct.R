@@ -61,7 +61,11 @@ dct <- function(client, f, margin = NULL, percentage = F,
                                   image '{image.name}'.."))
         result <- client$call(
             "dct",
-            f = f
+            f = f,
+            margin = margin,
+            percentage = percentage,
+            organizations_to_include = organizations_to_include,
+            subset_rules = subset_rules
         )
         return(result)
     }
