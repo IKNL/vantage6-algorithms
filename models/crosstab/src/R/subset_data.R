@@ -34,6 +34,9 @@ subset_data <- function(data, subset_rules){
 
   result <- data
 
+  print('Number of rows before subset_data:') 
+  print(nrow(result))
+
   # no subset rules are given
   if(is.null(subset_rules)){
     return(result)
@@ -51,6 +54,9 @@ subset_data <- function(data, subset_rules){
     returned for privacy preserving reasons.'))
     result <- NULL
   }
+
+  print('Number of rows after subset_data:') 
+  print(nrow(result))
 
   return(result)
 }
