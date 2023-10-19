@@ -11,7 +11,7 @@ plot_cox_zph <- function(cox_zph, resid=TRUE, se=TRUE, df=4, num_pts=40,
     nvar <- ncol(sch_residuals)
     pred.x <- seq(from=min(event_time), to=max(event_time), length=num_pts)
     temp <- c(pred.x, event_time)
-    lmat <- ns(temp, df=df, intercept=TRUE)
+    lmat <- splines::ns(temp, df=df, intercept=TRUE)
     # for prediction
     pmat <- lmat[1:num_pts,]
     xmat <- lmat[-(1:num_pts),]
