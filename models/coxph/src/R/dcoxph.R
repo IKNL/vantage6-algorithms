@@ -65,7 +65,8 @@ dcoxph <- function(client, expl_vars, time_col, censor_col, types = NULL,
     if (client$use.master.container) {
         vtg::log$debug("Running `dcoxph` in master container using image
                         '{image.name}'")
-        result <- client$call("dcoxph", expl_vars, time_col, censor_col)
+        result <- client$call("dcoxph", expl_vars, time_col, censor_col, types, 
+                              organizations_to_include)
         return(result)
     }
 
