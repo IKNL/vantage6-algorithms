@@ -9,14 +9,15 @@
 #' @author Cellamare, M.
 #'
 #' @export
-#'
+
 dct <- function(client, f, margin = NULL, percentage = F,
-                organizations_to_include = NULL){
+                organizations_to_include = NULL, subset_rules = NULL){
 
     vtg::log$debug("Initializing...")
     lgr::threshold("debug")
 
-    image.name <- "harbor2.vantage6.ai/starter/crosstab"
+    #image.name <- "harbor2.vantage6.ai/starter/crosstab"
+    image.name <- "my_crosstab"
 
     client$set.task.image(
         image.name,
@@ -27,29 +28,29 @@ dct <- function(client, f, margin = NULL, percentage = F,
     if (!is.null(organizations_to_include)) {
 
         vtg::log$info("Sending tasks only to specified organizations")
-        organisations_in_collaboration = client$collaboration$organizations
-        # Clear the current list of organisations in the collaboration
+        organizations_in_collaboration = client$collaboration$organizations
+        # Clear the current list of organizations in the collaboration
         # Will remove them for current task, not from actual collaboration
         client$collaboration$organizations <- list()
         # Reshape list when the organizations_to_include is not already a list
         # Relevant when e.g., Python is used as client
         if (!is.list(organizations_to_include)){
-            organisations_to_use <- toString(organizations_to_include)
+            organizations_to_use <- toString(organizations_to_include)
 
             # Remove leading and trailing spaces as in python list
-            organisations_to_use <-
-                gsub(" ", "", organisations_to_use, fixed=TRUE)
+            organizations_to_use <-
+                gsub(" ", "", organizations_to_use, fixed=TRUE)
 
             # Convert to list assuming it is comma separated
-            organisations_to_use <-
-                as.list(strsplit(organisations_to_use, ",")[[1]])
+            organizations_to_use <-
+                as.list(strsplit(organizations_to_use, ",")[[1]])
         }
-        # Loop through the organisation ids in the collaboration
-        for (organisation in organisations_in_collaboration) {
-            # Include the organisations only when desired
-            if (organisation$id %in% organisations_to_use) {
+        # Loop through the organization ids in the collaboration
+        for (organization in organizations_in_collaboration) {
+            # Include the organizations only when desired
+            if (organization$id %in% organizations_to_use) {
                 client$collaboration$organizations[[length(
-                    client$collaboration$organizations)+1]] <- organisation
+                    client$collaboration$organizations)+1]] <- organization
             }
         }
     }
@@ -76,6 +77,7 @@ dct <- function(client, f, margin = NULL, percentage = F,
     #######################################################################
     nodes <- client$call(
         "get_vars",
+        subset_rules = subset_rules,
         master = ct
     )
 
@@ -102,6 +104,7 @@ dct <- function(client, f, margin = NULL, percentage = F,
     #######################################################################
     nodes <- client$call(
         "CT",
+        subset_rules = subset_rules,
         master = ct
     )
 
