@@ -102,7 +102,6 @@ dsurvdiff <- function(client,formula,timepoints=NULL){
     exp <- sapply(master, function(s) sum(s$e))
     df=exp>0
     temp2 <- ((obs-exp)[df])[-1]
-
     V=matrix(NA,length(master),length(master))
     diag(V)=sapply(1:length(master), function(g){
         v=master[[g]]$n*(M/N)*((N-M)/N)*((N-master[[g]]$n)/(N-1))
@@ -124,7 +123,6 @@ dsurvdiff <- function(client,formula,timepoints=NULL){
                 var=V,
                 chisq=chi,
                 pvalue= pchisq(chi, df, lower.tail=FALSE))
-
     vtg.survdiff::print_output_dsurvdiff(rval)
     vtg::log$debug("  - [DONE]")
     return(rval)
