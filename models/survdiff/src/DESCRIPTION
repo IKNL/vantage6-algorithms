@@ -1,0 +1,22 @@
+vantage6-Comment:
+    **************************************************
+    * This file was generated from DESCRIPTION.tpl   *
+    * Please don't modify it directly! Instead,      *
+    * modify DESCRIPTION.tpl and run the following   *
+    * command:                                       *
+    *   make DESCRIPTION                             *
+    **************************************************
+Package: vtg.survdiff
+Type: Package
+Version: 1.0.0
+Title: vtg.survdiff
+Description: This package can be used with the vantage6 federated
+    learning infrastructure (see https://github.com/IKNL/vantage6).
+Encoding: UTF-8
+LazyData: true
+Imports:
+    glue,
+    vtg
+Remotes:
+    iknl/vtg
+RoxygenNote: 7.2.3
