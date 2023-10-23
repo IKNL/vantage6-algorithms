@@ -1,3 +1,4 @@
+#' version: 1.0
 #' Data filter function.
 #'
 #' This function will be called at the start of the analysis, and executed on 
