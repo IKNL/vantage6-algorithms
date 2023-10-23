@@ -1,0 +1,1 @@
+RPC_statistic <- function(data, col, E)
