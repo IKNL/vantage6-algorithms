@@ -14,14 +14,51 @@
 #' @export
 #'
 #'
-dsurvdiff <- function(client,formula,timepoints=NULL){
+dsurvdiff <- function(client, formula, timepoints=NULL, 
+                      organizations_to_include = NULL, subset_rules = NULL){
 
     vtg::log$debug("Initializing...")
     lgr::threshold("debug")
 
-    image.name <- "harbor2.vantage6.ai/starter/survdiff:latest"
+    image.name <- "harbor2.vantage6.ai/starter/survdiff"
 
-     # Parse a string to formula type. If it already is a formula this statement
+    client$set.task.image(
+        image.name,
+        task.name="survdiff"
+    )
+
+    # Update the client organizations according to those specified
+    if (!is.null(organizations_to_include)) {
+
+        vtg::log$info("Sending tasks only to specified organizations")
+        organizations_in_collaboration = client$collaboration$organizations
+        # Clear the current list of organizations in the collaboration
+        # Will remove them for current task, not from actual collaboration
+        client$collaboration$organizations <- list()
+        # Reshape list when the organizations_to_include is not already a list
+        # Relevant when e.g., Python is used as client
+        if (!is.list(organizations_to_include)){
+            organizations_to_use <- toString(organizations_to_include)
+
+            # Remove leading and trailing spaces as in python list
+            organizations_to_use <-
+                gsub(" ", "", organizations_to_use, fixed=TRUE)
+
+            # Convert to list assuming it is comma separated
+            organizations_to_use <-
+                as.list(strsplit(organizations_to_use, ",")[[1]])
+        }
+        # Loop through the organization ids in the collaboration
+        for (organization in organizations_in_collaboration) {
+            # Include the organizations only when desired
+            if (organization$id %in% organizations_to_use) {
+                client$collaboration$organizations[[length(
+                    client$collaboration$organizations)+1]] <- organization
+            }
+        }
+    }
+
+    # Parse a string to formula type. If it already is a formula this statement
     # will do nothing. This is needed when Python (or other langauges) is used
     # as a client.
 
@@ -38,7 +75,9 @@ dsurvdiff <- function(client,formula,timepoints=NULL){
         result <- client$call(
             "dsurvdiff",
             formula = formula,
-            timepoints = timepoints
+            timepoints = timepoints, 
+            organizations_to_include = organizations_to_include, 
+            subset_rules = subset_rules
             )
 
         return(result)
@@ -59,6 +98,7 @@ dsurvdiff <- function(client,formula,timepoints=NULL){
             vtg::log$info("RPC Time")
             node_time <- client$call(
                 "time",
+                subset_rules=subset_rules,
                 master=master
             )
             master=vtg.survdiff::serv_time(nodes = node_time,master=master)
@@ -69,6 +109,7 @@ dsurvdiff <- function(client,formula,timepoints=NULL){
         vtg::log$info("RPC Tab")
         node_tab <- client$call(
             "tab",
+            subset_rules=subset_rules,
             master=master,
             stratum=stratum
         )
@@ -83,6 +124,7 @@ dsurvdiff <- function(client,formula,timepoints=NULL){
         vtg::log$info("RPC strata")
         node_strata <- client$call(
             "strata",
+            subset_rules=subset_rules,
             strata=vars[3]
         )
         stratum=unique(unlist(node_strata))
