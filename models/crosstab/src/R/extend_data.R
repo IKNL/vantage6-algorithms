@@ -1,3 +1,4 @@
+#' version: 1.0
 #' Extend the data with new variables
 #'
 #' This function enriches the datasets at the nodes with more variable which in 
