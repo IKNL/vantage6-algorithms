@@ -14,8 +14,9 @@
 #' @export
 #'
 #'
-dsurvdiff <- function(client, formula, timepoints=NULL, 
-                      organizations_to_include = NULL, subset_rules = NULL){
+dsurvdiff <- function(client, formula, timepoints=NULL,
+                      organizations_to_include = NULL, subset_rules = NULL
+                      ){
 
     vtg::log$debug("Initializing...")
     lgr::threshold("debug")
@@ -62,7 +63,7 @@ dsurvdiff <- function(client, formula, timepoints=NULL,
     # will do nothing. This is needed when Python (or other langauges) is used
     # as a client.
 
-    formula <- as.formula(formula)
+    f <- as.formula(formula)
 
     # Run in a MASTER container. Note that this will call this method but then
     # within a Docker container. The client used here below has set the
@@ -74,16 +75,16 @@ dsurvdiff <- function(client, formula, timepoints=NULL,
                                   image '{image.name}'.."))
         result <- client$call(
             "dsurvdiff",
-            formula = formula,
-            timepoints = timepoints, 
-            organizations_to_include = organizations_to_include, 
+            formula = f,
+            timepoints = timepoints,
+            organizations_to_include = organizations_to_include,
             subset_rules = subset_rules
             )
 
         return(result)
     }
     # initialization variables
-    vars=all.vars(formula)
+    vars=all.vars(f)
     LRT <- function(vars,stratum=NULL){
         if(length(vars)>3){
             master=list(time=vars[1],time2=vars[2],
@@ -155,18 +156,22 @@ dsurvdiff <- function(client, formula, timepoints=NULL,
         V[EG[i,1],EG[i,2]]=-sum(v[!is.nan(v)])
     }
     vv <- (V[df,df])[-1,-1, drop=FALSE]
+    colnames(V) <- names(master)
     chi <- sum(solve(vv, temp2) * temp2)
     df <- (sum(1*(exp>0))) -1
-    rval <-list(formula=f,
-                n= sapply(master, function(s) (s$n)[1]),
-                strata=names(master),
+    rval <-list(formula = formula,
+                n = sapply(master, function(s) (s$n)[1]),
+                strata = names(master),
                 obs = obs,
                 exp = exp,
-                var=V,
-                chisq=chi,
-                pvalue= pchisq(chi, df, lower.tail=FALSE))
-    vtg.survdiff::print_output_dsurvdiff(rval)
+                var = V,
+                chisq = chi,
+                pvalue = pchisq(chi, df, lower.tail=FALSE))
+
+    df.rval <- as.data.frame(rval)
+
+    vtg.survdiff::print_output_dsurvdiff(df.rval)
     vtg::log$debug("  - [DONE]")
-    return(rval)
+    return(df.rval)
 }
 

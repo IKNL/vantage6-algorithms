@@ -8,7 +8,8 @@ Encoding: UTF-8
 LazyData: true
 Imports:
     glue,
-    vtg
+    vtg,
+    dplyr
 Remotes:
     iknl/vtg
 RoxygenNote: 7.1.0

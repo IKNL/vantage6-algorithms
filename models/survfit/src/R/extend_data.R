@@ -16,15 +16,16 @@ extend_data <- function(data){
 
   library(dplyr)
 
-  temp.data = data
+  temp.data <- data
 
   print('Number of columns before extend_data:')
   print(ncol(temp.data))
 
   temp.data <- temp.data %>%
 
+    #FOR TESTING @TODO DELETE THIS LATER
     mutate(time2 = time+sample(1:20, n(), replace = TRUE)) %>%
-    
+
     #creazione dei site combinato
     #mutate(site = ifelse(!is.na(d11_siterare),d11_siterare ,d11_sitecomrar))
     #la differenza tra questi due codici, uno ha la label e l altro no. QUALE ? MEGLIO TENERE?
@@ -167,7 +168,7 @@ extend_data <- function(data){
     mutate(event_Lrc = case_when(is.na(datelrc)  ~ 0 ,
                                 datelrc1 < datelrc  ~ 0,
                                 datelrc1 >= datelrc ~  1 ,
-                                TRUE ~ NA))%>%
+                                TRUE ~ NA)) %>%
 
     mutate(LRC = pmin(as.Date(datelrc), as.Date(datelrc1), na.rm= TRUE) - pmin(as.Date(f02_datesurg), as.Date(f33_1_startdate_syst), as.Date(f80_radiostartdate), na.rm=TRUE)) %>%
     as.data.frame()
