@@ -1,1 +1,4 @@
-dchisq()
+dchisq.test <- function(client, columns)
+{
+
+}

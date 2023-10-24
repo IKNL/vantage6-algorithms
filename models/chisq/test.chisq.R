@@ -2,6 +2,7 @@ test.chisq.r <- function (x, y = NULL, correct = TRUE, p = rep(1/length(x), leng
           rescale.p = FALSE, simulate.p.value = FALSE, B = 2000)
 {
     DNAME <- deparse(substitute(x))
+    cat("this is p: ", p)
     if (is.data.frame(x))
         x <- as.matrix(x)
     if (is.matrix(x)) {
