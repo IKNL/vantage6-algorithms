@@ -1,3 +1,5 @@
+#' @export
+#'
 sumlocals <- function(nodes){
     check = attributes(nodes[[1]])$class
     if(!all(sapply(nodes, function(x) attributes(x)$class) == check)){

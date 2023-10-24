@@ -5,9 +5,9 @@ FROM harbor2.vantage6.ai/base/custom-r-base
 
 # This is a placeholder that should be overloaded by invoking
 # docker build with '--build-arg PKG_NAME=...'
-ARG PKG_NAME='vtg.glm'
+ARG PKG_NAME='vtg.chisq'
 
-LABEL maintainer="Frank Martin <f.martin@iknl.nl>"
+LABEL maintainer="Hasan Alradhi <h.alradhi@iknl.nl>"
 
 # Install federated glm package
 COPY ./models/glm/src /usr/local/R/${PKG_NAME}/
