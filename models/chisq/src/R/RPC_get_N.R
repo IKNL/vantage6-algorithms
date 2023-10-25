@@ -28,7 +28,7 @@ RPC_get_N <- function(data, col, threshold = 5L){
         x <- as.vector(data[,1])
         y <- as.vector(data[,2])
 
-        if((any(checker.fn(x)) < threshold) || (any(checker.fn()) < threshold))
+        if((any(checker.fn(x)) < threshold) || (any(checker.fn(y)) < threshold))
         {
             stop(paste0("Disclosure risk, some values are lower than ",
                         threshold))
