@@ -1,18 +1,14 @@
 #' @export
 #'
-RPC_get_NA <- function(data, col){
-
+glob_var <- function(glob_sqr_dev, Nglob, col){
     uniq.col <- unique(col)
     data <- na.omit(data[, uniq.col])
     out <- vector("list", length(uniq.col))
     names(out) <- uniq.col
-
     for(j in uniq.col){
-        if(any(is.na(data[,j]))){
-            na.pos <- which(is.na(data[,j]))
-            out[[j]] <- length(na.pos)
+        out[[j]] <- if(!((xsqr <- glob_sqr_dev[[j]]) == 0)){
+            xsqr / (Nglob[[j]] - 1)
         }
-
     }
-    return(out)
+    out
 }

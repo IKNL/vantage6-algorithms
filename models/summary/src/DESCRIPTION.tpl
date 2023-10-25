@@ -11,4 +11,4 @@ Imports:
     vtg
 Remotes:
     iknl/vtg
-RoxygenNote: 7.1.0
+RoxygenNote: 7.2.3

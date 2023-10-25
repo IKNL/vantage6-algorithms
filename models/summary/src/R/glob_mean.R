@@ -1,18 +1,15 @@
 #' @export
 #'
-RPC_get_NA <- function(data, col){
-
+glob_mean <- function(sumsglob, Nglob, col){
     uniq.col <- unique(col)
     data <- na.omit(data[, uniq.col])
     out <- vector("list", length(uniq.col))
     names(out) <- uniq.col
 
     for(j in uniq.col){
-        if(any(is.na(data[,j]))){
-            na.pos <- which(is.na(data[,j]))
-            out[[j]] <- length(na.pos)
+        out[[j]] <- if(!(sumsglob[[j]] == 0)){
+            sumsglob[[j]] / Nglob[[j]]
         }
-
     }
-    return(out)
+    out
 }

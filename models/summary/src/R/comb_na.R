@@ -1,3 +1,5 @@
+#' @export
+#'
 comb_na <- function(node_nas, col){
     uniq.col <- unique(col)
     na.list = lapply(uniq.col, function(x) 0 )
