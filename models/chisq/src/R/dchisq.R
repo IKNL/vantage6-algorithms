@@ -67,15 +67,14 @@ dchisq <- function(client, col, threshold = 5L, probs = NULL,
                                   image '{image.name}'.."))
         result <- client$call(
             "dchisq",
-            col,
-            threshold = 5L,
-            probs = NULL
+            col = col,
+            threshold = threshold,
+            probs = probs
         )
 
         return(result)
     }
 
-    # node.lens <- lapply(datasets, RPC_get_N, col, threshold)
     vtg::log$info("RPC get N")
     node.lens <- client$call(
         "get_N",
@@ -92,7 +91,6 @@ dchisq <- function(client, col, threshold = 5L, probs = NULL,
         (N <- ifelse(data.class == "DF", total.lengths$y,
                      total.lengths$x)), probs)
 
-    # node.sums <- lapply(datasets, RPC_get_sums, col)
     vtg::log$info("RPC get sums")
     node.sums <- client$call(
         "get_sums",
@@ -106,7 +104,6 @@ dchisq <- function(client, col, threshold = 5L, probs = NULL,
 
     V.glob <- exp.and.var$V
 
-    # node.statistic <- lapply(datasets, RPC_statistic, col, E.glob)
     vtg::log$info("RPC statistic")
     node.statistic <- client$call(
         "statistic",
