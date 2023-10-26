@@ -2,7 +2,6 @@
 #'
 glob_mean <- function(sumsglob, Nglob, col){
     uniq.col <- unique(col)
-    data <- na.omit(data[, uniq.col])
     out <- vector("list", length(uniq.col))
     names(out) <- uniq.col
 

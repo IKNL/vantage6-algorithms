@@ -73,20 +73,66 @@ dsummary <- function(client, col, threshold = 5L,
     vtg::log$info("RPC get NA")
     node.nas <- client$call(
         "get_NA",
-        col = col,
-        threshold = threshold
+        col = col
     )
 
     glob.nas <- vtg.summary::comb_na(node.nas, col)
 
-    vtg::log$info("RPC N")
+    cols.in.nodes <- lapply(seq(length(node.nas)), function(x){
+        paste("node ", x, " has columns: ", paste0(names(node.nas[[x]]),
+                                                   collapse = " ,") )
+    })
+
+
+    vtg::log$info("RPC len col")
     node.lens <- client$call(
-        "N",
+        "len_col",
         col = col,
         threshold = threshold
     )
 
     glob.lens <- vtg.summary::comb_N(node.lens, col)
+
+    vtg::log$info("RPC N row")
+    node.row.lens <- client$call(
+        "N_row",
+        col = col,
+        threshold = threshold
+    )
+
+    glob.row.len <- Reduce("sum",lapply(node.row.lens, function(x) x))
+
+    local.rows.len <- lapply(seq(length(node.row.lens)), function(x){
+        paste("node ", x, " has: ", node.row.lens[[x]], " rows." )
+    })
+
+    # we want to send back which nodes contain an NA while checking that there
+    # is no disclosure risk of doing so...
+
+    node.na.cols <- vector("list", length = length(node.lens))
+
+    node.na.cols <-
+        lapply(seq(length(node.lens)), function(x){
+            if( all( (check <- lapply(node.lens[[x]], function(i) i) >
+                      threshold ) )){
+                node.na.cols[[x]] <- sapply(node.nas[[x]], function(j) j)
+                new_vector <- c(Reduce("c", node.na.cols[[x]]) )
+                non_null_names <- names(node.nas[[x]])[!sapply(node.nas[[x]],
+                                                               is.null)]
+                names(new_vector) <- non_null_names
+                node.na.cols[[x]] <- new_vector
+
+            }else{
+                stop(paste0("Disclosure risk from node, ", x, "column: ",
+                            names(x)[which(sapply(check, isFALSE), arr.ind = T)
+                                     ]))
+            }
+        })
+
+    missing.cols <- lapply(seq(length(node.na.cols)), function(x){
+        paste("node ", x, " has NA in the following columns: ",
+              paste0(names(node.na.cols[[x]]),collapse = " ,") )
+    })
 
     vtg::log$info("RPC range")
     node.range <- client$call(
@@ -104,6 +150,8 @@ dsummary <- function(client, col, threshold = 5L,
         threshold = threshold
     )
 
+    vtg::log$info("combining sums")
+
     glob.sums <- vtg.summary::comb_sums(node.sums, col)
 
     glob.mean <- vtg.summary::glob_mean(glob.sums, glob.lens, col)
@@ -117,19 +165,24 @@ dsummary <- function(client, col, threshold = 5L,
 
     glob.sqr.dev <- vtg.summary::comb_sums(node.sqr.dev, col)
 
-    glob.var <- vtg.summary::glob_var(glob.sqr.dev, glob.lens, col)
+    glob.var <- data.frame(vtg.summary::glob_var(glob.sqr.dev, glob.lens, col))
 
     glob.sd <- sapply(glob.var, sqrt)
 
     structure(
         list(
-            "NA:" = node.nas,
-            "N" = glob.lens,
-            "Range" = glob.range,
-            "Sums" = glob.sums,
-            "Mean" = glob.mean,
-            "Variance" = glob.var,
-            "Standard-deviation" = glob.sd
+            "NA:" = glob.nas,
+            "total.len.data" = glob.lens,
+            "range" = glob.range,
+            "sum" = glob.sums,
+            "mean" = glob.mean,
+            "var" = glob.var,
+            "sqr.dev.sum" = glob.sqr.dev,
+            "std.dev" = glob.sd,
+            "missing.columns" = missing.cols,
+            "columns.in.nodes" = cols.in.nodes,
+            "total.row.len.na.included" = glob.row.len,
+            "local.row.len.na.included" = local.rows.len
         )
     )
 }

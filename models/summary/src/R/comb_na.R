@@ -6,7 +6,9 @@ comb_na <- function(node_nas, col){
     names(na.list) = uniq.col
     for(x in seq(length(node_nas))){
         for(j in col){
-            na.list[[j]] = na.list[[j]] + sapply(node_nas[[x]][[j]], function(l) l)
+            if(!is.null(node_nas[[x]][[j]])){
+                na.list[[j]] = na.list[[j]] + sapply(node_nas[[x]][[j]], function(l) l)
+            }
         }
     }
     na.list

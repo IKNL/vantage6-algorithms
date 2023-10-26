@@ -3,16 +3,15 @@
 RPC_get_NA <- function(data, col){
 
     uniq.col <- unique(col)
-    data <- na.omit(data[, uniq.col])
-    out <- vector("list", length(uniq.col))
-    names(out) <- uniq.col
+    cols.in.data <- uniq.col[uniq.col %in% names(data)]
+    out <- vector("list", length(cols.in.data))
+    names(out) <- cols.in.data
 
-    for(j in uniq.col){
+    for(j in cols.in.data){
         if(any(is.na(data[,j]))){
             na.pos <- which(is.na(data[,j]))
             out[[j]] <- length(na.pos)
         }
-
     }
-    return(out)
+    out
 }
