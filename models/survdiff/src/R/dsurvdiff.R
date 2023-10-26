@@ -156,7 +156,7 @@ dsurvdiff <- function(client, formula, timepoints=NULL,
         V[EG[i,1],EG[i,2]]=-sum(v[!is.nan(v)])
     }
     vv <- (V[df,df])[-1,-1, drop=FALSE]
-    colnames(V) <- names(master)
+    colnames(V) <- names(master) #this has to be double-checked if OK.
     chi <- sum(solve(vv, temp2) * temp2)
     df <- (sum(1*(exp>0))) -1
     rval <-list(formula = formula,
