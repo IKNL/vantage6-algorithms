@@ -9,7 +9,8 @@ LazyData: true
 Imports:
     glue,
     vtg,
-    RCurl
+    RCurl,
+    dplyr
 Remotes:
     iknl/vtg
 RoxygenNote: 7.2.3

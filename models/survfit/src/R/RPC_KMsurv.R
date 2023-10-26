@@ -1,4 +1,9 @@
-RPC_KMsurv=function(data,master,stratum=NULL){
+RPC_KMsurv=function(data,subset_rules,master,stratum=NULL){
+
+    # data pre-processing
+    data <- extend_data(data)
+    data <- subset_data(data, subset_rules)
+
     time=master$time
     time2=master$time2
     if(!is.na(time2)) data[,time]=data[,time2]-data[,time]

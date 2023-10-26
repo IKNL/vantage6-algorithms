@@ -15,7 +15,8 @@ COPY ./models/survfit/src /usr/local/R/${PKG_NAME}/
 WORKDIR /usr/local/R/${PKG_NAME}
 RUN Rscript -e 'library(devtools)' -e 'install_github("IKNL/vtg")'
 RUN Rscript -e 'install.packages("RCurl", repos = "http://cran.rstudio.com/")'
-RUN R CMD INSTALL --no-multiarch --with-keep.source .
+RUN Rscript -e 'devtools::install_deps(".")'
+RUN Rscript -e 'install.packages(".", repos = NULL, type = "source", INSTALL_opts = "--no-multiarch")'
 
 # Change directory to '/app’ and create files that will be
 # used to mount input, output and database.

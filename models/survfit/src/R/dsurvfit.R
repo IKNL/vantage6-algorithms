@@ -24,13 +24,12 @@
 #'
 dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
                      timepoints=NULL,plotCI=F,
-                     organizations_to_include = NULL){
+                     organizations_to_include = NULL, subset_rules = NULL){
 
     vtg::log$debug("Initializing...")
     lgr::threshold("debug")
 
-    #image.name <- "harbor2.vantage6.ai/starter/survfit:latest"
-    image.name <- "my_survfit"
+    image.name <- "harbor2.vantage6.ai/starter/survfit"
 
     client$set.task.image(
         image.name,
@@ -41,29 +40,29 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
     if (!is.null(organizations_to_include)) {
 
         vtg::log$info("Sending tasks only to specified organizations")
-        organisations_in_collaboration = client$collaboration$organizations
-        # Clear the current list of organisations in the collaboration
+        organizations_in_collaboration = client$collaboration$organizations
+        # Clear the current list of organizations in the collaboration
         # Will remove them for current task, not from actual collaboration
         client$collaboration$organizations <- list()
         # Reshape list when the organizations_to_include is not already a list
         # Relevant when e.g., Python is used as client
         if (!is.list(organizations_to_include)){
-            organisations_to_use <- toString(organizations_to_include)
+            organizations_to_use <- toString(organizations_to_include)
 
             # Remove leading and trailing spaces as in python list
-            organisations_to_use <-
-                gsub(" ", "", organisations_to_use, fixed=TRUE)
+            organizations_to_use <-
+                gsub(" ", "", organizations_to_use, fixed=TRUE)
 
             # Convert to list assuming it is comma separated
-            organisations_to_use <-
-                as.list(strsplit(organisations_to_use, ",")[[1]])
+            organizations_to_use <-
+                as.list(strsplit(organizations_to_use, ",")[[1]])
         }
-        # Loop through the organisation ids in the collaboration
-        for (organisation in organisations_in_collaboration) {
-            # Include the organisations only when desired
-            if (organisation$id %in% organisations_to_use) {
+        # Loop through the organization ids in the collaboration
+        for (organization in organizations_in_collaboration) {
+            # Include the organizations only when desired
+            if (organization$id %in% organizations_to_use) {
                 client$collaboration$organizations[[length(
-                    client$collaboration$organizations)+1]] <- organisation
+                    client$collaboration$organizations)+1]] <- organization
             }
         }
     }
@@ -88,7 +87,9 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
             conf.int = conf.int,
             conf.type = conf.type,
             timepoints = timepoints,
-            plotCI = plotCI
+            plotCI = plotCI,
+            organizations_to_include = organizations_to_include, 
+            subset_rules = subset_rules
         )
 
         return(result)
@@ -111,6 +112,7 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
         vtg::log$info("RPC Time")
         node_time <- client$call(
             "time",
+            subset_rules=subset_rules,
             master=master,
             stratum=stratum
         )
@@ -124,6 +126,7 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
         vtg::log$info("RPC at risk")
         node_at_risk <- client$call(
             "at_risk",
+            subset_rules=subset_rules,
             master=master,
             stratum=stratum
         )
@@ -132,6 +135,7 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
         vtg::log$info("RPC KM surv")
         node_KMsurv <- client$call(
             "KMsurv",
+            subset_rules=subset_rules,
             master=master,
             stratum=stratum
         )
@@ -144,6 +148,7 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
         vtg::log$info("RPC strata")
         node_strata <- client$call(
             "strata",
+            subset_rules=subset_rules,
             strata=vars[3]
         )
         stratum=unique(unlist(node_strata))
