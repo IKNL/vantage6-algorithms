@@ -126,11 +126,11 @@ dsurvdiff <- function(client, formula, timepoints=NULL,
         node_strata <- client$call(
             "strata",
             subset_rules=subset_rules,
-            strata=vars[3]
+            strata=ifelse(length(vars)>3, vars[4], vars[3])
         )
         stratum=unique(unlist(node_strata))
         master=lapply(stratum, function(k) LRT(vars,k))
-        names(master)=paste0(vars[3],'=',stratum)
+        names(master)=paste0(ifelse(length(vars)>3, vars[4], vars[3]),'=',stratum)
     }
 
     ######################################
