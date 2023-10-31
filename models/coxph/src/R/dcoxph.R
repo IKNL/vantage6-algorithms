@@ -18,12 +18,15 @@
 #' @export
 #'
 dcoxph <- function(client, expl_vars, time_col, censor_col, types = NULL,
-                   organizations_to_include = NULL) {
+                   organizations_to_include = NULL, subset_rules = NULL) {
+
+    vtg::log$debug("Initializing...")
+    lgr::threshold("debug")
 
     MAX_COMPLEXITY = 250000
     USE_VERBOSE_OUTPUT = getOption('vtg.verbose_output', F)
 
-    image.name <- "harbor2.vantage6.ai/starter/coxph:latest"
+    image.name <- "harbor2.vantage6.ai/starter/coxph"
 
     client$set.task.image(
         image.name,
@@ -34,39 +37,46 @@ dcoxph <- function(client, expl_vars, time_col, censor_col, types = NULL,
     if (!is.null(organizations_to_include)) {
 
         vtg::log$info("Sending tasks only to specified organizations")
-        organisations_in_collaboration = client$collaboration$organizations
-        # Clear the current list of organisations in the collaboration
+        organizations_in_collaboration = client$collaboration$organizations
+        # Clear the current list of organizations in the collaboration
         # Will remove them for current task, not from actual collaboration
         client$collaboration$organizations <- list()
         # Reshape list when the organizations_to_include is not already a list
         # Relevant when e.g., Python is used as client
         if (!is.list(organizations_to_include)){
-            organisations_to_use <- toString(organizations_to_include)
+            organizations_to_use <- toString(organizations_to_include)
 
             # Remove leading and trailing spaces as in python list
-            organisations_to_use <-
-                gsub(" ", "", organisations_to_use, fixed=TRUE)
+            organizations_to_use <-
+                gsub(" ", "", organizations_to_use, fixed=TRUE)
 
             # Convert to list assuming it is comma separated
-            organisations_to_use <-
-                as.list(strsplit(organisations_to_use, ",")[[1]])
+            organizations_to_use <-
+                as.list(strsplit(organizations_to_use, ",")[[1]])
         }
-        # Loop through the organisation ids in the collaboration
-        for (organisation in organisations_in_collaboration) {
-            # Include the organisations only when desired
-            if (organisation$id %in% organisations_to_use) {
+        # Loop through the organization ids in the collaboration
+        for (organization in organizations_in_collaboration) {
+            # Include the organizations only when desired
+            if (organization$id %in% organizations_to_use) {
                 client$collaboration$organizations[[length(
-                    client$collaboration$organizations)+1]] <- organisation
+                    client$collaboration$organizations)+1]] <- organization
             }
         }
     }
 
     # Run in a MASTER container
     if (client$use.master.container) {
-        vtg::log$debug("Running `dcoxph` in master container using image
+        vtg::log$info("Running `dcoxph` in master container using image
                         '{image.name}'")
-        result <- client$call("dcoxph", expl_vars, time_col, censor_col, types, 
-                              organizations_to_include)
+        result <- client$call(
+            "dcoxph",
+            expl_vars=expl_vars, 
+            time_col=time_col, 
+            censor_col=censor_col, 
+            types=types, 
+            organizations_to_include=organizations_to_include, 
+            subset_rules=subset_rules
+            )
         return(result)
     }
 
@@ -74,19 +84,26 @@ dcoxph <- function(client, expl_vars, time_col, censor_col, types = NULL,
     m <- length(expl_vars)
 
     # Ask all nodes to return their unique event times with counts
-    vtg::log$debug("Getting unique event times and counts")
-    results <- client$call("get_unique_event_times_and_counts", time_col,
-                           censor_col, types)
+    vtg::log$info("Getting unique event times and counts")
+    results <- client$call(
+        "get_unique_event_times_and_counts", 
+        subset_rules=subset_rules,
+        time_col=time_col,
+        censor_col=censor_col, 
+        types=types
+        )
 
     Ds <- lapply(results, as.data.frame)
 
     D_all <- compute.combined.ties(Ds)
     unique_event_times <- as.numeric(names(D_all))
+    
+    vtg::log$info(unique_event_times)
 
     complexity <- length(unique_event_times) * length(expl_vars)^2
-    vtg::log$debug("********************************************")
-    vtg::log$debug(c("Complexity:", complexity))
-    vtg::log$debug("********************************************")
+    vtg::log$info("********************************************")
+    vtg::log$info(c("Complexity:", complexity))
+    vtg::log$info("********************************************")
 
     if (complexity > MAX_COMPLEXITY) {
         stop("*** This computation will be too heavy on the nodes! Aborting!
@@ -94,9 +111,15 @@ dcoxph <- function(client, expl_vars, time_col, censor_col, types = NULL,
     }
 
     # Ask all nodes to compute the summed Z statistic
-    vtg::log$debug("Getting the summed Z statistic")
-    summed_zs <- client$call("compute_summed_z", expl_vars, time_col,
-                             censor_col, types)
+    vtg::log$info("Getting the summed Z statistic")
+    summed_zs <- client$call(
+        "compute_summed_z", 
+        subset_rules=subset_rules,
+        expl_vars=expl_vars, 
+        time_col=time_col,
+        censor_col=censor_col, 
+        types=types
+        )
 
     # z_hat: vector of same length m
     # Need to jump through a few hoops because apply simplifies a matrix
@@ -108,13 +131,13 @@ dcoxph <- function(client, expl_vars, time_col, censor_col, types = NULL,
     z_hat <- Reduce(`+`, summed_zs)
 
     # Initialize the betas to 0 and start iterating
-    vtg::log$debug("Starting iterations ...")
+    vtg::log$info("Starting iterations ...")
     beta <- beta_old <- rep(0, m)
     delta <- 0
 
     i = 1
     while (i <= 30) {
-        vtg::log$debug(sprintf("Executing iteration %i", i))
+        vtg::log$info(sprintf("Executing iteration %i", i))
         if (USE_VERBOSE_OUTPUT) {
             writeln("Beta's:")
             print(beta)
@@ -125,8 +148,16 @@ dcoxph <- function(client, expl_vars, time_col, censor_col, types = NULL,
             writeln()
         }
 
-        aggregates <- client$call("perform_iteration", expl_vars, time_col,
-                                  censor_col, beta, unique_event_times, types)
+        aggregates <- client$call(
+            "perform_iteration", 
+            subset_rules=subset_rules,
+            expl_vars=expl_vars, 
+            time_col=time_col,
+            censor_col=censor_col, 
+            beta=beta, 
+            unique_event_times=unique_event_times, 
+            types=types
+            )
 
         # Compute the primary and secondary derivatives
         derivatives <- compute.derivatives(z_hat, D_all, aggregates)
@@ -148,7 +179,7 @@ dcoxph <- function(client, expl_vars, time_col, censor_col, types = NULL,
         }
 
         if (delta <= 10^-8) {
-            vtg::log$debug("Betas have settled! Finished iterating!")
+            vtg::log$info("Betas have settled! Finished iterating!")
             break
         }
 

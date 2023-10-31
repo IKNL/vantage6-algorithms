@@ -9,8 +9,9 @@ dcoxph(
   expl_vars,
   time_col,
   censor_col,
-  types,
-  organizations_to_include = NULL
+  types = NULL,
+  organizations_to_include = NULL,
+  subset_rules = NULL
 )
 }
 \description{

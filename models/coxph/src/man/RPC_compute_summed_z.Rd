@@ -6,7 +6,14 @@
 sum over all distinct times i
   sum the covariates of cases in the set of cases with events at time i.}
 \usage{
-RPC_compute_summed_z(df, expl_vars, time_col, censor_col, types)
+RPC_compute_summed_z(
+  df,
+  subset_rules,
+  expl_vars,
+  time_col,
+  censor_col,
+  types = NULL
+)
 }
 \description{
 Params:

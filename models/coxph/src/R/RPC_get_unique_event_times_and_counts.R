@@ -6,8 +6,12 @@
 #'
 #' Return:
 #'   dataframe with columns time and Freq
-RPC_get_unique_event_times_and_counts <- function(df, time_col, censor_col,
-                                                  types=NULL){
+RPC_get_unique_event_times_and_counts <- function(df, subset_rules, time_col,
+                                                  censor_col, types=NULL){
+
+    # data pre-processing
+    df <- extend_data(df)
+    df <- subset_data(df, subset_rules)
 
     # Specify data types for the columns in the data
     if (!is.null(types)) df <- assign_types(df, types)

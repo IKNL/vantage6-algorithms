@@ -11,8 +11,13 @@
 #'
 #' Return:
 #'   list containing aggretated statistics
-RPC_perform_iteration <- function(df, expl_vars, time_col, censor_col, beta,
-                                  unique_event_times, types=NULL) {
+RPC_perform_iteration <- function(df, subset_rules, expl_vars, time_col,
+                                  censor_col, beta, unique_event_times,
+                                  types=NULL) {
+
+    # data pre-processing
+    df <- extend_data(df)
+    df <- subset_data(df, subset_rules)
 
     if (!is.null(types)) df <- assign_types(df, types)
 

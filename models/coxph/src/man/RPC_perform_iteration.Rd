@@ -6,6 +6,7 @@
 \usage{
 RPC_perform_iteration(
   df,
+  subset_rules,
   expl_vars,
   time_col,
   censor_col,
