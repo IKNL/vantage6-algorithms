@@ -7,11 +7,12 @@
 #'    algorithm should extract the event from
 #' @return uniuqe event times
 #'
-RPC_extract_event_times <- function( #nolint
-        data,
-        time,
-        event) {
+RPC_extract_event_times <- function(data,subset_rules,time,event) {
 
+    # data pre-processing
+    data <- extend_data(data)
+    data <- subset_data(data, subset_rules)
+    
     vtg::log$debug("Extracting unique event times...")
 
     data <- data[order(data[,time]), ]

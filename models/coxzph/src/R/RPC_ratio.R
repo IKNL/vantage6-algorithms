@@ -1,7 +1,12 @@
 #' node-side function used further in calculatin of Hazard Ratio.
 #' @export
 #'
-RPC_ratio=function(data,time,event,coxfit){
+RPC_ratio=function(data,subset_rules,time,event,coxfit){
+
+    # data pre-processing
+    data <- extend_data(data)
+    data <- subset_data(data, subset_rules)
+
     beta=coxfit$beta
     betavar=coxfit$betavar
     # order the data according to the event times

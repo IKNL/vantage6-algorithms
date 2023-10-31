@@ -1,10 +1,11 @@
 #' @export
 #'
-RPC_schoenfeld_residuals <- function( #nolint
-        data,
-        time,
-        event,
-        coxfit){
+RPC_schoenfeld_residuals <- function(data,subset_rules,time,event,coxfit){
+
+    # data pre-processing
+    data <- extend_data(data)
+    data <- subset_data(data, subset_rules)
+
     case <- data[,event]==1
     data_at_time <- data[which(case),time]
     n <- length(data_at_time)
