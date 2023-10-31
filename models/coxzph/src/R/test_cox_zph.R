@@ -39,5 +39,7 @@ test_cox_zph <- function(
     dev.off()
     txt <- RCurl::base64Encode(readBin(plot, "raw", file.info(plot)[1, "size"])
                                , "txt")
-    return(list(z=round(z.ph,3), imgtxt=txt))
+    result <- list(z=as.data.frame(round(z.ph,3)), imgtxt=txt)
+
+    return(result)
 }

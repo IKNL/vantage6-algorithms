@@ -1,7 +1,7 @@
 #' @importMethodsFrom glue glue
 #' @export
 #'
-dcoxzph <- function(client, fit, time, event, transform='identity',resid=TRUE,
+dcoxzph <- function(client, fit, time, event, transform='identity', resid=TRUE,
                     se=TRUE, df=4,num_pts=40, xlab="Time", ylab="", lty=1:2,
                     col=1, lwd=1, organizations_to_include=NULL,
                     subset_rules=NULL){
@@ -11,8 +11,7 @@ dcoxzph <- function(client, fit, time, event, transform='identity',resid=TRUE,
 
     stopifnot(!is.null(fit))
 
-    #image.name <- "harbor2.vantage6.ai/starter/coxzph:latest"
-    image.name <- "my_coxzph2"
+    image.name <- "harbor2.vantage6.ai/starter/coxzph"
 
     client$set.task.image(
         image.name,
