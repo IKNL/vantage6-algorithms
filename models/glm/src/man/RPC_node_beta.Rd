@@ -6,6 +6,7 @@
 \usage{
 RPC_node_beta(
   data,
+  subset_rules,
   formula,
   family,
   first_iteration,

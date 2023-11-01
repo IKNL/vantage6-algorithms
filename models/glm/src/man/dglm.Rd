@@ -11,7 +11,9 @@ dglm(
   types = NULL,
   family = gaussian,
   tol = 1e-08,
-  maxit = 25
+  maxit = 25,
+  organizations_to_include = NULL,
+  subset_rules = NULL
 )
 }
 \arguments{

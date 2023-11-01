@@ -9,6 +9,7 @@
 #'
 RPC_node_deviance <- function( #nolint
     data,
+    subset_rules,
     formula,
     family,
     first_iteration,
@@ -17,7 +18,7 @@ RPC_node_deviance <- function( #nolint
     coeff_old,
     wtdmu,
     types=NULL,
-    weights = NULL) {
+    weights=NULL) {
 
     vtg::log$debug("Starting node deviance.")
 
@@ -25,6 +26,10 @@ RPC_node_deviance <- function( #nolint
     if (!is.null(types)) {
         data <- vtg.glm::assign_types(data, types)
     }
+
+    # # data pre-processing
+    # data <- extend_data(data)
+    data <- subset_data(data, subset_rules)
 
     # The function calculate the residual deviance with updated betas for the
     # single node extract y variable names

@@ -20,6 +20,7 @@
 #'
 RPC_node_beta <- function( #nolint
     data,
+    subset_rules,
     formula,
     family,
     first_iteration,
@@ -34,6 +35,10 @@ RPC_node_beta <- function( #nolint
     if (!is.null(types)) {
       data <- vtg.glm::assign_types(data, types)
     }
+
+    # # data pre-processing
+    # data <- extend_data(data)
+    data <- subset_data(data, subset_rules)
 
     # Extract y and X variables name from formula
     y <- eval(formula[[2]], envir = data)

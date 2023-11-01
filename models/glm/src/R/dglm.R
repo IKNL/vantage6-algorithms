@@ -20,10 +20,44 @@
 #' @author van Gestel, A.
 #'
 dglm <- function(client, formula, dstar=NULL, types=NULL, family=gaussian,
-                 tol=1e-08, maxit=25) {
+                 tol=1e-08, maxit=25, organizations_to_include=NULL, 
+                 subset_rules=NULL) {
+
+    vtg::log$debug("*** A")
 
     vtg::log$debug("Initializing...")
     lgr::threshold("debug")
+
+    # Update the client organizations according to those specified
+    if (!is.null(organizations_to_include)) {
+
+        vtg::log$info("Sending tasks only to specified organizations")
+        organizations_in_collaboration = client$collaboration$organizations
+        # Clear the current list of organizations in the collaboration
+        # Will remove them for current task, not from actual collaboration
+        client$collaboration$organizations <- list()
+        # Reshape list when the organizations_to_include is not already a list
+        # Relevant when e.g., Python is used as client
+        if (!is.list(organizations_to_include)){
+            organizations_to_use <- toString(organizations_to_include)
+
+            # Remove leading and trailing spaces as in python list
+            organizations_to_use <-
+                gsub(" ", "", organizations_to_use, fixed=TRUE)
+
+            # Convert to list assuming it is comma separated
+            organizations_to_use <-
+                as.list(strsplit(organizations_to_use, ",")[[1]])
+        }
+        # Loop through the organization ids in the collaboration
+        for (organization in organizations_in_collaboration) {
+            # Include the organizations only when desired
+            if (organization$id %in% organizations_to_use) {
+                client$collaboration$organizations[[length(
+                    client$collaboration$organizations)+1]] <- organization
+            }
+        }
+    }
 
     # Parse a string to formula type. If it already is a formula this statement
     # will do nothing. This is needed when Python (or other langauges) is used
@@ -44,7 +78,9 @@ dglm <- function(client, formula, dstar=NULL, types=NULL, family=gaussian,
             types = types,
             family = family,
             tol = tol,
-            maxit = maxit
+            maxit = maxit,
+            organizations_to_include = organizations_to_include,
+            subset_rules = subset_rules
         )
 
         return(result)
@@ -70,6 +106,7 @@ dglm <- function(client, formula, dstar=NULL, types=NULL, family=gaussian,
         vtg::log$info("{iter}.1 - RPC Node Beta")
         beta_partials <- client$call(
             "node_beta",
+            subset_rules = subset_rules,
             formula = formula,
             family = family,
             first_iteration = (iter == 0),
@@ -105,6 +142,7 @@ dglm <- function(client, formula, dstar=NULL, types=NULL, family=gaussian,
         vtg::log$info("{iter}.3 - RPC Node Deviance")
         deviance_partials <- client$call(
             "node_deviance",
+            subset_rules = subset_rules,
             formula = formula,
             family = family,
             first_iteration = (iter == 0),
