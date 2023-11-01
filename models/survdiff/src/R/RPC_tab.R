@@ -1,6 +1,11 @@
 #' @export
 #'
-RPC_tab <- function(data,master,stratum){
+RPC_tab <- function(data, subset_rules, master, stratum){
+
+  # data pre-processing
+  data <- extend_data(data)
+  data <- subset_data(data, subset_rules)
+
   time=master$time
   time2=master$time2
   tmax=master$tmax

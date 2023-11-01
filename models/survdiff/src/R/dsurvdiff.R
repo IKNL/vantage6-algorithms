@@ -14,18 +14,56 @@
 #' @export
 #'
 #'
-dsurvdiff <- function(client,formula,tmax=NA,timepoints=NULL){
+dsurvdiff <- function(client, formula, timepoints=NULL,
+                      organizations_to_include = NULL, subset_rules = NULL
+                      ){
 
     vtg::log$debug("Initializing...")
     lgr::threshold("debug")
 
-    image.name <- "harbor2.vantage6.ai/starter/survdiff:latest"
+    image.name <- "harbor2.vantage6.ai/starter/survdiff"
 
-     # Parse a string to formula type. If it already is a formula this statement
+    client$set.task.image(
+        image.name,
+        task.name="survdiff"
+    )
+
+    # Update the client organizations according to those specified
+    if (!is.null(organizations_to_include)) {
+
+        vtg::log$info("Sending tasks only to specified organizations")
+        organizations_in_collaboration = client$collaboration$organizations
+        # Clear the current list of organizations in the collaboration
+        # Will remove them for current task, not from actual collaboration
+        client$collaboration$organizations <- list()
+        # Reshape list when the organizations_to_include is not already a list
+        # Relevant when e.g., Python is used as client
+        if (!is.list(organizations_to_include)){
+            organizations_to_use <- toString(organizations_to_include)
+
+            # Remove leading and trailing spaces as in python list
+            organizations_to_use <-
+                gsub(" ", "", organizations_to_use, fixed=TRUE)
+
+            # Convert to list assuming it is comma separated
+            organizations_to_use <-
+                as.list(strsplit(organizations_to_use, ",")[[1]])
+        }
+        # Loop through the organization ids in the collaboration
+        for (organization in organizations_in_collaboration) {
+            # Include the organizations only when desired
+            if (organization$id %in% organizations_to_use) {
+                client$collaboration$organizations[[length(
+                    client$collaboration$organizations)+1]] <- organization
+            }
+        }
+    }
+
+    # Parse a string to formula type. If it already is a formula this statement
     # will do nothing. This is needed when Python (or other langauges) is used
     # as a client.
 
-    formula <- as.formula(formula)
+    f <- as.formula(formula)
 
     # Run in a MASTER container. Note that this will call this method but then
     # within a Docker container. The client used here below has set the
@@ -37,14 +75,16 @@ dsurvdiff <- function(client,formula,tmax=NA,timepoints=NULL){
                                   image '{image.name}'.."))
         result <- client$call(
             "dsurvdiff",
-            formula = formula,
-            timepoints = timepoints
+            formula = f,
+            timepoints = timepoints,
+            organizations_to_include = organizations_to_include,
+            subset_rules = subset_rules
             )
 
         return(result)
     }
     # initialization variables
-    vars=all.vars(formula)
+    vars=all.vars(f)
     LRT <- function(vars,stratum=NULL){
         if(length(vars)>3){
             master=list(time=vars[1],time2=vars[2],
@@ -59,6 +99,7 @@ dsurvdiff <- function(client,formula,tmax=NA,timepoints=NULL){
             vtg::log$info("RPC Time")
             node_time <- client$call(
                 "time",
+                subset_rules=subset_rules,
                 master=master
             )
             master=vtg.survdiff::serv_time(nodes = node_time,master=master)
@@ -69,6 +110,7 @@ dsurvdiff <- function(client,formula,tmax=NA,timepoints=NULL){
         vtg::log$info("RPC Tab")
         node_tab <- client$call(
             "tab",
+            subset_rules=subset_rules,
             master=master,
             stratum=stratum
         )
@@ -83,11 +125,12 @@ dsurvdiff <- function(client,formula,tmax=NA,timepoints=NULL){
         vtg::log$info("RPC strata")
         node_strata <- client$call(
             "strata",
-            strata=vars[3]
+            subset_rules=subset_rules,
+            strata=ifelse(length(vars)>3, vars[4], vars[3])
         )
         stratum=unique(unlist(node_strata))
         master=lapply(stratum, function(k) LRT(vars,k))
-        names(master)=paste0(vars[3],'=',stratum)
+        names(master)=paste0(ifelse(length(vars)>3, vars[4], vars[3]),'=',stratum)
     }
 
     ######################################
@@ -113,18 +156,22 @@ dsurvdiff <- function(client,formula,tmax=NA,timepoints=NULL){
         V[EG[i,1],EG[i,2]]=-sum(v[!is.nan(v)])
     }
     vv <- (V[df,df])[-1,-1, drop=FALSE]
+    colnames(V) <- names(master) #this has to be double-checked if OK.
     chi <- sum(solve(vv, temp2) * temp2)
     df <- (sum(1*(exp>0))) -1
-    rval <-list(formula=f,
-                n= sapply(master, function(s) (s$n)[1]),
-                strata=names(master),
+    rval <-list(formula = formula,
+                n = sapply(master, function(s) (s$n)[1]),
+                strata = names(master),
                 obs = obs,
                 exp = exp,
-                var=V,
-                chisq=chi,
-                pvalue= pchisq(chi, df, lower.tail=FALSE))
-    vtg.survdiff::print_output_dsurvdiff(rval)
+                var = V,
+                chisq = chi,
+                pvalue = pchisq(chi, df, lower.tail=FALSE))
+
+    df.rval <- as.data.frame(rval)
+
+    vtg.survdiff::print_output_dsurvdiff(df.rval)
     vtg::log$debug("  - [DONE]")
-    return(rval)
+    return(df.rval)
 }
 

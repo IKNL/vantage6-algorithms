@@ -5,16 +5,17 @@ FROM harbor2.vantage6.ai/base/custom-r-base
 
 # This is a placeholder that should be overloaded by invoking
 # docker build with '--build-arg PKG_NAME=...'
-ARG PKG_NAME='vtg.glm'
+ARG PKG_NAME='vtg.survdiff'
 
-LABEL maintainer="Frank Martin <f.martin@iknl.nl>"
+LABEL maintainer="Hasan Alradhi <h.alradhi@iknl.nl>"
 
-# Install federated glm package
-COPY ./models/glm/src /usr/local/R/${PKG_NAME}/
+# Install federated crosstab package
+COPY ./models/survdiff/src /usr/local/R/${PKG_NAME}/
 
 WORKDIR /usr/local/R/${PKG_NAME}
-RUN Rscript -e 'library(devtools)' -e 'install_deps(".")'
-RUN R CMD INSTALL --no-multiarch --with-keep.source .
+RUN Rscript -e 'library(devtools)' -e 'install_github("IKNL/vtg")'
+RUN Rscript -e 'devtools::install_deps(".")'
+RUN Rscript -e 'install.packages(".", repos = NULL, type = "source", INSTALL_opts = "--no-multiarch")'
 
 # Change directory to '/app’ and create files that will be
 # used to mount input, output and database.
@@ -26,4 +27,3 @@ RUN touch database
 # Tell docker to execute `docker.wrapper()` when the image is run.
 ENV PKG_NAME=${PKG_NAME}
 CMD Rscript -e "vtg::docker.wrapper('$PKG_NAME')"
-
