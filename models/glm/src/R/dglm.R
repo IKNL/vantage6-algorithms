@@ -23,8 +23,6 @@ dglm <- function(client, formula, dstar=NULL, types=NULL, family=gaussian,
                  tol=1e-08, maxit=25, organizations_to_include=NULL, 
                  subset_rules=NULL) {
 
-    vtg::log$debug("*** A")
-
     vtg::log$debug("Initializing...")
     lgr::threshold("debug")
 

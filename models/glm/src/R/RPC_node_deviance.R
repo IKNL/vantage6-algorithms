@@ -27,8 +27,8 @@ RPC_node_deviance <- function( #nolint
         data <- vtg.glm::assign_types(data, types)
     }
 
-    # # data pre-processing
-    # data <- extend_data(data)
+    # data pre-processing
+    data <- extend_data(data)
     data <- subset_data(data, subset_rules)
 
     # The function calculate the residual deviance with updated betas for the
