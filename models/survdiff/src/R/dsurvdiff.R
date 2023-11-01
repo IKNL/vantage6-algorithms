@@ -14,7 +14,7 @@
 #' @export
 #'
 #'
-dsurvdiff <- function(client,formula,timepoints=NULL){
+dsurvdiff <- function(client,formula,tmax=NA,timepoints=NULL){
 
     vtg::log$debug("Initializing...")
     lgr::threshold("debug")
@@ -49,11 +49,11 @@ dsurvdiff <- function(client,formula,timepoints=NULL){
         if(length(vars)>3){
             master=list(time=vars[1],time2=vars[2],
                         event=vars[3],strata=vars[4],
-                        timepoints=timepoints)
+                        timepoints=timepoints,tmax=tmax)
         }else{
             master=list(time=vars[1],time2=NA,
                         event=vars[2],strata=vars[3],
-                        timepoints=timepoints)
+                        timepoints=timepoints,tmax=tmax)
         }
         if(is.null(timepoints)){
             vtg::log$info("RPC Time")

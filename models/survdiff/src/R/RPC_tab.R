@@ -3,10 +3,15 @@
 RPC_tab <- function(data,master,stratum){
   time=master$time
   time2=master$time2
-  if(!is.na(time2)) data[,time]=data[,time2]-data[,time]
+  tmax=master$tmax
   event=master$event
   strata=master$strata
   times=master$times
+  if(!is.na(time2)) data[,time]=data[,time2]-data[,time]
+  if(!is.na(tmax)){
+      data[data[,time]>tmax ,event]=0
+      data[data[,time]>tmax ,time]=tmax
+  }
   n.event=sapply(times, function(t) sum( data[data[,time]==t & data[,strata] %in% stratum,event]==1) )
   n.censor=sapply(times, function(t) sum(data[data[,time]==t & data[,strata] %in% stratum,event]==0))
   n.at.risk=nrow(data[data[,strata] %in% stratum,])

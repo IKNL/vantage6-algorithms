@@ -4,7 +4,7 @@
 \alias{dsurvdiff}
 \title{Federated survdiff}
 \usage{
-dsurvdiff(client, formula, timepoints = NULL)
+dsurvdiff(client, formula, tmax = NA, timepoints = NULL)
 }
 \arguments{
 \item{client}{vtg::Client instance, provided by the node}
