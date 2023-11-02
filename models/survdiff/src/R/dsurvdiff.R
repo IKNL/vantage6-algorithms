@@ -14,7 +14,7 @@
 #' @export
 #'
 #'
-dsurvdiff <- function(client, formula, timepoints=NULL,
+dsurvdiff <- function(client, formula, timepoints=NULL, tmax=NA,
                       organizations_to_include = NULL, subset_rules = NULL
                       ){
 
