@@ -14,8 +14,8 @@ extend_data(data)
 Original dataframe extended with new columns.
 }
 \description{
-This function enriches the datasets at the nodes with more variable which in 
+This function enriches the datasets at the nodes with more variable which in
 turn can be used in analyses. Created together with Laura Botta (INT).
-This function will be called at the start of the analysis, and executed on 
+This function will be called at the start of the analysis, and executed on
 the data of every node. Has to be implemented in every RPC call.
 }

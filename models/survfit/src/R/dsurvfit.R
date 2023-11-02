@@ -22,7 +22,7 @@
 #'
 #' @export
 #'
-dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
+dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',tmax=NA,
                      timepoints=NULL,plotCI=F,
                      organizations_to_include = NULL, subset_rules = NULL){
 
@@ -88,7 +88,7 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
             conf.type = conf.type,
             timepoints = timepoints,
             plotCI = plotCI,
-            organizations_to_include = organizations_to_include, 
+            organizations_to_include = organizations_to_include,
             subset_rules = subset_rules
         )
 
@@ -102,11 +102,11 @@ dsurvfit <- function(client,formula,conf.int=0.95,conf.type='log',
             if(length(vars) > 3){
                 list(time=vars[1],time2=vars[2],event=vars[3],strata=vars[4],
                 conf.int=conf.int,conf.type=conf.type,
-                timepoints=timepoints)
+                timepoints=timepoints, tmax=tmax)
                 }else{
                     list(time=vars[1],time2=NA,event=vars[2],strata=vars[3],
                     conf.int=conf.int,conf.type=conf.type,
-                    timepoints=timepoints)
+                    timepoints=timepoints,tmax=tmax)
                 }
 
         vtg::log$info("RPC Time")
