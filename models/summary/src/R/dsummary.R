@@ -17,8 +17,8 @@
 dsummary <- function(client, col, threshold = 5L,
                    organizations_to_include = NULL){
 
-    vtg::log$debug("Initializing...")
-    lgr::threshold("debug")
+    log <- lgr::get_logger_glue("summary")
+    log$set_threshold("debug")
 
     image.name <- "harbor2.vantage6.ai/starter/summary:latest"
 
@@ -59,8 +59,8 @@ dsummary <- function(client, col, threshold = 5L,
     }
 
     if (client$use.master.container) {
-        vtg::log$debug(glue::glue("Running `dsummary` in master container using
-                                  image '{image.name}'.."))
+        log$info("Running `dsummary` in master container using
+                                  image '{image.name}'..")
         result <- client$call(
             "dsummary",
             col = col,
@@ -70,119 +70,111 @@ dsummary <- function(client, col, threshold = 5L,
         return(result)
     }
 
-    vtg::log$info("RPC get NA")
+    log$info("RPC get NA")
+    # this now also shows which columns are available on which data!
     node.nas <- client$call(
         "get_NA",
         col = col
     )
 
-    glob.nas <- vtg.summary::comb_na(node.nas, col)
+    log$info("Aggregating total missing columns...")
+    list.glob.nas <- vtg.summary::comb_na(node.nas, col)
+    glob.nas <- Reduce("c", list.glob.nas)
+    names(glob.nas) <- names(list.glob.nas)
 
+
+    # TODO: Order of input must match... so Node 1 has to correspond to
+    # the first dataset in the "list" of datasets... Of course this is handled
+    # internally with the Client.
     cols.in.nodes <- lapply(seq(length(node.nas)), function(x){
-        paste("node ", x, " has columns: ", paste0(names(node.nas[[x]]),
-                                                   collapse = " ,") )
-    })
+        paste("node", x, "has columns:", paste0(names(node.nas[[x]]),
+                                                   collapse = " ,"))})
 
 
-    vtg::log$info("RPC len col")
+    log$info("Calculating Node specific column lengths...")
     node.lens <- client$call(
         "len_col",
         col = col,
         threshold = threshold
     )
 
-    glob.lens <- vtg.summary::comb_N(node.lens, col)
+    log$info("Creating global column lengths...")
+    glob.lens <- vector(length=length(unique(col)))
+    names(glob.lens) = unique(col)
+    for(colName in col){
+        identifies.values.of.columns <- mapply(FUN = function(vec){
+            vec[which(names(vec) == colName)]}, node.lens)
+        # to remove the named numeric(0)
+        identifies.values.of.columns <- Reduce("c",
+                                               identifies.values.of.columns)
+        glob.lens[[colName]] <- sum(identifies.values.of.columns)
+    }
 
-    vtg::log$info("RPC N row")
-    node.row.lens <- client$call(
-        "N_row",
+    log$info("Calculating node specific useable rows...")
+    node.useable.rows <- client$call(
+        "useable_rows_in_data",
         col = col,
         threshold = threshold
     )
 
-    glob.row.len <- Reduce("sum",lapply(node.row.lens, function(x) x))
+    # TODO : this has to be something added to the client as the previous
+    # todo...
+    useable.rows.per.node <- lapply(seq(length(node.useable.rows)),function(x){
+        paste("node", x, "has", node.useable.rows[[x]], "useable rows.")})
 
-    local.rows.len <- lapply(seq(length(node.row.lens)), function(x){
-        paste("node ", x, " has: ", node.row.lens[[x]], " rows." )
-    })
+    glob.useable.rows <- Reduce("sum", node.useable.rows)
 
-    # we want to send back which nodes contain an NA while checking that there
-    # is no disclosure risk of doing so...
-
-    node.na.cols <- vector("list", length = length(node.lens))
-
-    node.na.cols <-
-        lapply(seq(length(node.lens)), function(x){
-            if( all( (check <- lapply(node.lens[[x]], function(i) i) >
-                      threshold ) )){
-                node.na.cols[[x]] <- sapply(node.nas[[x]], function(j) j)
-                new_vector <- c(Reduce("c", node.na.cols[[x]]) )
-                non_null_names <- names(node.nas[[x]])[!sapply(node.nas[[x]],
-                                                               is.null)]
-                names(new_vector) <- non_null_names
-                node.na.cols[[x]] <- new_vector
-
-            }else{
-                stop(paste0("Disclosure risk from node, ", x, "column: ",
-                            names(x)[which(sapply(check, isFALSE), arr.ind = T)
-                                     ]))
-            }
-        })
-
-    missing.cols <- lapply(seq(length(node.na.cols)), function(x){
-        paste("node ", x, " has NA in the following columns: ",
-              paste0(names(node.na.cols[[x]]),collapse = " ,") )
-    })
-
-    vtg::log$info("RPC range")
+    log$info("Calculating node specific range per column")
     node.range <- client$call(
         "range",
         col = col,
         threshold = threshold
     )
 
+    log$info("Calculating global range")
     glob.range <- vtg.summary::comb_range(node.range, col)
 
-    vtg::log$info("RPC sums")
+    log$info("Calculating node specific sums per column")
     node.sums <- client$call(
         "sums",
         col = col,
         threshold = threshold
     )
 
-    vtg::log$info("combining sums")
-
+    log$info("Calculating global sum per column")
     glob.sums <- vtg.summary::comb_sums(node.sums, col)
 
+    log$info("Calculating global mean per column")
     glob.mean <- vtg.summary::glob_mean(glob.sums, glob.lens, col)
 
-    vtg::log$info("RPC sqr dev")
+    log$info("Calculating node specific squared deviance")
     node.sqr.dev <- client$call(
         "sqr_dev",
         col = col,
-        glob_mu = glob.mean
+        glob.mean = glob.mean
     )
 
+    log$info("Calculating global squared deviance")
     glob.sqr.dev <- vtg.summary::comb_sums(node.sqr.dev, col)
 
-    glob.var <- data.frame(vtg.summary::glob_var(glob.sqr.dev, glob.lens, col))
+    log$info("Calculating global variance")
+    glob.var <- vtg.summary::glob_var(glob.sqr.dev, glob.lens, col)
 
+    log$info("Calculating global standard deviation")
     glob.sd <- sapply(glob.var, sqrt)
 
-    structure(
-        list(
-            "NA:" = glob.nas,
-            "total.len.data" = glob.lens,
-            "range" = glob.range,
-            "sum" = glob.sums,
-            "mean" = glob.mean,
-            "var" = glob.var,
-            "sqr.dev.sum" = glob.sqr.dev,
-            "std.dev" = glob.sd,
-            "missing.columns" = missing.cols,
-            "columns.in.nodes" = cols.in.nodes,
-            "total.row.len.na.included" = glob.row.len,
-            "local.row.len.na.included" = local.rows.len
-        )
+    summaries <- list(
+        "global.na.per.column" = glob.nas,
+        "global.length.data" = glob.lens,
+        "global.range"=glob.range,
+        "global.sums"=glob.sums,
+        "global.means"=glob.mean,
+        "global.variance"=glob.var,
+        "global.sqr.dev"=glob.sqr.dev,
+        "global.std.dev"=glob.sd,
+        "columns.in.nodes"=cols.in.nodes,
+        "useable.rows.in.nodes"=useable.rows.per.node,
+        "global.useable.rows"=glob.useable.rows
     )
+    return(summaries)
 }

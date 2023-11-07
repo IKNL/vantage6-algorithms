@@ -1,12 +1,40 @@
 #' @export
 #'
-comb_sums <- function(node_sums, col){
+comb_sums <- function(node.list.to.sum, col){
     uniq.col <- unique(col)
-    out <- vector("list", length(uniq.col))
-    names(out) <- uniq.col
-    for(j in col){
-        temp <- lapply(node_sums, function(x) x[[j]])
-        out[[j]] <- Reduce("sum", lapply(temp, function(x) x))
+    list.of.sums <- vector("list", length(uniq.col))
+    names(list.of.sums) <- uniq.col
+    for(j in uniq.col){
+        temp <- lapply(node.list.to.sum, function(x){
+            if(!is.na(x[j])){
+                x[[j]]
+            }
+        })
+        # to see which values are valid or not
+        find.na.or.nulls <- sapply(temp, function(value){
+         if((is.na(value)) || (is.nan(value)) || is.null(value)){
+             T
+         }else{
+             F
+         }
+        })
+        # Because not every value can be assigned NaN and 0 is sometimes
+        # valid if values are greater than or less than 0...
+        temp <- lapply(seq(length(temp)), function(x){
+            if(isTRUE(find.na.or.nulls[[x]])){
+                NaN
+            }else{
+                temp[[x]]
+            }
+        })
+        list.of.sums[[j]] <- if(all(is.na(sapply(temp, function(x) x)))){
+            NaN
+        }else{
+            Reduce("sum", lapply(temp, function(x) x[!is.na(x)]))
+        }
+
     }
-    out
+    vec.of.sums <- Reduce("c", list.of.sums)
+    names(vec.of.sums) <- names(list.of.sums)
+    return(vec.of.sums)
 }
