@@ -23,15 +23,18 @@ dataset= list((d1<- Data[(1:333), ]),
 
 col = c("X", "Y", "Z", "T")
 threshold = 5L
+types=NULL
 
-summary.mock <- function(dataset, col, threshold){
+summary.mock <- function(dataset, col, threshold, types){
     client=vtg::MockClient$new(datasets = dataset, pkgname = 'vtg.summary')
     result=vtg.summary::dsummary(client = client,
                                col=col,
-                               threshold=threshold)
+                               threshold=threshold,
+                               types=types)
     return(result)
 }
 
 res <- summary.mock(dataset = dataset,
                   col=col,
-                  threshold=threshold)
+                  threshold=threshold,
+                  types=types)

@@ -1,3 +1,18 @@
+#' Function to combine range(s) of the columns.
+#'
+#' This function combines the ranges sent back by each datastation (node)
+#' based on the type of range. Here it can be two unique cases: a table for
+#' factor data or a numeric/integer in which case the simple min/max of each
+#' datasation per unique column is aggregated.
+#'
+#' @param node.range these are the node specific range(s) per column. This is
+#' a list of either a vector with 2 distinct values (min, max) or a table
+#' for factor data of the number of unique instances of each factor level.
+#' @param col Should be supplied by researcher as a vector of strings
+#' representing the column names they think is present in the data
+#'
+#' @return list of combined ranges.
+#'
 #' @export
 #'
 comb_range <- function(node.range, col){

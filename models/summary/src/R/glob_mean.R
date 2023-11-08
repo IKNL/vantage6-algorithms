@@ -1,3 +1,15 @@
+#' Global Mean.
+#'
+#' Function to compute the global mean from aggregated sums and lengths of each
+#' column.
+#'
+#' @param glob.sums is the global sum per column.
+#' @param glob.lens is the global lengths of each column.
+#' @param col Should be supplied by researcher as a vector of strings
+#' representing the column names they think is present in the data
+#'
+#' @return named vector of global mean per column.
+#'
 #' @export
 #'
 glob_mean <- function(glob.sums, glob.lens, col){

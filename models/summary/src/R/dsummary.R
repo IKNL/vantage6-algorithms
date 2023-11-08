@@ -7,6 +7,19 @@
 #' @param threshold Disclosure check. Default is 5, if number of counts in
 #' any cell is less than `threshold` the function stops and returns an error
 #' message.
+#' @param types types to subset data with.
+#'
+#' @return a list of combined summary statistics aggregated about all
+#' datastation(s) in the study. It will return  a list containing the
+#' following:
+#' `global.nas` representing each unique column's number of missing values,
+#' `global.lengths` representing total length of each column across each site,
+#' `global.range` a list of ranges per column,
+#' `global.means` a vector of means per column,
+#' `global.variance` a vector of variance per column,
+#' `node.specific.useable.rows` the node specific useable rows if the entire
+#' data were used without missing values,
+#' `global.useable.rows` is an aggregation of the node.specific.useable.rows.
 #'
 #' @author Hasan Alradhi
 #' @author Matteo Cellamare
@@ -14,7 +27,7 @@
 #'
 #' @export
 #'
-dsummary <- function(client, col, threshold = 5L,
+dsummary <- function(client, col, threshold = 5L, types = NULL,
                    organizations_to_include = NULL){
 
     log <- lgr::get_logger_glue("summary")
@@ -66,115 +79,96 @@ dsummary <- function(client, col, threshold = 5L,
             col = col,
             threshold = threshold
         )
-
         return(result)
     }
 
-    log$info("RPC get NA")
-    # this now also shows which columns are available on which data!
-    node.nas <- client$call(
-        "get_NA",
-        col = col
-    )
+    log$info("Computing Summary. Warning: If your data is factor calculations
+             such as sum, mean, squared-deviance and variance are not
+             applicable.")
 
-    log$info("Aggregating total missing columns...")
-    list.glob.nas <- vtg.summary::comb_na(node.nas, col)
-    glob.nas <- Reduce("c", list.glob.nas)
-    names(glob.nas) <- names(list.glob.nas)
-
-
-    # TODO: Order of input must match... so Node 1 has to correspond to
-    # the first dataset in the "list" of datasets... Of course this is handled
-    # internally with the Client.
-    cols.in.nodes <- lapply(seq(length(node.nas)), function(x){
-        paste("node", x, "has columns:", paste0(names(node.nas[[x]]),
-                                                   collapse = " ,"))})
-
-
-    log$info("Calculating Node specific column lengths...")
-    node.lens <- client$call(
-        "len_col",
+    log$info("Computing initial statistics...")
+    initial.statistics <- client$call(
+        "get_statistics",
         col = col,
-        threshold = threshold
+        threshold = threshold,
+        types = types
     )
 
-    log$info("Creating global column lengths...")
+    ###########################################
+    # Separating pieces of initial statistics #
+    ###########################################
+    log$info("Aggregating length of missing data...")
+    node.nas <- lapply(initial.statistics, function(results){
+        results[["data.na"]]
+    })
+    glob.nas <- vtg.summary::comb_na(node.nas, col)
+
+    log$info("Aggregating node specific data lengths...")
+    node.lengths <- lapply(initial.statistics, function(results){
+        results[["data.lengths"]]})
     glob.lens <- vector(length=length(unique(col)))
     names(glob.lens) = unique(col)
-    for(colName in col){
+    for(colName in unique(col)){
+        # fast function
         identifies.values.of.columns <- mapply(FUN = function(vec){
-            vec[which(names(vec) == colName)]}, node.lens)
+            vec[which(names(vec) == colName)]}, node.lengths)
         # to remove the named numeric(0)
-        identifies.values.of.columns <- Reduce("c",
-                                               identifies.values.of.columns)
+        identifies.values.of.columns <-
+            Reduce("c", identifies.values.of.columns)
         glob.lens[[colName]] <- sum(identifies.values.of.columns)
     }
 
-    log$info("Calculating node specific useable rows...")
-    node.useable.rows <- client$call(
-        "useable_rows_in_data",
-        col = col,
-        threshold = threshold
-    )
-
-    # TODO : this has to be something added to the client as the previous
-    # todo...
-    useable.rows.per.node <- lapply(seq(length(node.useable.rows)),function(x){
-        paste("node", x, "has", node.useable.rows[[x]], "useable rows.")})
-
-    glob.useable.rows <- Reduce("sum", node.useable.rows)
-
-    log$info("Calculating node specific range per column")
-    node.range <- client$call(
-        "range",
-        col = col,
-        threshold = threshold
-    )
-
-    log$info("Calculating global range")
-    glob.range <- vtg.summary::comb_range(node.range, col)
-
-    log$info("Calculating node specific sums per column")
-    node.sums <- client$call(
-        "sums",
-        col = col,
-        threshold = threshold
-    )
-
-    log$info("Calculating global sum per column")
+    log$info("Aggregating node specific sums...")
+    node.sums <- lapply(initial.statistics, function(results){
+        results[["data.sums"]]})
     glob.sums <- vtg.summary::comb_sums(node.sums, col)
 
-    log$info("Calculating global mean per column")
+
+    log$info("Aggregating node specific ranges...")
+    node.range <- lapply(initial.statistics, function(results){
+        results[["data.range"]]})
+    glob.range <- vtg.summary::comb_range(node.range, col)
+
+    log$info("Aggregating useable rows...")
+    node.useable.rows <- lapply(initial.statistics, function(results){
+        results[["data.useable.rows"]]
+    })
+    glob.useable.rows <- Reduce("sum", node.useable.rows)
+    node.useable.rows.df <-
+        data.frame("node" = seq_along(node.useable.rows),
+                   "useable.rows" = Reduce("c", node.useable.rows),
+                   row.names = NULL)
+    # :@ R is still assigning rownames!!
+    rownames(node.useable.rows.df) <- NULL
+
+    log$info("Computing global means...")
     glob.mean <- vtg.summary::glob_mean(glob.sums, glob.lens, col)
 
-    log$info("Calculating node specific squared deviance")
+    log$info("Calculating node specific squared deviance...")
     node.sqr.dev <- client$call(
         "sqr_dev",
         col = col,
         glob.mean = glob.mean
     )
 
-    log$info("Calculating global squared deviance")
+    log$info("Aggregating squared deviance...")
     glob.sqr.dev <- vtg.summary::comb_sums(node.sqr.dev, col)
 
-    log$info("Calculating global variance")
+    log$info("Calculating global variance...")
     glob.var <- vtg.summary::glob_var(glob.sqr.dev, glob.lens, col)
 
     log$info("Calculating global standard deviation")
     glob.sd <- sapply(glob.var, sqrt)
 
-    summaries <- list(
-        "global.na.per.column" = glob.nas,
-        "global.length.data" = glob.lens,
-        "global.range"=glob.range,
-        "global.sums"=glob.sums,
-        "global.means"=glob.mean,
-        "global.variance"=glob.var,
-        "global.sqr.dev"=glob.sqr.dev,
-        "global.std.dev"=glob.sd,
-        "columns.in.nodes"=cols.in.nodes,
-        "useable.rows.in.nodes"=useable.rows.per.node,
-        "global.useable.rows"=glob.useable.rows
+    return(
+        list(
+            "global.nas" = glob.nas,
+            "global.lengths" = glob.lens,
+            "global.range" = glob.range,
+            "global.means" = glob.mean,
+            "global.variance" = glob.var,
+            "node.specific.useable.rows" = node.useable.rows.df,
+            "global.useable.rows" = glob.useable.rows
+        )
     )
-    return(summaries)
 }

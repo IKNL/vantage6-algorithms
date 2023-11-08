@@ -1,3 +1,13 @@
+#' Combine Sums
+#'
+#' Function to aggregate the datastation (node) specific sums per column.
+#'
+#' @param node.list.to.sum is the node specific sum per column. This is a list.
+#' @param col Should be supplied by researcher as a vector of strings
+#' representing the column names they think is present in the data
+#'
+#' @return named vector of aggregated sums.
+#'
 #' @export
 #'
 comb_sums <- function(node.list.to.sum, col){

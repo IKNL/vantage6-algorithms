@@ -4,7 +4,13 @@
 \alias{dsummary}
 \title{Federated Summary algorithm.}
 \usage{
-dsummary(client, col, threshold = 5L, organizations_to_include = NULL)
+dsummary(
+  client,
+  col,
+  threshold = 5L,
+  types = NULL,
+  organizations_to_include = NULL
+)
 }
 \arguments{
 \item{client}{vtg::Client instance provided by node (datastation).}
@@ -14,6 +20,21 @@ dsummary(client, col, threshold = 5L, organizations_to_include = NULL)
 \item{threshold}{Disclosure check. Default is 5, if number of counts in
 any cell is less than `threshold` the function stops and returns an error
 message.}
+
+\item{types}{types to subset data with.}
+}
+\value{
+a list of combined summary statistics aggregated about all
+datastation(s) in the study. It will return  a list containing the
+following:
+`global.nas` representing each unique column's number of missing values,
+`global.lengths` representing total length of each column across each site,
+`global.range` a list of ranges per column,
+`global.means` a vector of means per column,
+`global.variance` a vector of variance per column,
+`node.specific.useable.rows` the node specific useable rows if the entire
+data were used without missing values,
+`global.useable.rows` is an aggregation of the node.specific.useable.rows.
 }
 \description{
 This version has built in `threshold` parameter that checks if any counts

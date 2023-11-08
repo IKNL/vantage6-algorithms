@@ -1,4 +1,17 @@
-#' @export
+#' Calculate Squared Deviance.
+#'
+#' This function is the precursor to getting the summed squared deviance
+#' across all the datastation(s) (node). This is then used to calculate the
+#' variance and following that, the standard deviation.
+#'
+#' @param data Dataset
+#' @param col Should be supplied by researcher as a vector of strings
+#' representing the column names they think is present in the data
+#' @param glob.mean This is calculated earlier in the algorithm, global mean
+#' of the combined datastation(s) (nodes).
+#'
+#' @return Vector of squared deviance per column in the Data or NaN if the
+#' data is populated entirely by NA
 #'
 RPC_sqr_dev <- function(data, col, glob.mean){
     uniq.col <- unique(col)
@@ -10,13 +23,15 @@ RPC_sqr_dev <- function(data, col, glob.mean){
         out <- NaN
     }else{
         for(colName in cols.in.data){
+            dt <- data[,colName]
             # factor data cannot be used to calculate squared deviance
-            if (!is.factor(data[, colName])) {
-                out[[colName]] <- sum((data[, colName]-glob.mean[[colName]])^2,
+            if ((!is.factor(dt)) && (is.numeric(dt))){
+                out[[colName]] <- sum((dt-glob.mean[[colName]])^2,
                                       na.rm = T)
-            }else {
-                cat("The column,", colName, "is a factor...")
+            }else if((is.factor(dt)) || is.na(dt)){
                 out[[colName]] <- NA
+            }else{
+                stop("Cannot compute squared deviance with other data type...")
             }
         }
     }
