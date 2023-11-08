@@ -17,15 +17,15 @@ RPC_len_col <- function(data, col, threshold = 5L){
         }else if (length.of.columns > threshold){
             assigned.length <- as.vector(length.of.columns)
         }else if(length.of.columns < threshold) {
-            stop(paste("Disclosure risk, not enough observations in",
-                        colName, "<", threshold))
+            stop("Disclosure risk, not enough observations in ", colName, " < "
+                 , threshold)
         }else{
             stop("Cannot compute the length of this object, check the input.")
         }
         names(assigned.length) <- colName
         return(assigned.length)
     })
-    # to access the vector easily
+    # accessing vector rather than list, easier to view.
     column.lengths <- Reduce("c", assigns.column.lengths)
     return(column.lengths)
 }

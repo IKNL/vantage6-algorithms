@@ -12,7 +12,7 @@ glob_var <- function(glob.sqr.dev, glob.lens, col){
             xsqr / (glob.lens[j] - 1)
         }
     }
-    global.mean <- Reduce("c", out)
-    names(global.mean) <- names(out)
-    return(global.mean)
+    glob.var <- Reduce("c", out)
+    names(glob.var) <- names(out)
+    return(glob.var)
 }

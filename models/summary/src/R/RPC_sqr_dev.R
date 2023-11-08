@@ -5,19 +5,18 @@ RPC_sqr_dev <- function(data, col, glob.mean){
     cols.in.data <- uniq.col[uniq.col %in% names(data)]
     out <- vector("list", length(cols.in.data))
     names(out) <- cols.in.data
-    data <- na.omit(data[, cols.in.data])
-    if(!length(data)){
+    # check if there is any data that is not NA
+    if(!length(na.omit(data[,cols.in.data]))){
         out <- NaN
     }else{
-        for(j in uniq.col){
+        for(colName in cols.in.data){
             # factor data cannot be used to calculate squared deviance
-            out[[j]] <- if(is.factor(data[,j])){
-                cat("The column,", j, "is a factor...")
-                NA
-            }else if((!is.factor(data[,j])) &&  all(is.finite(data[,j]))){
-                sum((data[,j] - glob.mean[[j]])^2)
-            }else{
-                stop("Cannot compute squared deviance...")
+            if (!is.factor(data[, colName])) {
+                out[[colName]] <- sum((data[, colName]-glob.mean[[colName]])^2,
+                                      na.rm = T)
+            }else {
+                cat("The column,", colName, "is a factor...")
+                out[[colName]] <- NA
             }
         }
     }

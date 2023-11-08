@@ -10,14 +10,14 @@ tryCatch({
 library(vtg);library(vtg.summary)
 
 set.seed(123L);
-Data <- data.frame("X" = sample(1:10, size = 1000, replace = T),
-                   "Y" = sample(c(1:3, NA), size= 1000, replace = T),
-                   "Z" = sample(c(6:19, NA), size= 1000, replace = T),
-                   "T" = sample(gl(10, 100), size = 1000, replace = T) )
+Data <- data.frame("X" = sample(1:10, size = 999, replace = T),
+                   "Y" = sample(c(1:3, NA), size= 999, replace = T),
+                   "Z" = sample(c(6:19, NA), size= 999, replace = T),
+                   "T" = sample(gl(10, 100), size = 999, replace = T) )
 
-dataset= list((d1<- Data[(1:floor(nrow(Data) / 3)), ]),
-              (d2<- Data[(floor(nrow(Data) / 3)+1: floor(nrow(Data) / 3) * 2),]),
-              (d3<- Data[((floor(nrow(Data) / 3) * 2) +1) : nrow(Data) ,]),
+dataset= list((d1<- Data[(1:333), ]),
+              (d2<- Data[(334:667),]),
+              (d3<- Data[(668:999) ,]),
               (d4 <- data.frame("T" = rep(NA, nrow(d1)))))
 
 
