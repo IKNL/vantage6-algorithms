@@ -9,11 +9,13 @@
 #' representing the column names they think is present in the data
 #' @param glob.mean This is calculated earlier in the algorithm, global mean
 #' of the combined datastation(s) (nodes).
+#' @param types containing the types to set to the columns
 #'
 #' @return Vector of squared deviance per column in the Data or NaN if the
 #' data is populated entirely by NA
 #'
-RPC_sqr_dev <- function(data, col, glob.mean){
+RPC_sqr_dev <- function(data, col, glob.mean, types=NULL){
+    if(!is.null(types)) data <- vtg.summary::assign_types(data, types)
     uniq.col <- unique(col)
     cols.in.data <- uniq.col[uniq.col %in% names(data)]
     out <- vector("list", length(cols.in.data))
