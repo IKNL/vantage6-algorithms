@@ -39,8 +39,6 @@
 #' @importFrom lme4 getME
 #' @importFrom lgr threshold
 #' @importFrom vtg log
-#' @importFrom numDeriv grad
-#' @importFrom numDeriv hessian
 #'
 #' @export
 #'
@@ -56,16 +54,17 @@ RPC_localdev <- function(data,
     }
     re_names <- as.character(sapply(lme4::findbars(formula), function(i) i[[3]]
     ))
+    if(length(re_names) > 1){
+        error <- "Cannot handle more than one scalar factor re."
+        return(vtg::error_format(error))
+    }
     mixeff <- as.vector(unlist(params))
     ranef <- mixeff[1:length(re_names)]
     beta <- mixeff[(length(ranef)+1):length(mixeff)]
     ME <- collect_ME(ranef, beta)
     groups = sapply(re_names, function(i) unique(data[[i]]))
     number_of_groups <- length(groups)
-    if(number_of_groups > 1){
-        nAGQ <- 1L
-    }
-    # TODO: Use regular GLM to find good starting value for parameters...
+
     single_iteration <- function(formula, data, family, nAGQ, params){
         fn <- function(params){
             suppressWarnings(lme4::glmer(formula = formula, data = data,
@@ -75,37 +74,16 @@ RPC_localdev <- function(data,
                                          optCtrl = list(maxfun = 1)
                                          ), start = list(fixef = beta,
                                                          theta = ranef))
-                             )}
+            )
+            }
         execute <- fn(params)
         out <- execute@devcomp$cmp["dev"]
-        # attr(out, "gradient") <- execute@optinfo$derivs$gradient
-            # numDeriv::grad(
-            # func = function(x) {
-            #     as.numeric(fn(list(fixef = x[(number_of_groups+1):length(x)],
-            #                        ranef = x[1:number_of_groups])
-            #                   )@devcomp$cmp["dev"])
-            # },x = unlist(params, use.names = F))
-        # attr(out, "hessian") <- execute@optinfo$derivs$Hessian
-            # numDeriv::hessian(
-            # func = function(x) {
-            #     as.numeric(fn(list(fixef = x[(number_of_groups+1):length(x)],
-            #                        ranef = x[1:number_of_groups])
-            #     )@devcomp$cmp["dev"])
-            # },x = unlist(params, use.names = F))
+        attr(out, "hessian") <- execute@optinfo$derivs$Hessian
+        attr(out, "gradient") <- execute@optinfo$derivs$gradient
         attr(out, "number_of_groups") <- number_of_groups
-        intercept <- lapply(1:number_of_groups, function(i){
-            lme4::ranef(execute)[[re_names[i]]]}
-        )
-        names(intercept) <- names(groups)
-        attr(out, "intercepts") <- intercept
-        attr(out, "conditional_mode_spherical_ranef") <- lme4::getME(execute,
-                                                                     "u")
-        attr(out, "condtional_mode_ranef") <- as.numeric(lme4::getME(execute,
-                                                                     "b"))
         attr(out, "ME") <- ME
         attr(out, "nAGQ") <- nAGQ
         return(out)
     }
     return(single_iteration(formula, data, family, nAGQ, params))
 }
-

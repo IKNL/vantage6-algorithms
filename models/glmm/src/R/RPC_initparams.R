@@ -10,7 +10,8 @@ RPC_initparams <- function(data, formula_str, family, ...){
     # ans <- glm(formula=f, family=family, data=data,...)
     response <- as.name(f[2])
     terms <- as.list(parse(text = paste(f[3:length(f)], collapse = " ")))
-    new_formula <- as.formula(paste(response, "~", paste(terms, collapse = " + ")))
+    new_formula <- as.formula(paste(response, "~", paste(terms,
+                                                         collapse = " + ")))
     ans <- glm(formula = new_formula, family = family, data = data, ...)
     ## varcovar <- vcov(ans);get the RE?
     return(as.vector(ans$coefficients))

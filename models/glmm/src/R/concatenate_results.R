@@ -41,80 +41,37 @@ concatenate_results <- function(params,
                                 nAGQ,
                                 formula){
 
-    # vtg::log$debug("Collecting partial results from nodes...")
-
+    vtg::log$debug("Collecting partial results from nodes...")
     mixeff <- unlist(params, use.names = T)
-
     len.mix.eff <- length(unlist(params, use.names = F))
-
-    vtg::log$debug("Running GLM on fixed effects to find init params...")
-
-    # fe_term_init <- client$call("initparams", formula_str=formula, family=family)
-
-    # contributers <- seq(length(fe_term_init))
-
-    # fe_term_init <- Reduce(`mean`, lapply(contributers, function(i){
-        # fe_term_init}))
-
     nodes <- client$call(local_eval, params = params,
         family=family, formula=formula,
-        nAGQ=nAGQ)
-
+        nAGQ=nAGQ, )
     contributers <- seq(length(nodes))
-
     vtg::log$debug("Summing partials to update mixed effects...")
-
     deviance <- Reduce(`+`, lapply(contributers, function(i) nodes[[i]][1]))
-
-    # gradient <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
-    #                                                               "gradient")))
-    #
-    # hessian <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
-    #                                                              "hessian")))
-
-    intercepts <- Reduce(`c`, lapply(contributers, function(i)
-        attr(nodes[[i]], "intercepts")))
-
+    gradient <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
+                                                                  "gradient")))
+    hessian <- Reduce(`+`, lapply(contributers, function(i) attr(nodes[[i]],
+                                                                 "hessian")))
     number_of_groups <- Reduce(`+`, lapply(contributers, function(i)
         attr(nodes[[i]], "number_of_groups")))
-
-    cond_mode_u <- Reduce(`c`, lapply(contributers, function(i)
-        attr(nodes[[i]], "conditional_mode_spherical_ranef")))
-
-    cond_mode_b <- Reduce(`c`, lapply(contributers, function(i)
-        attr(nodes[[i]], "condtional_mode_ranef")))
-
     ME <- lapply(contributers, function(i) {
         lapply(attr(nodes[[i]], "ME"), function(j) j[1])
     })
-
     fe_assertion <- all.equal(unlist(lapply(ME, function(i) i$N_fe)),
                               unlist(lapply(ME, function(i) i$N_fe)))
     re_assertion <- all.equal(unlist(lapply(ME, function(i) i$N_re)),
                               unlist(lapply(ME, function(i) i$N_re)))
-
     if(!isTRUE(all(c(fe_assertion, re_assertion)))){
         stop("The number of random effects and fixed effects must be the same
              at each site.")
     }
-
     res <- deviance
-
-    # attr(res, "gradient") <- gradient
-    #
-    # attr(res, "hessian") <- hessian
-
-    vtg::set.option("intercepts", intercepts)
-
+    attr(res, "gradient") <- gradient
+    attr(res, "hessian") <- hessian
     vtg::set.option("number_of_groups", number_of_groups)
-
-    vtg::set.option("u", cond_mode_u)
-
-    vtg::set.option("b", cond_mode_b)
-
     vtg::set.option("N_re", unique(unlist(lapply(ME, function(i) i$N_re))))
-
     vtg::set.option("N_fe", unique(unlist(lapply(ME, function(i) i$N_fe))))
-
     return(res)
 }

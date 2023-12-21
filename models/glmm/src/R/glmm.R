@@ -31,6 +31,8 @@
 #'
 #' @return A list object from which
 #'
+#' @importFrom stats nlm
+#'
 #' @export
 #'
 glmm <- function(client,
@@ -48,13 +50,12 @@ glmm <- function(client,
 
     vtg::log$debug("Using nlm to optimize GLMM...")
 
-    res <- stats::nlm(f = vtg.glmm::concatenate_results, p=mixeff,
-               client = client, local_eval = local_eval,
-               formula=formula, family = family, nAGQ = nAGQ,
-               hessian = TRUE, iterlim = 1000, print.level = 2,
-               check.analyticals = T)
-
-    family <- vtg.glmm::get_family(family)
+    res <- stats::nlm(f = concatenate_results, p = mixeff,
+                      client = client, local_eval = local_eval,
+                      formula=formula, family = family, nAGQ = nAGQ,
+                      hessian = TRUE, iterlim = 30, print.level = 2,
+                      check.analyticals = T)
+    family <- get_family(family)
     vtg::log$debug("Collected local deviance...")
     output <- list(
         paste("Generalized linear mixed model fit by minimized deviance",
@@ -65,16 +66,13 @@ glmm <- function(client,
         gradient = res$gradient,
         hessian = res$hessian,
         variance_covariance = solve(0.5*res$hessian),
-        formula = Reduce(paste, deparse(formula)),
+        formula = paste(formula),
         family = family$family,
         link = family$link,
         nlm_code = res$code,
         iterations = res$iterations,
         nAGQ = nAGQ,
-        number_of_groups = vtg::get.option("number_of_groups"),
-        intercepts = vtg::get.option("intercepts"),
-        modes = vtg::get.option("b"),
-        spherical_modes = vtg::get.option("u")
+        number_of_groups = vtg::get.option("number_of_groups")
     )
 
     vtg::log$debug("Finalized...")
