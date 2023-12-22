@@ -44,9 +44,23 @@ glmm <- function(client,
 
     lgr::threshold('debug')
 
-    vtg::log$debug("Starting...")
+    formula <- if(!class(formula) == "formula"){
+        as.formula(formula)
+    }else{
+        formula
+    }
+
+    vtg::log$debug("Collecting number of parameters...")
 
     mixeff <- as.vector(unlist(params, use.names = F))
+
+    n.params <- length(mixef)
+
+    vtg::log$debug("Collecting number of rows from all data stations...")
+
+    num.rows <- client$call("number_rows", formula)
+
+    total.rows <- Reduce("+", lapply(num.rows, function(x) x))
 
     vtg::log$debug("Using nlm to optimize GLMM...")
 
@@ -56,11 +70,15 @@ glmm <- function(client,
                       hessian = TRUE, iterlim = 30, print.level = 2,
                       check.analyticals = T)
     family <- get_family(family)
-    vtg::log$debug("Collected local deviance...")
+    deviance <- res$minimum
+    loglik <- - 0.5 * deviance
+    df.residuals <- total.rows - n.params
+    aic <- (-2 * loglik) + (2 * n.params)
+    bic <- (-2 * loglik) + (n.params * log(total.rows))
     output <- list(
         paste("Generalized linear mixed model fit by minimized deviance",
               sprintf("(Adaptive Gauss-Hermite Quadrature, nAGQ = %d)", nAGQ)),
-        deviance = res$minimum,
+        deviance = deviance,
         beta = res$estimate[-1:-(vtg::get.option("N_re"))],
         ranef = res$estimate[1:(vtg::get.option("N_re"))],
         gradient = res$gradient,
@@ -72,7 +90,10 @@ glmm <- function(client,
         nlm_code = res$code,
         iterations = res$iterations,
         nAGQ = nAGQ,
-        number_of_groups = vtg::get.option("number_of_groups")
+        number_of_groups = vtg::get.option("number_of_groups"),
+        df.resid = df.residuals,
+        AIC = aic,
+        BIC = bic
     )
 
     vtg::log$debug("Finalized...")
