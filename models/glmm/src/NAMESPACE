@@ -2,6 +2,7 @@
 
 export(RPC_initparams)
 export(RPC_localdev)
+export(RPC_number_rows)
 export(as.GLMM)
 export(collect_ME)
 export(concatenate_results)

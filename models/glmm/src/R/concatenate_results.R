@@ -46,7 +46,7 @@ concatenate_results <- function(params,
     len.mix.eff <- length(unlist(params, use.names = F))
     nodes <- client$call(local_eval, params = params,
         family=family, formula=formula,
-        nAGQ=nAGQ, )
+        nAGQ=nAGQ)
     contributers <- seq(length(nodes))
     vtg::log$debug("Summing partials to update mixed effects...")
     deviance <- Reduce(`+`, lapply(contributers, function(i) nodes[[i]][1]))

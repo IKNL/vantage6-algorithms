@@ -54,9 +54,9 @@ glmm <- function(client,
 
     mixeff <- as.vector(unlist(params, use.names = F))
 
-    n.params <- length(mixef)
+    n.params <- length(mixeff)
 
-    vtg::log$debug("Collecting number of rows from all data stations...")
+    vtg::log$debug("Collecting number of useablerows from all data stations")
 
     num.rows <- client$call("number_rows", formula)
 
