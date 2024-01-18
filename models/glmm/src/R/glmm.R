@@ -1,0 +1,104 @@
+#' Federated Generalized Mixed Effect Function.
+#'
+#' Collects all the partial values of the deviance from each site via
+#' vtg.glmm::concatenate_results then
+#'
+#' @param vtg::Client instance, provided by the node
+#'
+#' @param params List of starting values for the Random Effect Term and the
+#' Fixed Effect Term(s). Note that one should invoke the list in the following
+#' manner: params = list(theta = x, fixef = y) where `x` is a single value, and
+#' `y` can be a vector of starting values depending on how many fixed effects
+#' are included in the model.
+#'
+#' @param local_eval String, RPC call to run a single iteration of
+#' the `lme4::glmer` function. This evaluates the deviance at the supplied set
+#' of starting values given by the `params` parameter via the Adaptive Gauss
+#' Hermite Quadrature Scheme.
+#'
+#' @param family Family type, if non is supplied then Gaussian Family is used.
+#'
+#' @param nAGQ Integer Scalar of the number of points per axis for evaluating
+#' the Adaptive Gauss Hermite Quadrature approximation to the log-likelihood.
+#' The default number we take is 10, but this can go up to 25 or as few as 1.
+#' The latter will simply be the Laplace Approximation of the Deviance.
+#'
+#' @param formula A two-sided linear formula object describing both the fixed
+#' effects and random effect parts of the model. The response parameter must be
+#' on the left hand side of a '~' operator and the independent variables that
+#' follow must be separated with a '+' operator. The random effect term must
+#' be distinguished by a vertical bar '|'.
+#'
+#' @return A list object from which
+#'
+#' @importFrom stats nlm
+#'
+#' @export
+#'
+glmm <- function(client,
+                 params,
+                 local_eval,
+                 family,
+                 nAGQ,
+                 formula){
+
+    lgr::threshold('debug')
+
+    formula <- if(!class(formula) == "formula"){
+        as.formula(formula)
+    }else{
+        formula
+    }
+
+    vtg::log$debug("Collecting number of parameters...")
+
+    mixeff <- as.vector(unlist(params, use.names = F))
+
+    n.params <- length(mixeff)
+
+    vtg::log$debug("Collecting number of useablerows from all data stations")
+
+    num.rows <- client$call("number_rows", formula)
+
+    total.rows <- Reduce("+", lapply(num.rows, function(x) x))
+
+    vtg::log$debug("Using nlm to optimize GLMM...")
+
+    res <- stats::nlm(f = concatenate_results, p = mixeff,
+                      client = client, local_eval = local_eval,
+                      formula=formula, family = family, nAGQ = nAGQ,
+                      hessian = TRUE, iterlim = 30, print.level = 2,
+                      check.analyticals = T)
+    family <- get_family(family)
+    deviance <- res$minimum
+    loglik <- - 0.5 * deviance
+    df.residuals <- total.rows - n.params
+    aic <- (-2 * loglik) + (2 * n.params)
+    bic <- (-2 * loglik) + (n.params * log(total.rows))
+    output <- list(
+        paste("Generalized linear mixed model fit by minimized deviance",
+              sprintf("(Adaptive Gauss-Hermite Quadrature, nAGQ = %d)", nAGQ)),
+        deviance = deviance,
+        beta = res$estimate[-1:-(vtg::get.option("N_re"))],
+        ranef = res$estimate[1:(vtg::get.option("N_re"))],
+        gradient = res$gradient,
+        hessian = res$hessian,
+        variance_covariance = solve(0.5*res$hessian),
+        formula = paste(formula),
+        family = family$family,
+        link = family$link,
+        nlm_code = res$code,
+        iterations = res$iterations,
+        nAGQ = nAGQ,
+        number_of_groups = vtg::get.option("number_of_groups"),
+        df.resid = df.residuals,
+        AIC = aic,
+        BIC = bic
+    )
+
+    vtg::log$debug("Finalized...")
+
+    return(output)
+
+
+}

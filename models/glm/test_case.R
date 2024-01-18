@@ -1,12 +1,12 @@
-data(user_1)
+load("C:/Users/hal2002.53340/Repositories/playground/testing-stats-functions/glmm/df1.RData")
+load("C:/Users/hal2002.53340/Repositories/playground/testing-stats-functions/glmm/df2.RData")
 
-datasets <- list(
-    read.csv("D:\\data\\glm\\goal3.csv"),
-    read.csv("D:\\data\\glm\\iknl.csv"),
-    read.csv("D:\\data\\glm\\xeltis.csv")
-)
+datasets <- list(df1, df2)
 
-formula <- d~end+sex+agecat2+site2+country1+offset(log(y))
+rb <- rbind(df1, df2)
+
+formula <- awards ~ math  + I(ses=="high")
+glm(formula = formula, data = rb, family = "poisson")
 # formula <- d~end+agecat2+country1+offset(log(y))
 
 glm.mock <- function(datasets, ...) {
@@ -19,16 +19,16 @@ go <- expression(install(dependencies = F, quick = T))
 eval(go)
 results_v6 <- glm.mock(
     datasets,
-    formula=formula,
-    dstar="d_star",
-    types=list(
-        sex=list(type='factor',levels=1:2, ref=NULL),
-        site2=list(type='factor',levels=c(1,2,3,4,5,9), ref=NULL),
-        end=list(type='factor',levels=1:5, ref=NULL),
-        agecat2=list(type='factor',levels=1:5, ref='4'),
-        country1=list(type='factor',levels=c(1,2,4), ref=NULL)
-    ),
-    family='rs.poi',
+    formula=formula #,
+    # types=list(
+    #     math=list(type='integer'),
+    #     prog = list(type='character'),
+    #     ses = list(type='logical')
+        # agecat2=list(type='factor',levels=1:5, ref='4'),
+        # country1=list(type='factor',levels=c(1,2,4), ref=NULL)
+    # )
+    ,
+    family='poisson',
     maxit=25,
     tol= 1e-08
 )
