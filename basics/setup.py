@@ -6,21 +6,21 @@ from setuptools import setup, find_packages
 here = path.abspath(path.dirname(__file__))
 
 # get the long description from the README file
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
+with open(path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 # setup the package
 setup(
-    name='v6-basics-py',
+    name="v6-basics-py",
     version="1.0.0",
-    description='vantage6 basics',
+    description="vantage6 basics",
     long_description=long_description,
-    long_description_content_type='text/markdown',
-    url='https://github.com/IKNL/vantage6-algorithms',
+    long_description_content_type="text/markdown",
+    url="https://github.com/IKNL/vantage6-algorithms",
     packages=find_packages(),
-    python_requires='>=3.6',
+    python_requires=">=3.6",
     install_requires=[
-        'pandas',
-        'vantage6-algorithm-tools',
-    ]
+        "pandas",
+        "vantage6-algorithm-tools==4.2.1",
+    ],
 )
