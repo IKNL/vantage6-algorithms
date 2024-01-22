@@ -12,4 +12,4 @@ RUN pip install /app
 ENV PKG_NAME=${PKG_NAME}
 
 # Tell docker to execute `docker_wrapper()` when the image is run.
-CMD python -c "from vantage6.algorithm.tools.wrap import wrap_algorithm; wrap_algorithm('${PKG_NAME}')"
+CMD python -c "from vantage6.algorithm.tools.wrap import wrap_algorithm; wrap_algorithm()"
